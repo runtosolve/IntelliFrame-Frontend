@@ -63,9 +63,6 @@ interface InputFieldProps extends React.ComponentProps<"div"> {
 
 interface LabelledInputFieldProps extends InputFieldProps {
   label: string,
-  name: string,
-  defaultValue: string,
-  setField: (v: number) => void
 }
 
 function checkValidity(v: number, minValue: number) {

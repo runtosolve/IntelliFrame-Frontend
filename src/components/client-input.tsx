@@ -12,7 +12,9 @@ export default function ClientInput() {
 
   return (
     <div className="mt-8 w-1/2 space-y-3">
-      <PurlinView/>
+      <PurlinView
+        data={generatePurlinViewData(state.span, state.lapLength)}
+      />
       <LabelledInputField
         label="Roof slope (deg.)"
         name="roofSlope"
@@ -58,6 +60,12 @@ export default function ClientInput() {
       <DynamicInputFiled
         label="Span (ft.)"
         name="span"
+        value={state.span}
+        setField={(v) => dispatch({
+          type: "set",
+          field: "span",
+          payload: v
+        })}
       />
       <LabelledInputField
         label="Lap length (in.)"
@@ -105,3 +113,20 @@ const DECK_OPTIONS = [
   {label: "SSR Ultra-Dek 20 in. 24 ga", value: "SSR Ultra-Dek 20 in. 24 ga"}
 ]
 
+/**
+ * Convert state's raw span data into format consumable for PurLinView componet
+ * @param spans 
+ * @param lapLength unit: inches
+ */
+function generatePurlinViewData(spans: Array<{id: string, value: number}>, lapLength: number) {
+
+  const data = spans.map((item, index) => {
+    let leftLap = (index == 0) ? (0) : (lapLength / 12);
+    let rightLap = (index == (spans.length - 1)) ? (0) : (lapLength / 12)
+    
+    return {index, leftLap, span: item.value, rightLap}
+  })
+
+  return data
+
+}

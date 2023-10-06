@@ -2,13 +2,8 @@ import React, { useState } from "react"
 import { v4 as uuidv4 } from 'uuid';
 import { InputField } from "./input-field";
 
-export default function DynamicInputFiled({ label, name }: DynamicInputFiledProps) {
-  
-  const [spans, setSpans] = useState([
-    {id: uuidv4(), value: 16},
-    {id: uuidv4(), value: 12},
-  ])
-  
+export default function DynamicInputFiled({ label, name, value, setField }: DynamicInputFiledProps) {
+
   return (
     <div>
       <label htmlFor={name} className="block text-lg font-medium text-gray-900">
@@ -17,35 +12,26 @@ export default function DynamicInputFiled({ label, name }: DynamicInputFiledProp
       <div className="mt-2">
         <div>
           <div className="space-y-3">
-            {spans.map((span, spanIndex) => (
+            {value.map((span, spanIndex) => (
               <div
                 className="flex items-center"
                 key={span.id}
                 >
                 <InputField
                   className="flex-1"
-                  name={span.id}
+                  name={`span-${spanIndex}`}
                   defaultValue={span.value.toString()}
                   minValue={1}
                   setField={(v) => {
-                    const newSpans = [...spans];
+                    const newSpans = [...value];
                     newSpans[spanIndex].value = v;
-                    setSpans(newSpans);
+                    setField(newSpans);
                   }}
                 />
-                {/* <input
-                  className="flex-1 block w-full no-spinner outline-none border-0 rounded ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 px-2 py-1.5"
-                  value={span.value}
-                  onChange={(e) => {
-                    const newSpans = [...spans];
-                    newSpans[spanIndex].value = parseFloat(e.currentTarget.value)
-                    setSpans(newSpans);
-                  }}
-                /> */}
                 <button className="ml-4 h-6 w-6 rounded-full border border-gray-300 hover:bg-gray-200 text-sm font-semibold text-gray-900 text-center align-middle"
                   onClick={(e) => {
                     e.preventDefault();
-                    setSpans(spans.filter((_, index) => (index != spanIndex)))
+                    setField(value.filter((_, index) => (index != spanIndex)))
                   }}
                 >
                   -
@@ -57,7 +43,7 @@ export default function DynamicInputFiled({ label, name }: DynamicInputFiledProp
             className="mt-2 w-full bg-gray-100 border border-gray-300 hover:bg-gray-200 text-sm font-semibold text-gray-900 align-middle"
             onClick={e => {
               e.preventDefault();
-              setSpans([...spans, {id: uuidv4(), value: 12}]);
+              setField([...value, {id: uuidv4(), value: 12}]);
             }}
           >
             +
@@ -71,9 +57,11 @@ export default function DynamicInputFiled({ label, name }: DynamicInputFiledProp
 type DynamicInputFiledProps = {
   label: string,
   name: string,
+  value: Array<{id: string, value: number}>
+  setField: (v: Array<{id: string, value: number}>) => void
 }
 
-type Span = {
+type DynamicFieldValue = {
   id: string,
-  value: number,
+  value: number
 }
