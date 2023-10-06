@@ -1,5 +1,5 @@
-import CellInput from "./input-table/cell-input";
-import CellSelect from "./input-table/cell-select";
+import CellInput from "./cell-input";
+import CellSelect from "./cell-select";
 
 export default function InputTable() {
 
@@ -16,7 +16,7 @@ export default function InputTable() {
   ];
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto mb-4">
       <table className="w-full whitespace-nowrap divide-y divide-gray-300 my-4 text-center table-auto">
         <thead>
           <tr>
