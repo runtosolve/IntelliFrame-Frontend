@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { v4 as uuidv4 } from 'uuid';
+import { InputField } from "./input-field";
 
 export default function DynamicInputFiled({ label, name }: DynamicInputFiledProps) {
   
@@ -21,7 +22,18 @@ export default function DynamicInputFiled({ label, name }: DynamicInputFiledProp
                 className="flex items-center"
                 key={span.id}
                 >
-                <input
+                <InputField
+                  className="flex-1"
+                  name={span.id}
+                  defaultValue={span.value.toString()}
+                  minValue={1}
+                  setField={(v) => {
+                    const newSpans = [...spans];
+                    newSpans[spanIndex].value = v;
+                    setSpans(newSpans);
+                  }}
+                />
+                {/* <input
                   className="flex-1 block w-full no-spinner outline-none border-0 rounded ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 px-2 py-1.5"
                   value={span.value}
                   onChange={(e) => {
@@ -29,7 +41,7 @@ export default function DynamicInputFiled({ label, name }: DynamicInputFiledProp
                     newSpans[spanIndex].value = parseFloat(e.currentTarget.value)
                     setSpans(newSpans);
                   }}
-                />
+                /> */}
                 <button className="ml-4 h-6 w-6 rounded-full border border-gray-300 hover:bg-gray-200 text-sm font-semibold text-gray-900 text-center align-middle"
                   onClick={(e) => {
                     e.preventDefault();

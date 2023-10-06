@@ -1,6 +1,6 @@
 import DynamicInputFiled from "./form-input/dynamic-input-field";
-import InputField from "./form-input/input-field";
-import SelectField from "./form-input/select-field";
+import LabelledInputField from "./form-input/input-field";
+import LabelledSelectField from "./form-input/select-field";
 import usePurlinLine, { INITIAL_STATE } from "./hooks/use-purlin-line";
 import PurlinView from "./purlin-view";
 import React from "react";
@@ -13,7 +13,7 @@ export default function ClientInput() {
   return (
     <div className="mt-8 w-1/2 space-y-3">
       <PurlinView/>
-      <InputField
+      <LabelledInputField
         label="Roof slope (deg.)"
         name="roofSlope"
         defaultValue={INITIAL_STATE.roofSlope.toFixed(2)}
@@ -23,7 +23,7 @@ export default function ClientInput() {
           payload: v
         })}
       />
-      <SelectField
+      <LabelledSelectField
         label="Deck type"
         name="deckType"
         value={state.deckType}
@@ -38,8 +38,8 @@ export default function ClientInput() {
             {item.label}
           </option>  
         )}
-      </SelectField>
-      <SelectField
+      </LabelledSelectField>
+      <LabelledSelectField
         label="Cross section"
         name="crossSection"
         value={state.crossSection}
@@ -54,22 +54,23 @@ export default function ClientInput() {
             {item.label}
           </option>  
         )}
-      </SelectField>
+      </LabelledSelectField>
       <DynamicInputFiled
         label="Span (ft.)"
         name="span"
       />
-      <InputField
+      <LabelledInputField
         label="Lap length (in.)"
         name="lapLength"
         defaultValue={INITIAL_STATE.lapLength.toFixed(2)}
+        minValue={2.5}
         setField={(v) => dispatch({
           type: "set",
           field: "lapLength",
           payload: v,
         })}
       />
-      <InputField
+      <LabelledInputField
         label="Spacing (ft.)"
         name="spacing"
         defaultValue={INITIAL_STATE.spacing.toFixed(2)}
@@ -79,10 +80,11 @@ export default function ClientInput() {
           payload: v,
         })}
       />
-      <InputField
+      <LabelledInputField
         label="Frame flange width (in.)"
         name="frameFlangeWidth"
         defaultValue={INITIAL_STATE.frameFlangeWidth.toFixed(2)}
+        minValue={0.5}
         setField={(v) => dispatch({
           type: "set",
           field: "frameFlangeWidth",

@@ -1,7 +1,22 @@
 import { useState } from "react";
 import React from "react";
 
-export default function InputField({ label, name, defaultValue, setField}: InputFieldProps) {
+export default function LabelledInputField({ label, name, ...props }: LabelledInputFieldProps) {
+
+  return (
+    <div>
+      <label htmlFor={name} className="block text-lg font-medium text-gray-900">
+        {label}
+      </label>
+      <InputField
+        name={name}
+        {...props}
+        />
+    </div>
+  );
+}
+
+export function InputField({ name, defaultValue, minValue = 0, setField, ...props }: InputFieldProps) {
   
   const [inputValue, setInputValue] = useState(defaultValue);
   const [isValid, setIsValid] = useState(false);
@@ -11,7 +26,7 @@ export default function InputField({ label, name, defaultValue, setField}: Input
     setInputValue(e.currentTarget.value);
     const v = parseFloat(e.currentTarget.value)
 
-    const {valid, msg} = checkValidity(v)
+    const { valid, msg } = checkValidity(v, minValue)
     setIsValid(valid);
     setErrorMsg(msg);
 
@@ -19,47 +34,49 @@ export default function InputField({ label, name, defaultValue, setField}: Input
       setField(v);
     }
   }
-  
+
   return (
-    <div>
-      <label htmlFor={name} className="block text-lg font-medium text-gray-900">
-        {label}
-      </label>
-      <div className="mt-2">
-        <input
-          className="block w-full no-spinner outline-none border-0 rounded ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 px-2 py-1.5"
-          name={name}
-          value={inputValue}
-          type="number"
-          onChange={handleOnChange}
-        />
-        {!isValid && 
-          <div className="text-sm text-red-500">
-            {errorMsg}
-          </div>
-        }
-      </div>
+    <div {...props}>
+      <input
+        className="block w-full no-spinner outline-none border-0 rounded ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 px-2 py-1.5"
+        name={name}
+        value={inputValue}
+        type="number"
+        onChange={handleOnChange}
+      />
+      {!isValid &&
+        <div className="text-sm text-red-500">
+          {errorMsg}
+        </div>
+      }
     </div>
   );
 }
 
+interface InputFieldProps extends React.ComponentProps<"div"> {
+  name: string,
+  defaultValue: string,
+  minValue?: number,
+  setField: (v: number) => void  
+}
 
-type InputFieldProps = {
+
+interface LabelledInputFieldProps extends InputFieldProps {
   label: string,
   name: string,
   defaultValue: string,
   setField: (v: number) => void
 }
 
-function checkValidity(v: number) {
-  if (!v) {
-    return {valid: false, msg: "Input must be a number"}
+function checkValidity(v: number, minValue: number) {
+  if (isNaN(v)) {
+    return { valid: false, msg: "Input must be a number" }
   }
 
   // Check negative
-  if (v <= 0) {
-    return {valid: false, msg: "Input must be greater than 0"};
+  if (v < minValue) {
+    return { valid: false, msg: `Input must not be smaller than ${minValue}`};
   }
 
-  return {valid: true, msg: ""};
+  return { valid: true, msg: "" };
 }

@@ -1,6 +1,6 @@
 import { ComponentProps } from "react";
 
-export default function SelectField({label, name, children, ...props}: SelectFieldProps) {
+export default function LabelledSelectField({label, name, children, ...props}: LabelledSelectFieldProps) {
   return (
     <div>
       <label htmlFor={name} className="block text-lg font-medium text-gray-900">
@@ -19,6 +19,6 @@ export default function SelectField({label, name, children, ...props}: SelectFie
   )
 }
 
-interface SelectFieldProps extends ComponentProps<"select"> {
+interface LabelledSelectFieldProps extends ComponentProps<"select"> {
   label: string,
 }
