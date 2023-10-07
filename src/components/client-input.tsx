@@ -11,7 +11,7 @@ export default function ClientInput() {
   const [state, dispatch] = usePurlinLine()
 
   return (
-    <div className="mt-8 w-1/2 space-y-3">
+    <div className="w-1/2 space-y-3">
       <PurlinView
         data={generatePurlinViewData(state.span, state.lapLength)}
       />

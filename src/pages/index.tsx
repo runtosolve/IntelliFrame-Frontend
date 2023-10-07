@@ -1,25 +1,28 @@
 import ClientInput from "@/components/client-input";
+import Image from "next/image";
 
 export default function Home() {
   return (
     <>
-      <header className="bg-gray-800 text-gray-100 flex items-center px-4">
-        <img
-          className="h-8 w-auto"
-          src="https://tailwindui.com/img/logos/mark.svg?color=blue&shade=500"
+      <header className="h-16 font-serif border-b-1 bg-white shadow-lg text-gray-900 flex items-center place-content-between space-x-6">
+        <Image
+          width={100} 
+          height={100}
+          src="/RunToSolveLogo.svg"
           alt="Logo"
+          className="h-full w-auto py-2 px-6"
         />
-        <div className="text-lg px-2 py-2 m-2">
+        <div className="h-full px-16 text-md font-medium text-gray-700 flex items-center">
           PurlinLine Designer
         </div>
       </header>
-      <main className="w-full flex justify-center">
+      <main className="py-12 w-full flex justify-center bg-gray-100">
         <ClientInput/>
       </main>
       <footer
-        className="mx-4 my-4 border-t border-gray-200 text-center"
+        className="bg-slate-950 border-t border-gray-100 text-gray-100 text-center"
       >
-        <div className="py-4 text-gray-600">
+        <div className="py-6">
           &copy; 2023 RunToSolve, LLC. All rights reserved
         </div>
       </footer>
