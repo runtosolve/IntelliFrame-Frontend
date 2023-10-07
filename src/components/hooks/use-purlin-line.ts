@@ -21,7 +21,8 @@ export const INITIAL_STATE: PurLinLineState = {
   deckType: "SSR Ultra-Dek 18 in. 24 ga",
   crossSection: "Z8x2.5 060",
   span: [
-    {id: uuidv4(), value: 16}
+    {id: uuidv4(), value: 16},
+    {id: uuidv4(), value: 20},
   ],
   lapLength: 4,
   spacing: 5, 
