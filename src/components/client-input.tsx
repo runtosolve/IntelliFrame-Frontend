@@ -5,6 +5,7 @@ import usePurlinLine, { INITIAL_STATE } from "./hooks/use-purlin-line";
 import PurlinView from "./purlin-view";
 import React from "react";
 import { v4 as uuidv4 } from 'uuid';
+import SubmitButton from "./submission/submit-button";
 
 export default function ClientInput() {
 
@@ -13,7 +14,7 @@ export default function ClientInput() {
   return (
     <div className="w-1/2 space-y-3">
       <PurlinView
-        data={generatePurlinViewData(state.span, state.lapLength)}
+        data={generatePurlinViewData(state.spans, state.lapLength)}
       />
       <LabelledInputField
         label="Roof slope (deg.)"
@@ -58,12 +59,12 @@ export default function ClientInput() {
         )}
       </LabelledSelectField>
       <DynamicInputFiled
-        label="Span (ft.)"
-        name="span"
-        value={state.span}
+        label="Spans (ft.)"
+        name="spans"
+        value={state.spans}
         setField={(v) => dispatch({
           type: "set",
-          field: "span",
+          field: "spans",
           payload: v
         })}
       />
@@ -99,6 +100,9 @@ export default function ClientInput() {
           payload: v,
         })}
       />
+      <div className="pt-6 flex justify-center">
+        <SubmitButton inputState={state}/>
+      </div>
     </div>
   );
 }

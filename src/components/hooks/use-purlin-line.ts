@@ -20,7 +20,7 @@ export const INITIAL_STATE: PurLinLineState = {
   roofSlope: 1 / 12,
   deckType: "SSR Ultra-Dek 18 in. 24 ga",
   crossSection: "Z8x2.5 060",
-  span: [
+  spans: [
     {id: uuidv4(), value: 16},
     {id: uuidv4(), value: 20},
   ],
@@ -31,11 +31,11 @@ export const INITIAL_STATE: PurLinLineState = {
 
 // Use only the following props for now:
 // span length, lap length, and cross-section type
-type PurLinLineState = {
+export type PurLinLineState = {
   roofSlope: number, // unit: degrees
   deckType: string, 
   crossSection: string, 
-  span: Array<{id: string, value: number}>, // unit: ft
+  spans: Array<{id: string, value: number}>, // unit: ft
   lapLength: number, // unit: ft
   spacing: number, // unit: ft
   frameFlangeWidth: number, // unit: in.
@@ -45,7 +45,7 @@ type PurLinLineState = {
 type ReducerAction = 
   | { type: "set", field: "roofSlope" | "lapLength" | "spacing" | "frameFlangeWidth", payload: number }
   | { type: "set", field: "deckType" | "crossSection", payload: string }
-  | { type: "set", field: "span", payload: Array<{id: string, value: number}>}
+  | { type: "set", field: "spans", payload: Array<{id: string, value: number}>}
 
 
 
