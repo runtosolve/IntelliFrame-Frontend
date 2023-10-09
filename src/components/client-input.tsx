@@ -6,6 +6,12 @@ import PurlinView from "./purlin-view";
 import React from "react";
 import { v4 as uuidv4 } from 'uuid';
 import SubmitButton from "./submission/submit-button";
+import dynamic from "next/dynamic";
+
+
+const PurlineViewNoSSR = dynamic(() => import("./purlin-view"), {
+  ssr: false,
+});
 
 export default function ClientInput() {
 
@@ -13,7 +19,7 @@ export default function ClientInput() {
 
   return (
     <div className="w-1/2 space-y-3">
-      <PurlinView
+      <PurlineViewNoSSR
         data={generatePurlinViewData(state.spans, state.lapLength)}
       />
       <LabelledInputField
