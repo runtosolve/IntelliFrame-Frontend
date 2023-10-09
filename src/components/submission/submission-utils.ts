@@ -8,7 +8,7 @@ export function mapStateToJSON(state: PurLinLineState) {
     purlin_laps: Array(2 * (state.spans.length - 1)).fill(state.lapLength),
     purlin_spacing: state.spacing,
     frame_flange_width: state.frameFlangeWidth,
-    roof_sloe: state.roofSlope,
+    roof_slope: state.roofSlope,
     deck_type: state.deckType,
   };
 
