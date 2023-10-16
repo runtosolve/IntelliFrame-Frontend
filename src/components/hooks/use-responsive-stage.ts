@@ -1,36 +1,44 @@
 import { MutableRefObject, useEffect } from "react"
 import Konva from 'konva';
 
-export function useResponsiveStage({ stageRef, containerRef, targetZoom }: ResponsiveStageReducerProps) {
+export function useResponsiveStage({ stageRef, containerRef, boundingBox, setZoom }: ResponsiveStageReducerProps) {
+  
   useEffect(() => {
-    // Resize stage to match container
-    stageRef.current.width(containerRef.current.offsetWidth);
-    stageRef.current.height(containerRef.current.offsetHeight);
+    function handleResize() {
+      // Resize stage to match container size
+      stageRef.current.width(containerRef.current.offsetWidth);
+      stageRef.current.height(containerRef.current.offsetHeight);
+  
+      const xc = containerRef.current.offsetWidth / 2;
+      const yc = containerRef.current.offsetHeight / 2;
 
-    // Update stage zoom to best show content
-    // Always zoom from the center of the container
-    const zoomCenter = {
-      x: containerRef.current.offsetWidth / 2, 
-      y: containerRef.current.offsetHeight / 2};
-    const oldZoom = stageRef.current.scaleX(); // always assume uniform scale
-    const oldStagePos = {
-      x: zoomCenter.x - stageRef.current.x(),
-      y: zoomCenter.y - stageRef.current.y(),
+      // Calculate best zoom ratio
+      const sceneWidth = stageRef.current.width();
+      const sceneHeight = stageRef.current.height();
+      const bestZoom = Math.min(0.8 * sceneWidth / boundingBox.width, 0.8 * sceneHeight / boundingBox.height);
+      setZoom(bestZoom);
+
+      // Apply scale
+      stageRef.current.scale({x: bestZoom, y: bestZoom});
+  
+      // Shift to center
+      stageRef.current.position({x: xc - boundingBox.x * bestZoom, y: yc - boundingBox.y * bestZoom});
     }
-    const newStagePos = {
-      x: zoomCenter.x - oldStagePos.x / oldZoom * targetZoom,
-      y: zoomCenter.y - oldStagePos.y / oldZoom * targetZoom,
-    }
 
-    // Update stage scale and position
-    stageRef.current.scale({x: targetZoom, y: targetZoom});
-    stageRef.current.position(newStagePos);
+    handleResize();
 
-  }, [stageRef, containerRef, targetZoom])
+    window.addEventListener("resize", handleResize);
+
+    return (() => {
+      window.removeEventListener("resize", handleResize);
+    });
+
+  }, [stageRef, containerRef, boundingBox, setZoom])
 }
 
 type ResponsiveStageReducerProps = {
   stageRef: MutableRefObject<Konva.Stage>,
   containerRef: MutableRefObject<HTMLDivElement>,
-  targetZoom: number,
+  boundingBox: {x: number, y: number, width: number, height: number},
+  setZoom: (v: number) => void,
 }

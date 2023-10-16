@@ -1,8 +1,7 @@
 import DynamicInputFiled from "./form-input/dynamic-input-field";
 import LabelledInputField from "./form-input/input-field";
 import LabelledSelectField from "./form-input/select-field";
-import usePurlinLine, { INITIAL_STATE } from "./hooks/use-purlin-line";
-import PurlinView from "./purlin-view";
+import usePurlinLine, { INITIAL_PURLIN_STATE } from "./hooks/use-purlin-line";
 import React from "react";
 import { v4 as uuidv4 } from 'uuid';
 import SubmitButton from "./submission/submit-button";
@@ -19,13 +18,15 @@ export default function ClientInput() {
 
   return (
     <div className="w-1/2 space-y-3">
-      <PurlineViewNoSSR
-        data={generatePurlinViewData(state.spans, state.lapLength)}
-      />
+      <div className="aspect-video rounded overflow-hidden mb-8">
+        <PurlineViewNoSSR
+          data={generatePurlinViewData(state.spans, state.lapLength)}
+        />
+      </div>
       <LabelledInputField
         label="Roof slope (deg.)"
         name="roofSlope"
-        defaultValue={INITIAL_STATE.roofSlope.toFixed(2)}
+        defaultValue={INITIAL_PURLIN_STATE.roofSlope.toFixed(2)}
         setField={(v) => dispatch({
           type: "set",
           field: "roofSlope",
@@ -77,7 +78,7 @@ export default function ClientInput() {
       <LabelledInputField
         label="Lap length (in.)"
         name="lapLength"
-        defaultValue={INITIAL_STATE.lapLength.toFixed(2)}
+        defaultValue={INITIAL_PURLIN_STATE.lapLength.toFixed(2)}
         minValue={2.5}
         setField={(v) => dispatch({
           type: "set",
@@ -88,7 +89,7 @@ export default function ClientInput() {
       <LabelledInputField
         label="Spacing (ft.)"
         name="spacing"
-        defaultValue={INITIAL_STATE.spacing.toFixed(2)}
+        defaultValue={INITIAL_PURLIN_STATE.spacing.toFixed(2)}
         setField={(v) => dispatch({
           type: "set",
           field: "spacing",
@@ -98,7 +99,7 @@ export default function ClientInput() {
       <LabelledInputField
         label="Frame flange width (in.)"
         name="frameFlangeWidth"
-        defaultValue={INITIAL_STATE.frameFlangeWidth.toFixed(2)}
+        defaultValue={INITIAL_PURLIN_STATE.frameFlangeWidth.toFixed(2)}
         minValue={0.5}
         setField={(v) => dispatch({
           type: "set",
@@ -128,13 +129,13 @@ const DECK_OPTIONS = [
  * @param spans 
  * @param lapLength unit: inches
  */
-function generatePurlinViewData(spans: Array<{id: string, value: number}>, lapLength: number) {
+export function generatePurlinViewData(spans: Array<{id: string, value: number}>, lapLength: number) {
 
   const data = spans.map((item, index) => {
     let leftLap = (index == 0) ? (0) : (lapLength / 12);
     let rightLap = (index == (spans.length - 1)) ? (0) : (lapLength / 12)
     
-    return {index, leftLap, span: item.value, rightLap}
+    return {id: item.id, index, leftLap, span: item.value, rightLap}
   })
 
   return data
