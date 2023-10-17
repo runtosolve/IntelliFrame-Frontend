@@ -1,12 +1,13 @@
 import { useRef, useState } from "react";
-import { Layer, Rect, RegularPolygon, Stage } from "react-konva";
+import { Layer, Rect, Stage } from "react-konva";
 import Konva from "konva"
-import { useResponsiveStage } from "./hooks/use-responsive-stage";
+import { useResponsiveStage } from "../hooks/use-responsive-stage";
+import SteelBeam from "./steel-beam";
 
 
-export default function PurlinView({ data }: PurLinViewProps) {
+export default function PurlinView({ purlinData, frameFlangeWidth }: PurLinViewProps) {
 
-  const box = getBoundingBox(data);
+  const box = getBoundingBox(purlinData);
 
   const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null!);
@@ -17,11 +18,11 @@ export default function PurlinView({ data }: PurLinViewProps) {
   useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom})
 
   return (
-    <div ref={containerRef} className="w-full h-full bg-gray-300 ">
+    <div ref={containerRef} className="w-full h-full bg-gray-300">
       <Stage ref={stageRef}>
         <Layer>
-          {generatePurlins(data, zoom)}
-          {generateSupports(data, zoom)}
+          {generatePurlins(purlinData, zoom)}
+          {generateSupports(purlinData, zoom, frameFlangeWidth)}
         </Layer>
       </Stage>
     </div>
@@ -82,7 +83,7 @@ const generatePurlins = (data: Array<PurlinData>, zoom: number) => {
   }))
 };
 
-const generateSupports = (data: Array<PurlinData>, zoom: number) => {
+const generateSupports = (data: Array<PurlinData>, zoom: number, frameFlangeWidth: number) => {
 
   const locations: Array<number> = []
   let curPos = 0;
@@ -92,23 +93,30 @@ const generateSupports = (data: Array<PurlinData>, zoom: number) => {
     locations.push(curPos);
   })
 
+  const w = frameFlangeWidth / 12;  // Convert to ft
+  const h = 3 * w;
+  const tf = w / 13.7;
+  const tw = (h - 2 * tf) / 49.6;
+
   return (
     locations.map((x) => (
-      <RegularPolygon
+      <SteelBeam
         key={x}
         x={x}
-        y={PURLIN_HEIGHT + 1.5 * SUPPORT_RAIDUS + LAP_OFFSET_Y / 2}
-        sides={3} 
-        radius={1}
+        y={PURLIN_HEIGHT + LAP_OFFSET_Y}
+        w={w}
+        h={h}
+        tf={tf}
+        tw={tw}
         strokeWidth={1 / zoom}
-        {...SUPPORT_STYLE}
-        />
+      />
     ))
   );
 }
 
 type PurLinViewProps = {
-  data: Array<PurlinData>
+  purlinData: Array<PurlinData>,
+  frameFlangeWidth: number,
 }
 
 type PurlinData = {

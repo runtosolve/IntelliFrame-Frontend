@@ -8,7 +8,7 @@ import SubmitButton from "./submission/submit-button";
 import dynamic from "next/dynamic";
 
 
-const PurlineViewNoSSR = dynamic(() => import("./purlin-view"), {
+const PurlineViewNoSSR = dynamic(() => import("./viewer/purlin-view"), {
   ssr: false,
 });
 
@@ -20,7 +20,8 @@ export default function ClientInput() {
     <div className="w-1/2 space-y-3">
       <div className="aspect-video rounded overflow-hidden mb-8">
         <PurlineViewNoSSR
-          data={generatePurlinViewData(state.spans, state.lapLength)}
+          purlinData={generatePurlinViewData(state.spans, state.lapLength)}
+          frameFlangeWidth={state.frameFlangeWidth}
         />
       </div>
       <LabelledInputField
