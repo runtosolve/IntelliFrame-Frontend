@@ -13,7 +13,7 @@ export default function SubmitButton({ inputState }: SubmitButtonProps) {
 
   const handleClick = () => {
     setSubmitStatus("analyzing");
-    fetch(`${HOST.ip}:${HOST.port}/api/create_job`, {
+    fetch(`http://${HOST.ip}:${HOST.port}/api/create_job`, {
       method: "POST",
       body: mapStateToJSON(inputState)
     })
