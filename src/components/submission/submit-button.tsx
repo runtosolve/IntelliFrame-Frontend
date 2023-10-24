@@ -2,13 +2,18 @@ import { useState } from "react";
 import { PurLinLineState } from "../hooks/use-purlin-line";
 import { mapStateToJSON } from "./submission-utils";
 
+const HOST = {
+  ip: "134.209.32.202",
+  port: "8080"
+}
+
 export default function SubmitButton({ inputState }: SubmitButtonProps) {
 
   const [submitStaus, setSubmitStatus] = useState<SubmitStatus>("not-submitted")
 
   const handleClick = () => {
     setSubmitStatus("analyzing");
-    fetch("http://localhost:8080/api/create_job", {
+    fetch(`${HOST.ip}:${HOST.port}/api/create_job`, {
       method: "POST",
       body: mapStateToJSON(inputState)
     })
