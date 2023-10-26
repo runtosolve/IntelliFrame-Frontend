@@ -3,7 +3,7 @@ import { PurLinLineState } from "../hooks/use-purlin-line";
 import { mapStateToJSON } from "./submission-utils";
 
 const HOST = {
-  ip: "134.209.32.202",
+  ip: "api.purlinline.runtosolve.com",
   port: "8080"
 }
 

@@ -1,5 +1,6 @@
 import ClientInput from "@/components/client-input";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -12,12 +13,13 @@ export default function Home() {
           alt="Logo"
           className="h-full w-auto py-2 px-6"
         />
-        <div className="h-full px-16 text-md font-medium text-gray-700 flex items-center">
-          PurlinLine Designer
-        </div>
       </header>
       <main className="py-12 w-full flex justify-center bg-gray-100">
-        <ClientInput/>
+        <button className="rounded bg-gray-800 hover:bg-gray-600 text-gray-100 px-4 py-2">
+          <Link href="/purlinline">
+            Go to PurlinLine Designer
+          </Link>
+        </button>
       </main>
       <footer
         className="bg-slate-950 border-t border-gray-100 text-gray-100 text-center"
