@@ -3,17 +3,34 @@ import { PurLinLineState } from "../hooks/use-purlin-line";
 import { mapStateToJSON } from "./submission-utils";
 
 const HOST = {
-  ip: "api.purlinline.runtosolve.com",
-  port: "8080"
+  url: "https://purlinline.runtosolve.com/api",
 }
 
 export default function SubmitButton({ inputState }: SubmitButtonProps) {
 
   const [submitStaus, setSubmitStatus] = useState<SubmitStatus>("not-submitted")
 
+  const handleClickMsg = () => {
+    setSubmitStatus("analyzing");
+    fetch(`${HOST.url}/msg`, {
+      method: "GET"
+    })
+      .then(response => {
+        return response.json();
+      })
+      .then(data => {
+        setSubmitStatus("ready");
+        console.log(data);
+      })
+      .catch(err => {
+        setSubmitStatus("error");
+        console.log(err);
+      });
+  }
+
   const handleClick = () => {
     setSubmitStatus("analyzing");
-    fetch(`http://${HOST.ip}:${HOST.port}/api/create_job`, {
+    fetch(`${HOST.url}/create_job`, {
       method: "POST",
       body: mapStateToJSON(inputState)
     })
@@ -35,7 +52,7 @@ export default function SubmitButton({ inputState }: SubmitButtonProps) {
       <button
         name="submit-button"
         className="w-36 h-10 bg-gray-800 hover:bg-gray-600 text-gray-100 rounded"
-        onClick={handleClick}>
+        onClick={handleClickMsg}>
         <div className="w-full h-full flex justify-center items-center space-x-2">
           {(submitStaus == "analyzing") && <Spinner/>}
           <span>
