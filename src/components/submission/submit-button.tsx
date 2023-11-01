@@ -30,7 +30,7 @@ export default function SubmitButton({ inputState }: SubmitButtonProps) {
 
   const handleClick = () => {
     setSubmitStatus("analyzing");
-    fetch(`${HOST.url}/create_job`, {
+    fetch(`${HOST.url}/submit_job`, {
       method: "POST",
       body: mapStateToJSON(inputState)
     })
@@ -52,7 +52,7 @@ export default function SubmitButton({ inputState }: SubmitButtonProps) {
       <button
         name="submit-button"
         className="w-36 h-10 bg-gray-800 hover:bg-gray-600 text-gray-100 rounded"
-        onClick={handleClickMsg}>
+        onClick={handleClick}>
         <div className="w-full h-full flex justify-center items-center space-x-2">
           {(submitStaus == "analyzing") && <Spinner/>}
           <span>
