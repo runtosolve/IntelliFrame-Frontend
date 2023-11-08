@@ -1,4 +1,5 @@
 import ClientInput from "@/components/client-input";
+import ResultsDisplay from "@/components/results/results-display";
 import Image from "next/image";
 
 export default function PurlinLine() {
@@ -16,8 +17,13 @@ export default function PurlinLine() {
           PurlinLine Designer
         </div>
       </header>
-      <main className="py-12 w-full flex justify-center bg-gray-100">
-        <ClientInput/>
+      <main className="py-12 w-full bg-gray-100">
+        <div className="flex justify-center">
+          <ClientInput/>
+        </div>
+        <div className="flex justify-center">
+          <ResultsDisplay/>
+        </div>
       </main>
       <footer
         className="bg-slate-950 border-t border-gray-100 text-gray-100 text-center"
