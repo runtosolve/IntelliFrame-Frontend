@@ -1,12 +1,13 @@
-import { UnitedValue } from "@/utils/value-types";
 import { Group, Arrow, Line, Text } from "react-konva";
 
-export default function DistanceDimension({startPoint, endPoint, distanceValue = {value: 0., unit: "unit"}}: DistanceDimensionProps) {
+export default function DistanceDimension({startPoint, endPoint, distanceValue, distanceUnit, scale = 1}: DistanceDimensionProps) {
 
-  const extensionLength = 50
-  const extendBeyond = 10
-  const pointerWidth = 12
+  const extensionLength = 50 * scale
+  const extendBeyond = 10 * scale
+  const pointerWidth = 6 * scale
   const pointerLength = pointerWidth * 1.25
+  const fontSize = 14 * scale
+  const lineWidth = 0.5 * scale
 
   // Convert to local coordinate
   const distance = Math.sqrt(Math.pow(endPoint.x - startPoint.x, 2) + Math.pow(endPoint.y - startPoint.y, 2))
@@ -23,8 +24,8 @@ export default function DistanceDimension({startPoint, endPoint, distanceValue =
   const extend2End = {x: localEnd.x, y: localEnd.y + extensionLength + extendBeyond}
 
   // Define text
-  distanceValue.value = distance
-  const text = `${distanceValue.value.toFixed(1)} ${distanceValue.unit}`
+  if (!distanceValue) distanceValue = distance
+  const text = `${distanceValue.toFixed(1)} ${distanceUnit}`
 
   return (
     <Group
@@ -32,31 +33,34 @@ export default function DistanceDimension({startPoint, endPoint, distanceValue =
       x={startPoint.x}
       y={startPoint.y}
     >
+      {/* Dimension  */}
       <Arrow
         points={[...Object.values(dimStart), ...Object.values(dimEnd)]}
         stroke="#020617"
-        strokeWidth={1}
+        strokeWidth={lineWidth}
         fill="#020617"
         pointerWidth={pointerWidth}
         pointerLength={pointerLength}
         pointerAtBeginning={true}
         pointerAtEnding={true}
       />
+      {/* Left extension line */}
       <Line
         points={[...Object.values(extend1Start), ...Object.values(extend1End)]}
         stroke="#020617"
-        strokeWidth={1}
+        strokeWidth={lineWidth}
       />
+      {/* Right extension line */}
       <Line
         points={[...Object.values(extend2Start), ...Object.values(extend2End)]}
         stroke="#020617"
-        strokeWidth={1}
+        strokeWidth={lineWidth}
       />
       <Text
         text={text}
         align="center"
         verticalAlign="top"
-        fontSize={16}
+        fontSize={fontSize}
         x={0}
         y={extensionLength + extendBeyond}
         width={distance}
@@ -68,7 +72,9 @@ export default function DistanceDimension({startPoint, endPoint, distanceValue =
 type DistanceDimensionProps = {
   startPoint: Position,
   endPoint: Position,
-  distanceValue?: UnitedValue,
+  distanceValue?: number,
+  distanceUnit?: string,
+  scale?: number
 }
 
 type Position = {
