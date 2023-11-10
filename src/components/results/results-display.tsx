@@ -42,7 +42,7 @@ export function processRawData(rawData: RawData): AnalaysisData {
     failureLimitState: rawData.failure_limit_state[0].toLocaleUpperCase() + rawData.failure_limit_state.slice(1),
     failureLocation: rawData.failure_location,
     nodeLocations: rawData.input_z,
-    nodeDeflections: rawData.output_v.map(v => -v),
+    nodeDeflections: rawData.output_v, // downward being positive
     failureNodeIndex: findDeflectionAtFailureLocation(rawData)
   }
 }
