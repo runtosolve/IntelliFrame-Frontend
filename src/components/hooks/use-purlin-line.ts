@@ -1,7 +1,7 @@
 import {Dispatch, useReducer} from "react";
 import { v4 as uuidv4 } from 'uuid';
 
-export default function usePurlinLine(): [PurLinLineState, Dispatch<ReducerAction>] {
+export default function usePurlinLine(): [PurLinLineState, PurLinLineStateDispatch] {
   const [state, dispatch] = useReducer(reducer, INITIAL_PURLIN_STATE)
 
   return [state, dispatch]
@@ -41,6 +41,7 @@ export type PurLinLineState = {
   frameFlangeWidth: number, // unit: in.
 }
 
+export type PurLinLineStateDispatch = Dispatch<ReducerAction>
 
 type ReducerAction = 
   | { type: "set", field: "roofSlope" | "lapLength" | "spacing" | "frameFlangeWidth", payload: number }

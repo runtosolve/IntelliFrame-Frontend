@@ -1,8 +1,8 @@
 import DeflectionView from "./deflection-view";
 
-export default function ResultsDisplay() {
+export default function ResultsDisplay({ data }: ResultsDisplayProps) {
 
-  const data = processRawData(SAMPLE_RAW_DATA)
+  // const data = processRawData(SAMPLE_RAW_DATA)
 
   return (
     <div className="w-1/2 mt-6">
@@ -39,7 +39,7 @@ function ReportCard({title, children}: React.ComponentProps<"div">) {
   );
 }
 
-export function processRawData(rawData: RawData): AnalaysisData {
+export function processRawData(rawData: RawAPIData): AnalaysisData {
   return {
     capacity: {
       value: (rawData.applied_pressure * 1000 * 144).toFixed(2),
@@ -53,7 +53,7 @@ export function processRawData(rawData: RawData): AnalaysisData {
   }
 }
 
-export function findDeflectionAtFailureLocation(rawData: RawData) {
+export function findDeflectionAtFailureLocation(rawData: RawAPIData) {
   const TOL = 1E-6
   for (let index = 0; index < (rawData.input_z.length - 1); index++) {
     if (Math.abs(rawData.input_z[index] - rawData.failure_location) <= TOL) {
@@ -63,7 +63,11 @@ export function findDeflectionAtFailureLocation(rawData: RawData) {
   return null
 }
 
-type AnalaysisData = {
+type ResultsDisplayProps = {
+  data: AnalaysisData
+}
+
+export type AnalaysisData = {
   capacity: {
     value: string,
     unit: string,
@@ -76,7 +80,7 @@ type AnalaysisData = {
 }
 
 
-type RawData = {
+export type RawAPIData = {
   applied_pressure: number,
   failure_limit_state: string,
   failure_location: number,

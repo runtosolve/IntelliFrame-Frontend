@@ -1,10 +1,9 @@
 import DynamicInputFiled from "./form-input/dynamic-input-field";
 import LabelledInputField from "./form-input/input-field";
 import LabelledSelectField from "./form-input/select-field";
-import usePurlinLine, { INITIAL_PURLIN_STATE } from "./hooks/use-purlin-line";
+import { PurLinLineState, PurLinLineStateDispatch, INITIAL_PURLIN_STATE } from "./hooks/use-purlin-line";
 import React from "react";
 import { v4 as uuidv4 } from 'uuid';
-import SubmitButton from "./submission/submit-button";
 import dynamic from "next/dynamic";
 
 
@@ -12,9 +11,7 @@ const PurlineViewNoSSR = dynamic(() => import("./viewer/purlin-view"), {
   ssr: false,
 });
 
-export default function ClientInput() {
-
-  const [state, dispatch] = usePurlinLine()
+export default function ClientInput({state, dispatch}: ClientInputProps) {
 
   return (
     <div className="w-1/2 space-y-3">
@@ -108,11 +105,13 @@ export default function ClientInput() {
           payload: v,
         })}
       />
-      <div className="pt-6 flex justify-center">
-        <SubmitButton inputState={state}/>
-      </div>
     </div>
   );
+}
+
+type ClientInputProps = {
+  state: PurLinLineState,
+  dispatch: PurLinLineStateDispatch,
 }
 
 const CROSS_SECTION_OPTIONS = [

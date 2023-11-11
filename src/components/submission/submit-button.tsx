@@ -1,44 +1,29 @@
 import { useState } from "react";
 import { PurLinLineState } from "../hooks/use-purlin-line";
 import { mapStateToJSON } from "./submission-utils";
+import { AnalaysisData, processRawData } from "../results/results-display";
 
 const HOST = {
   url: "https://purlinline.runtosolve.com/api",
 }
 
-export default function SubmitButton({ inputState }: SubmitButtonProps) {
+export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
 
   const [submitStaus, setSubmitStatus] = useState<SubmitStatus>("not-submitted")
 
-  const handleClickMsg = () => {
-    setSubmitStatus("analyzing");
-    fetch(`${HOST.url}/msg`, {
-      method: "GET"
-    })
-      .then(response => {
-        return response.json();
-      })
-      .then(data => {
-        setSubmitStatus("ready");
-        console.log(data);
-      })
-      .catch(err => {
-        setSubmitStatus("error");
-        console.log(err);
-      });
-  }
-
   const handleClick = () => {
     setSubmitStatus("analyzing");
+    onUpdate(null);
     fetch(`${HOST.url}/submit_job`, {
       method: "POST",
-      body: mapStateToJSON(inputState)
+      body: mapStateToJSON(input)
     })
       .then(response => {
         return response.json();
       })
       .then(data => {
         setSubmitStatus("ready");
+        onUpdate(processRawData(data));
         console.log(data);
       })
       .catch(err => {
@@ -65,22 +50,6 @@ export default function SubmitButton({ inputState }: SubmitButtonProps) {
   );
 }
 
-type SubmitButtonProps = {
-  inputState: PurLinLineState
-}
-
-type SubmitStatus =
-  | "not-submitted"
-  | "submitted"
-  | "analyzing"
-  | "ready"
-  | "error";
-
-
-type StatusAlertProps = {
-  status: SubmitStatus
-}
-
 const StatusAlert = ({status}: StatusAlertProps) => {
   switch (status) {
     case "ready": 
@@ -102,9 +71,24 @@ const StatusAlert = ({status}: StatusAlertProps) => {
     default:
       return (<></>);
   }
-
 }
 
+type SubmitButtonProps = {
+  input: PurLinLineState,
+  onUpdate: (data: AnalaysisData | null) => void,
+}
+
+type SubmitStatus =
+  | "not-submitted"
+  | "submitted"
+  | "analyzing"
+  | "ready"
+  | "error";
+
+
+type StatusAlertProps = {
+  status: SubmitStatus
+}
 
 const Spinner = (props: React.ComponentProps<"div">) => {
   return (
