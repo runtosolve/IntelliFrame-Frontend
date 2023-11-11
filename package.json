@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "d3": "^7.8.5",
     "konva": "^9.2.1",
     "next": "latest",
     "react": "latest",
@@ -22,6 +23,7 @@
     "@types/react-dom": "latest",
     "@types/uuid": "^9.0.4",
     "autoprefixer": "latest",
+    "daisyui": "^3.9.4",
     "eslint": "latest",
     "eslint-config-next": "latest",
     "postcss": "latest",

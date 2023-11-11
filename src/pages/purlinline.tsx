@@ -1,7 +1,15 @@
 import ClientInput from "@/components/client-input";
+import usePurlinLine from "@/components/hooks/use-purlin-line";
+import ResultsDisplay, { AnalaysisData } from "@/components/results/results-display";
+import SubmitButton from "@/components/submission/submit-button";
 import Image from "next/image";
+import { useState } from "react";
 
 export default function PurlinLine() {
+
+  const [inputData, inputDataDispatch] = usePurlinLine();
+  const [outputData, setOutputData] = useState<AnalaysisData | null>(null);
+
   return (
     <>
       <header className="h-16 font-serif border-b-1 bg-white shadow-lg text-gray-900 flex items-center place-content-between space-x-6">
@@ -16,8 +24,18 @@ export default function PurlinLine() {
           PurlinLine Designer
         </div>
       </header>
-      <main className="py-12 w-full flex justify-center bg-gray-100">
-        <ClientInput/>
+      <main className="py-12 w-full bg-gray-100">
+        <div className="flex justify-center">
+          <ClientInput state={inputData} dispatch={inputDataDispatch}/>
+        </div>
+        {outputData && 
+          <div className="flex justify-center">
+            <ResultsDisplay data={outputData}/>
+          </div>
+        }
+        <div className="pt-6 flex justify-center">
+          <SubmitButton input={inputData} onUpdate={setOutputData}/>
+        </div>
       </main>
       <footer
         className="bg-slate-950 border-t border-gray-100 text-gray-100 text-center"

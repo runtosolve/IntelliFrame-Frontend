@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
-import { Layer, Rect, Stage } from "react-konva";
+import { Layer, Rect, Stage, Group } from "react-konva";
 import Konva from "konva"
 import { useResponsiveStage } from "../hooks/use-responsive-stage";
 import SteelBeam from "./steel-beam";
+import DistanceDimension from "./dimension";
 
 
 export default function PurlinView({ purlinData, frameFlangeWidth }: PurLinViewProps) {
@@ -19,7 +20,7 @@ export default function PurlinView({ purlinData, frameFlangeWidth }: PurLinViewP
 
   return (
     <div ref={containerRef} className="w-full h-full bg-gray-300">
-      <Stage ref={stageRef}>
+      <Stage ref={stageRef} draggable>
         <Layer>
           {generatePurlins(purlinData, zoom)}
           {generateSupports(purlinData, zoom, frameFlangeWidth)}
@@ -98,21 +99,45 @@ const generateSupports = (data: Array<PurlinData>, zoom: number, frameFlangeWidt
   const tf = w / 13.7;
   const tw = (h - 2 * tf) / 49.6;
 
+  let dimensionOn = true
+  const dimensionObjsArr: Array<{startPoint: {x: number, y: number}, endPoint: {x: number, y: number}}> = []
+  const dimensionY = PURLIN_HEIGHT + LAP_OFFSET_Y + h
+  for (let index = 0; index < (locations.length - 1); index++) {
+    if (index == (locations.length - 1)) continue;
+    let startPoint = {x: locations[index], y: dimensionY};
+    let endPoint = {x: locations[index + 1], y: dimensionY};
+    dimensionObjsArr.push({startPoint, endPoint});
+  }
+
+
   return (
-    locations.map((x) => (
-      <SteelBeam
-        key={x}
-        x={x}
-        y={PURLIN_HEIGHT + LAP_OFFSET_Y}
-        w={w}
-        h={h}
-        tf={tf}
-        tw={tw}
-        strokeWidth={1 / zoom}
-      />
-    ))
+    <Group>
+      {locations.map((x) => (
+        <SteelBeam
+          key={x}
+          x={x}
+          y={PURLIN_HEIGHT + LAP_OFFSET_Y}
+          w={w}
+          h={h}
+          tf={tf}
+          tw={tw}
+          strokeWidth={1 / zoom}
+        />
+      ))}
+      {dimensionOn && (dimensionObjsArr.map(item => (
+        <DistanceDimension
+          key={item.startPoint.x}
+          distanceUnit="ft."
+          scale={1 / zoom}
+          {...item}
+        />
+      )))}
+    </Group>
   );
 }
+
+
+
 
 type PurLinViewProps = {
   purlinData: Array<PurlinData>,
