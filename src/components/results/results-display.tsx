@@ -1,3 +1,5 @@
+import DeflectionView from "./deflection-view";
+
 export default function ResultsDisplay() {
 
   const data = processRawData(SAMPLE_RAW_DATA)
@@ -8,10 +10,16 @@ export default function ResultsDisplay() {
         {`${data.capacity.value} ${data.capacity.unit}`}
       </ReportCard>
       <ReportCard title="Predidcted failure limit state">
-        {`${data.failureLimitState}`}
+        {`${data.failureLimitState}`} 
       </ReportCard>
       <ReportCard title="Purlin deflection and failure location">
-        Loading...
+        <div>
+          <div>
+            {`The purlin line deflection is shown below at a scale factor of X.`}
+          </div>
+          <DeflectionView data={data} scale={100}/>
+        </div>
+        
       </ReportCard>
     </div>
   );
@@ -20,14 +28,12 @@ export default function ResultsDisplay() {
 function ReportCard({title, children}: React.ComponentProps<"div">) {
   return (
     <div className="collapse collapse-arrow bg-base-100 border borer-base-300">
-        <input type="checkbox" /> 
+        <input type="checkbox"/> 
         <div className="collapse-title text-lg font-medium">
           {title}
         </div>
         <div className="collapse-content">
-          <p>
-            {children}
-          </p>
+          {children}
         </div>
       </div>
   );

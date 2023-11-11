@@ -1,21 +1,36 @@
 import * as d3 from "d3";
-import { processRawData, SAMPLE_RAW_DATA } from "@/components/results/results-display"
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-export default function DeflectionView() {
+export default function DeflectionView({data, scale = 50, ...props}) {
 
-  const data = processRawData(SAMPLE_RAW_DATA)
+  const containerRef = useRef(null);
+  const [containerSize, setContainerSize] = useState({width: 100, height: 100});
+
+  const handleResize = () => {
+    const rect = containerRef.current.getBoundingClientRect();
+    setContainerSize({width: rect.width, height: rect.height});
+  }
+
+  useEffect(() => {
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return (() => {
+      window.removeEventListener("resize", handleResize);
+    })
+  }, []);
+
 
   return (
-    <>
+    <div ref={containerRef} {...props}>
       <LinePlot
-        width={500}
-        height={400}
+        width={containerSize.width}
+        height={containerRef.height}
         dataX={data.nodeLocations}
         dataY={data.nodeDeflections}
         failureAt={data.failureNodeIndex}
+        deformScale={scale}
       />
-    </>
+    </div>
   );
 
 }
@@ -24,8 +39,8 @@ function LinePlot({
   dataX,
   dataY,
   failureAt,
-  width = 640,
-  height = 400,
+  width = 500,
+  height = 250,
   margin = 20,
   deformScale = 50,
 }) {
