@@ -5,6 +5,8 @@ import { PurLinLineState, PurLinLineStateDispatch, INITIAL_PURLIN_STATE } from "
 import React from "react";
 import { v4 as uuidv4 } from 'uuid';
 import dynamic from "next/dynamic";
+import purlinData from "../data/Purlins.json";
+import deckData from "../data/Decks.json";
 
 
 const PurlineViewNoSSR = dynamic(() => import("./viewer/purlin-view"), {
@@ -114,15 +116,24 @@ type ClientInputProps = {
   dispatch: PurLinLineStateDispatch,
 }
 
-const CROSS_SECTION_OPTIONS = [
-  {label: "Z8x2.5 060", value: "Z8x2.5 060"},
-  {label: "Z8x2.5 080", value: "Z8x2.5 080"}
-]
 
-const DECK_OPTIONS = [
-  {label: "SSR Ultra-Dek 18 in. 24 ga", value: "SSR Ultra-Dek 18 in. 24 ga"},
-  {label: "SSR Ultra-Dek 20 in. 24 ga", value: "SSR Ultra-Dek 20 in. 24 ga"}
-]
+const CROSS_SECTION_OPTIONS = purlinData.map(item => {
+  return {label: item.name, value: item.name}
+});
+
+const DECK_OPTIONS = deckData.map(item => {
+  return {label: item.name, value: item.name}
+});
+
+// const CROSS_SECTION_OPTIONS = [
+//   {label: "Z8x2.5 060", value: "Z8x2.5 060"},
+//   {label: "Z8x2.5 080", value: "Z8x2.5 080"}
+// ]
+
+// const DECK_OPTIONS = [
+//   {label: "SSR Ultra-Dek 18 in. 24 ga", value: "SSR Ultra-Dek 18 in. 24 ga"},
+//   {label: "SSR Ultra-Dek 20 in. 24 ga", value: "SSR Ultra-Dek 20 in. 24 ga"}
+// ]
 
 /**
  * Convert state's raw span data into format consumable for PurLinView componet
