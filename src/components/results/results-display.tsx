@@ -2,21 +2,16 @@ import DeflectionView from "./deflection-view";
 
 export default function ResultsDisplay({ data }: ResultsDisplayProps) {
 
-  // const data = processRawData(SAMPLE_RAW_DATA)
-
   return (
     <div className="w-1/2 mt-6">
-      <ReportCard title="Predicted loading capacity">
+      <ReportCard title="Allowable gravity roof pressure">
         {`${data.capacity.value} ${data.capacity.unit}`}
       </ReportCard>
-      <ReportCard title="Predidcted failure limit state">
+      <ReportCard title="Predicted failure limit state">
         {`${data.failureLimitState}`} 
       </ReportCard>
       <ReportCard title="Purlin deflection and failure location">
         <div>
-          <div>
-            {`The purlin line deflection is shown below at a scale factor of X.`}
-          </div>
           <DeflectionView data={data} scale={100}/>
         </div>
         
@@ -42,7 +37,7 @@ function ReportCard({title, children}: React.ComponentProps<"div">) {
 export function processRawData(rawData: RawAPIData): AnalaysisData {
   return {
     capacity: {
-      value: (rawData.applied_pressure * 1000 * 144).toFixed(2),
+      value: (rawData.applied_pressure * 1000 * 144).toPrecision(3),
       unit: "psf"
     },
     failureLimitState: rawData.failure_limit_state[0].toLocaleUpperCase() + rawData.failure_limit_state.slice(1),

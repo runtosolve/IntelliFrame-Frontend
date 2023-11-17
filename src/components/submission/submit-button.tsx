@@ -41,7 +41,7 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
         <div className="w-full h-full flex justify-center items-center space-x-2">
           {(submitStaus == "analyzing") && <Spinner/>}
           <span>
-            {(submitStaus == "analyzing") ? ("Analyzing") : ("Run analysis")}
+            {(submitStaus == "analyzing") ? ("Running") : ("Run")}
           </span>
         </div>
       </button>
