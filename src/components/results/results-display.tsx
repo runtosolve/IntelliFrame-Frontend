@@ -12,9 +12,6 @@ export default function ResultsDisplay({ data }: ResultsDisplayProps) {
       </ReportCard>
       <ReportCard title="Purlin deflection and failure location">
         <div>
-          <div>
-            {`The purlin line deflection is shown below at a scale factor of X.`}
-          </div>
           <DeflectionView data={data} scale={100}/>
         </div>
         

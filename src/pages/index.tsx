@@ -17,7 +17,7 @@ export default function Home() {
       <main className="py-12 w-full flex justify-center bg-gray-100">
         <button className="rounded bg-gray-800 hover:bg-gray-600 text-gray-100 px-4 py-2">
           <Link href="/purlinline">
-            Go to PurlinLine Designer
+            Go to PurlinLine.jl
           </Link>
         </button>
       </main>

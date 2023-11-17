@@ -5,7 +5,7 @@ import SubmitButton from "@/components/submission/submit-button";
 import Image from "next/image";
 import { useState } from "react";
 
-const DEV_MODE = false;
+const DEV_MODE = true;
 const DEV_DATA = processRawData(SAMPLE_RAW_DATA);
 
 export default function PurlinLine() {
@@ -26,7 +26,7 @@ export default function PurlinLine() {
           className="h-full w-auto py-2 px-6"
         />
         <div className="h-full px-16 text-md font-medium text-gray-700 flex items-center">
-          PurlinLine Designer
+          PurlinLine.jl
         </div>
       </header>
       <main className="py-12 w-full bg-gray-100">
