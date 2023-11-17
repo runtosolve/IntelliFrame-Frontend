@@ -23,48 +23,52 @@ export default function ClientInput({state, dispatch}: ClientInputProps) {
           frameFlangeWidth={state.frameFlangeWidth}
         />
       </div>
-      <LabelledInputField
-        label="Roof slope (deg.)"
-        name="roofSlope"
-        defaultValue={INITIAL_PURLIN_STATE.roofSlope.toFixed(2)}
-        setField={(v) => dispatch({
-          type: "set",
-          field: "roofSlope",
-          payload: v
-        })}
-      />
-      <LabelledSelectField
-        label="Deck type"
-        name="deckType"
-        value={state.deckType}
-        onChange={(e) => dispatch({
-          type: "set",
-          field: "deckType",
-          payload: e.target.value
-        })}
-      >
-        {DECK_OPTIONS.map(item => 
-          <option value={item.value} key={uuidv4()}>
-            {item.label}
-          </option>  
-        )}
-      </LabelledSelectField>
-      <LabelledSelectField
-        label="Cross section"
-        name="crossSection"
-        value={state.crossSection}
-        onChange={(e) => dispatch({
-          type: "set",
-          field: "crossSection",
-          payload: e.target.value
-        })}
-      >
-        {CROSS_SECTION_OPTIONS.map(item => 
-          <option value={item.value} key={uuidv4()}>
-            {item.label}
-          </option>  
-        )}
-      </LabelledSelectField>
+      <div>
+        <div className="space-y-1">
+          <LabelledInputField
+            label="Roof slope (deg.)"
+            name="roofSlope"
+            defaultValue={INITIAL_PURLIN_STATE.roofSlope.toFixed(2)}
+            setField={(v) => dispatch({
+              type: "set",
+              field: "roofSlope",
+              payload: v
+            })}
+          />
+          <LabelledSelectField
+            label="Deck type"
+            name="deckType"
+            value={state.deckType}
+            onChange={(e) => dispatch({
+              type: "set",
+              field: "deckType",
+              payload: e.target.value
+            })}
+          >
+            {DECK_OPTIONS.map(item => 
+              <option value={item.value} key={uuidv4()}>
+                {item.label}
+              </option>  
+            )}
+          </LabelledSelectField>
+          <LabelledSelectField
+            label="Cross section"
+            name="crossSection"
+            value={state.crossSection}
+            onChange={(e) => dispatch({
+              type: "set",
+              field: "crossSection",
+              payload: e.target.value
+            })}
+          >
+            {CROSS_SECTION_OPTIONS.map(item => 
+              <option value={item.value} key={uuidv4()}>
+                {item.label}
+              </option>  
+            )}
+          </LabelledSelectField>
+        </div>
+      </div>
       <DynamicInputFiled
         label="Spans (ft.)"
         name="spans"

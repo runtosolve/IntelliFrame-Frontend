@@ -8,7 +8,6 @@ export default function useSectionData(): [PurlinSectionData[], DeckSectionData[
     fetch("/data/Purlins.json")
       .then((res) => res.json())
       .then((data) => {
-        console.log(data)
         setPurlinSectionDataArray(data);
       });
   }, []);

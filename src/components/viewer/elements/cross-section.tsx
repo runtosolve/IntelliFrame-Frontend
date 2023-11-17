@@ -1,37 +1,55 @@
 import { PurlinSectionData } from "@/components/hooks/use-section-data";
 import { Line } from "react-konva";
 
-export function PurlinCrossSection({ data }: PurlinCrossSectionProps) {
+export function PurlinCrossSection({x, y, data, zoom = 20 }: PurlinCrossSectionProps) {
   const points = getCeeSectionPoints(data);
 
   return (
     <>
       <Line
+        x={x}
+        y={y}
         points={points}
-        closed={true}
         fill="white"
         stroke="black"
-        strokeWidth={2}
+        strokeWidth={25 * data.t}
+        strokeScaleEnabled={false}
       />
     </>
   );
 }
 
 type PurlinCrossSectionProps = {
-  data: PurlinSectionData
+  data: PurlinSectionData,
+  x: number,
+  y: number,
+  zoom?: number,
 }
 
 function getCeeSectionPoints(data: PurlinSectionData) {
-  const {D, B, H, t, r, webAngle, flangeAngle, lipAngle} = data;
+  const {shape, D, B, H, t, r, webAngle, flangeAngle, lipAngle} = data;
   // Origin is at the top left corner of the section
-  const coordinates = [
-    {x: B, y: D},
-    {x: B, y: 0},
-    {x: 0, y: 0},
-    {x: 0, y: H},
-    {x: B, y: H},
-    {x: B, y: H - D},
-  ]; // unit: inches
+  let coordinates: Array<{x: number, y:number}> = [];
+  if (shape === "C") {
+    coordinates = [
+      {x: B + D * Math.cos(Math.abs(lipAngle * Math.PI / 180)), y: D * Math.sin(Math.abs(lipAngle * Math.PI / 180))},
+      {x: B, y: 0},
+      {x: 0, y: 0},
+      {x: 0, y: H},
+      {x: B, y: H},
+      {x: (B + D * Math.cos(Math.abs(lipAngle * Math.PI / 180))), y: H - D * Math.sin(Math.abs(lipAngle * Math.PI / 180))},
+    ]; // unit: inches
+  }
+  else if (shape === "Z") {
+    coordinates = [
+      {x: B + D * Math.cos(Math.abs(lipAngle * Math.PI / 180)), y: D * Math.sin(Math.abs(lipAngle * Math.PI / 180))},
+      {x: B, y: 0},
+      {x: 0, y: 0},
+      {x: 0, y: H},
+      {x: -B, y: H},
+      {x: -(B + D * Math.cos(Math.abs(lipAngle * Math.PI / 180))), y: H - D * Math.sin(Math.abs(lipAngle * Math.PI / 180))},
+    ]; // unit: inches
+  }
 
   const points: Array<number> = []
   coordinates.forEach((coordinate) => {
