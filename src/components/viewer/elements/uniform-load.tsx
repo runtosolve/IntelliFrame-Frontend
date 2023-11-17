@@ -1,4 +1,4 @@
-import { Arrow, Group } from "react-konva";
+import { Arrow, Group, Line } from "react-konva";
 
 export default function UniformLoad({x = 0., y = 0., width, zoom = 1}: UniformLoadProps) {
 
@@ -7,7 +7,7 @@ export default function UniformLoad({x = 0., y = 0., width, zoom = 1}: UniformLo
   const height = width / 25;
   const pointerWidth = 5 / zoom;
   const pointerLength = pointerWidth * 1.5;
-  const strokeWidth = 1 / zoom;
+  const strokeWidth = 0.5 / zoom;
 
   const positions = []
   for (let x = 0; x <= (width + realSpacing / 2); x += realSpacing) {
@@ -31,6 +31,11 @@ export default function UniformLoad({x = 0., y = 0., width, zoom = 1}: UniformLo
           fill="#020617"
         />
         ))}
+        <Line
+          points={[0, 0, width, 0]}
+          stroke="#020617"
+          strokeWidth={strokeWidth}
+        />
     </Group>
   );
 }
