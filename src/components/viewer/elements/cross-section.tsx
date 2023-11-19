@@ -1,7 +1,7 @@
 import { PurlinSectionData } from "@/components/hooks/use-section-data";
 import { Line } from "react-konva";
 
-export function PurlinCrossSection({x, y, data, zoom = 20 }: PurlinCrossSectionProps) {
+export function PurlinCrossSection({x, y, rotation = 0, data }: PurlinCrossSectionProps) {
   const points = getCeeSectionPoints(data);
 
   return (
@@ -9,11 +9,11 @@ export function PurlinCrossSection({x, y, data, zoom = 20 }: PurlinCrossSectionP
       <Line
         x={x}
         y={y}
+        rotation={rotation}
         points={points}
-        fill="white"
-        stroke="black"
-        strokeWidth={25 * data.t}
-        strokeScaleEnabled={false}
+        stroke="#374151"
+        strokeWidth={2 * data.t}  // make section thicker for clarity
+        // strokeScaleEnabled={false}
       />
     </>
   );
@@ -23,7 +23,7 @@ type PurlinCrossSectionProps = {
   data: PurlinSectionData,
   x: number,
   y: number,
-  zoom?: number,
+  rotation?: number, // unit: degrees
 }
 
 function getCeeSectionPoints(data: PurlinSectionData) {

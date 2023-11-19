@@ -5,42 +5,30 @@ import { PurlinCrossSection } from "@/components/viewer/elements/cross-section";
 import useSectionData, { PurlinSectionData } from "@/components/hooks/use-section-data";
 import { useResponsiveStage } from "../hooks/use-responsive-stage";
 
-export default function SectionView() {
+export default function SectionView({ purlinName, deckName, rotation = 0 }: SectionViewProps) {
+
+  const name = "Z10x2.5 060"
 
   const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null!);
   const stageRef = useRef<Konva.Stage>(null!);
   
-  const [purlinSections, deckSections] = useSectionData();
-  const box = getBoundingBox(purlinSections[10]);
-  // useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom})
+  const [purlinSectionLibrary, deckSectionLibrary] = useSectionData();
 
-  useEffect(() => {
-    function handleResize() {
-      stageRef.current.width(containerRef.current.offsetWidth);
-      stageRef.current.height(containerRef.current.offsetHeight);
-    }
+  const box = getBoundingBox(purlinSectionLibrary[purlinName]);
 
-    handleResize();
-
-    window.addEventListener("resize", handleResize);
-
-    return (() => {
-      window.removeEventListener("resize", handleResize);
-    });
-
-  }, [])
+  useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom})
 
   return (
-    <div ref={containerRef} className="w-full h-full bg-gray-200">
+    <div ref={containerRef} className="w-full h-full bg-gray-100">
       <Stage ref={stageRef} draggable={true} scale={{x: 10, y: 10}}>
         <Layer>
-          {(purlinSections.length != 0) && (
+          {(Object.keys(purlinSectionLibrary).length != 0) && (
             <PurlinCrossSection
               x={0}
               y={0}
-              data={purlinSections[20]}
-              zoom={10}
+              rotation={rotation}
+              data={purlinSectionLibrary[purlinName]}
             />
           )}
         </Layer>
@@ -49,11 +37,17 @@ export default function SectionView() {
   );
 }
 
+type SectionViewProps = {
+  purlinName: string,
+  deckName: string,
+  rotation: number,
+}
+
 function getBoundingBox(data: PurlinSectionData) {
   if (data) {
     return ({
-      x: 0,
-      y: 0,
+      x: (data.shape == "C") ? data.B / 2 : 0,
+      y: data.H / 2,
       width: (data.shape == "C") ? data.B : 2 * data.B,
       height: data.H,
     });

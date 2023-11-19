@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react"
 
-export default function useSectionData(): [PurlinSectionData[], DeckSectionData[]] {
-  const [purlinSectionDataArray, setPurlinSectionDataArray] = useState<PurlinSectionData[]>([]);
-  const [deckSectionDataArray, setDeckSectionDataArray] = useState<DeckSectionData[]>([]);
+export default function useSectionData(): [PurlinSectionLibrary, DeckSectionLibrary] {
+  const [purlinSectionLibrary, setPurlinSectionLibrary] = useState<PurlinSectionLibrary>({});
+  const [deckSectionLibrary, setDeckSectionLibrary] = useState<DeckSectionLibrary>({});
 
   useEffect(() => {
     fetch("/data/Purlins.json")
       .then((res) => res.json())
       .then((data) => {
-        setPurlinSectionDataArray(data);
+        setPurlinSectionLibrary(createSectionLibrary(data) as PurlinSectionLibrary);
       });
   }, []);
 
@@ -16,14 +16,22 @@ export default function useSectionData(): [PurlinSectionData[], DeckSectionData[
     fetch("/data/Decks.json")
       .then((res) => res.json())
       .then((data) => {
-        setDeckSectionDataArray(data);
+        setDeckSectionLibrary(createSectionLibrary(data) as DeckSectionLibrary);
       });
   }, []);
 
 
-  return [purlinSectionDataArray, deckSectionDataArray];
+  return [purlinSectionLibrary, deckSectionLibrary];
 }
 
+
+export type PurlinSectionLibrary = {
+  [key: string]: PurlinSectionData
+}
+
+export type DeckSectionLibrary = {
+  [key: string]: DeckSectionData
+}
 
 export type PurlinSectionData = {
   name: string,
@@ -54,4 +62,12 @@ type FastenerData = {
 type clipData = {
   height: number,
   spacing: number
+}
+
+function createSectionLibrary(sectionArr: PurlinSectionData[] | DeckSectionData[]) {
+  const sectionLibrary: PurlinSectionLibrary | DeckSectionLibrary = {};
+  sectionArr.forEach((section) => {
+    sectionLibrary[section.name] = section;
+  });
+  return sectionLibrary;
 }
