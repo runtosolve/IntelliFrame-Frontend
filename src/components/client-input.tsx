@@ -28,7 +28,7 @@ export default function ClientInput({state, dispatch}: ClientInputProps) {
         />
       </div>
       <div className="md:flex md:flex-row">
-        <div className="flex-shrink-0 space-y-1">
+        <div className="flex-shrink-0 md:w-3/5 space-y-1">
           <LabelledInputField
             label="Roof slope (deg.)"
             name="roofSlope"
@@ -72,7 +72,7 @@ export default function ClientInput({state, dispatch}: ClientInputProps) {
             )}
           </LabelledSelectField>
         </div>
-        <div className="aspect-video md:flex-1 md:ml-4 py-4 relative">
+        <div className="aspect-video md:aspect-auto md:flex-1 md:ml-6 mt-6 relative">
           <SectionViewNoSSR
             purlinName={state.crossSection}
             deckName={state.deckType}

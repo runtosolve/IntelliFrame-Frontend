@@ -24,7 +24,7 @@ export default function DeflectionView({data, scale = 50, ...props}) {
     <div ref={containerRef} {...props}>
       <LinePlot
         width={containerSize.width}
-        height={containerRef.height}
+        height={containerSize.height}
         dataX={data.nodeLocations}
         dataY={data.nodeDeflections}
         failureAt={data.failureNodeIndex}
@@ -47,6 +47,8 @@ function LinePlot({
 
   const TOOLTIP_OFFSET = 20; 
 
+  const containerRef = useRef(null);
+  const svgRef = useRef(null);
   const toolTipRef = useRef(null);
   const [currentNodeIndex, setCurNodeIndex] = useState(null);
 
@@ -64,20 +66,52 @@ function LinePlot({
   const line = d3.line((d) => x(d.x), (d) => y(d.y));
 
   const handleMouseOverFor = (index) => {
-    return (() => {
+    return ((e) => {
+      const rect = containerRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      let toolTipX = 0;
+      let toolTipY = 0;
+      const toolTipWidth = toolTipRef.current.getBoundingClientRect().width;
+      const toolTipHeight = toolTipRef.current.getBoundingClientRect().height;
+      // Update horizontal position
+      if (mouseX < rect.width / 2) {
+        toolTipX = x(dataX[index]) + TOOLTIP_OFFSET;
+      }
+      else {
+        toolTipX = x(dataX[index]) - toolTipWidth - TOOLTIP_OFFSET;
+      }
+      toolTipRef.current.style.left = `${(toolTipX).toFixed(0)}px`;
+      // Update vertical position
+      if (mouseY < rect.height / 2) {
+        toolTipY = y(dataY[index]) + TOOLTIP_OFFSET;
+      }
+      else {
+        toolTipY = y(dataY[index]) - toolTipHeight - TOOLTIP_OFFSET;
+      }
+      toolTipRef.current.style.top = `${(toolTipY).toFixed(0)}px`;
+
       setCurNodeIndex(index);
-      toolTipRef.current.style.left = `${(x(dataX[index]) + TOOLTIP_OFFSET).toFixed(0)}px`;
-      toolTipRef.current.style.top = `${(y(dataY[index]) + TOOLTIP_OFFSET).toFixed(0)}px`;
+      
+      
     });
   };
 
   const handleMouseOut = () => {
     setCurNodeIndex(null);
   };
+
+  useEffect(() => {
+    const svg = d3.select(svgRef.current);
+
+    return (() => {});
+  },[]);
+
   
   return (
-    <div className="relative w-fit h-fit">
-      <svg width={width} height={height}>
+    <div className="relative w-full aspect-[3/1]" ref={containerRef}>
+      <svg className="w-full h-full" ref={svgRef}>
         <path fill="none" stroke="currentColor" strokeWidth={2} d={line(data)} />
         <circle
           cx={x(xFailure)}
@@ -98,19 +132,17 @@ function LinePlot({
         </g>
       </svg>
       <div 
-        className={`absolute ${!currentNodeIndex && "hidden"} w-fit rounded border border-gray-950 bg-gray-100 bg-opacity-30 px-2 py-1 text-sm`}
+        className={`absolute ${!currentNodeIndex && "opacity-0"} rounded border border-gray-950 bg-gray-100 bg-opacity-30 px-2 py-1 text-sm`}
         ref={toolTipRef}
       >
-        {currentNodeIndex && 
-          <ul>
-            <li>
-              <span className="font-semibold">deflection: </span>{dataY[currentNodeIndex].toFixed(2)} in.
-            </li>
-            <li>
-              <span className="font-semibold">max deflection: </span>{d3.max(dataY).toFixed(2)} in.
-            </li>
-          </ul>
-        }
+        <ul>
+          <li>
+            <span className="font-semibold">deflection: </span>{currentNodeIndex ? dataY[currentNodeIndex].toPrecision(2) : (0.10)} in.
+          </li>
+          <li>
+            <span className="font-semibold">max deflection: </span>{d3.max(dataY).toPrecision(2)} in.
+          </li>
+        </ul>
       </div>
     </div>
   );

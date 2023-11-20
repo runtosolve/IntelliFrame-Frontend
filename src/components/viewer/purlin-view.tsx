@@ -21,7 +21,7 @@ export default function PurlinView({ purlinData, frameFlangeWidth }: PurLinViewP
 
   return (
     <div ref={containerRef} className="w-full h-full bg-gray-300">
-      <Stage ref={stageRef} draggable>
+      <Stage ref={stageRef}>
         <Layer>
           {generatePurlins(purlinData, zoom)}
           {generateSupports(purlinData, zoom, frameFlangeWidth)}

@@ -3,7 +3,7 @@ import DeflectionView from "./deflection-view";
 export default function ResultsDisplay({ data }: ResultsDisplayProps) {
 
   return (
-    <div className="w-1/2 mt-6">
+    <div className="w-1/2 mt-12">
       <ReportCard title="Allowable gravity roof pressure">
         {`${data.capacity.value} ${data.capacity.unit}`}
       </ReportCard>
