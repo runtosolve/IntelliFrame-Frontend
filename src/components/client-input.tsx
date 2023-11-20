@@ -12,6 +12,10 @@ import deckData from "../data/Decks.json";
 const PurlineViewNoSSR = dynamic(() => import("./viewer/purlin-view"), {
   ssr: false,
 });
+const SectionViewNoSSR = dynamic(() => import("@/components/viewer/section-view"), {
+  ssr: false,
+});
+
 
 export default function ClientInput({state, dispatch}: ClientInputProps) {
 
@@ -23,48 +27,59 @@ export default function ClientInput({state, dispatch}: ClientInputProps) {
           frameFlangeWidth={state.frameFlangeWidth}
         />
       </div>
-      <LabelledInputField
-        label="Roof slope (deg.)"
-        name="roofSlope"
-        defaultValue={INITIAL_PURLIN_STATE.roofSlope.toFixed(2)}
-        setField={(v) => dispatch({
-          type: "set",
-          field: "roofSlope",
-          payload: v
-        })}
-      />
-      <LabelledSelectField
-        label="Deck type"
-        name="deckType"
-        value={state.deckType}
-        onChange={(e) => dispatch({
-          type: "set",
-          field: "deckType",
-          payload: e.target.value
-        })}
-      >
-        {DECK_OPTIONS.map(item => 
-          <option value={item.value} key={uuidv4()}>
-            {item.label}
-          </option>  
-        )}
-      </LabelledSelectField>
-      <LabelledSelectField
-        label="Cross section"
-        name="crossSection"
-        value={state.crossSection}
-        onChange={(e) => dispatch({
-          type: "set",
-          field: "crossSection",
-          payload: e.target.value
-        })}
-      >
-        {CROSS_SECTION_OPTIONS.map(item => 
-          <option value={item.value} key={uuidv4()}>
-            {item.label}
-          </option>  
-        )}
-      </LabelledSelectField>
+      <div className="md:flex md:flex-row">
+        <div className="flex-shrink-0 space-y-1">
+          <LabelledInputField
+            label="Roof slope (deg.)"
+            name="roofSlope"
+            defaultValue={INITIAL_PURLIN_STATE.roofSlope.toFixed(2)}
+            setField={(v) => dispatch({
+              type: "set",
+              field: "roofSlope",
+              payload: v
+            })}
+          />
+          <LabelledSelectField
+            label="Cross section"
+            name="crossSection"
+            value={state.crossSection}
+            onChange={(e) => dispatch({
+              type: "set",
+              field: "crossSection",
+              payload: e.target.value
+            })}
+          >
+            {CROSS_SECTION_OPTIONS.map(item => 
+              <option value={item.value} key={uuidv4()}>
+                {item.label}
+              </option>  
+            )}
+          </LabelledSelectField>
+          <LabelledSelectField
+            label="Deck type"
+            name="deckType"
+            value={state.deckType}
+            onChange={(e) => dispatch({
+              type: "set",
+              field: "deckType",
+              payload: e.target.value
+            })}
+          >
+            {DECK_OPTIONS.map(item => 
+              <option value={item.value} key={uuidv4()}>
+                {item.label}
+              </option>  
+            )}
+          </LabelledSelectField>
+        </div>
+        <div className="aspect-video md:flex-1 md:ml-4 py-4 relative">
+          <SectionViewNoSSR
+            purlinName={state.crossSection}
+            deckName={state.deckType}
+            rotation={-state.roofSlope}
+          /> 
+        </div>
+      </div>
       <DynamicInputFiled
         label="Spans (ft.)"
         name="spans"
@@ -125,15 +140,6 @@ const DECK_OPTIONS = deckData.map(item => {
   return {label: item.name, value: item.name}
 });
 
-// const CROSS_SECTION_OPTIONS = [
-//   {label: "Z8x2.5 060", value: "Z8x2.5 060"},
-//   {label: "Z8x2.5 080", value: "Z8x2.5 080"}
-// ]
-
-// const DECK_OPTIONS = [
-//   {label: "SSR Ultra-Dek 18 in. 24 ga", value: "SSR Ultra-Dek 18 in. 24 ga"},
-//   {label: "SSR Ultra-Dek 20 in. 24 ga", value: "SSR Ultra-Dek 20 in. 24 ga"}
-// ]
 
 /**
  * Convert state's raw span data into format consumable for PurLinView componet

@@ -8,6 +8,8 @@ export function useResponsiveStage({ stageRef, containerRef, boundingBox, setZoo
       // Resize stage to match container size
       stageRef.current.width(containerRef.current.offsetWidth);
       stageRef.current.height(containerRef.current.offsetHeight);
+      
+      console.log(containerRef.current.offsetWidth)
   
       const xc = containerRef.current.offsetWidth / 2;
       const yc = containerRef.current.offsetHeight / 2;

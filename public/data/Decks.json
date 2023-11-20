@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Rdeck 22 ga",
+    "t": 0.0295,
+    "connector": "fastener",
+    "connectorData": {
+      "spacing:": 12.0,
+      "diameter": 0.212,
+      "shearStrength": 2.5
+    }
+  },
+  {
+    "name": "Rdeck 24 ga",
+    "t": 0.0239,
+    "connector": "fastener",
+    "connectorData": {
+      "spacing:": 12.0,
+      "diameter": 0.212,
+      "shearStrength": 2.5
+    }
+  },
+  {
+    "name": "Rdeck 26 ga",
+    "t": 0.0179,
+    "connector": "fastener",
+    "connectorData": {
+      "spacing:": 12.0,
+      "diameter": 0.212,
+      "shearStrength": 2.5
+    }
+  },
+  {
+    "name": "SSR Ultra-Dek 24 in. 24 ga",
+    "t": 0.0239,
+    "connector": "clip",
+    "connectorData": {
+      "height": 2.25,
+      "spacing": 24.0
+    }
+  },
+  {
+    "name": "SSR Ultra-Dek 18 in. 24 ga",
+    "t": 0.0239,
+    "connector": "clip",
+    "connectorData": {
+      "height": 2.25,
+      "spacing": 18.0
+    }
+  },
+  {
+    "name": "SSR SuperLok-Dek 16 in. 22 ga",
+    "t": 0.0295,
+    "connector": "clip",
+    "connectorData": {
+      "height": 2.25,
+      "spacing": 16.0
+    }
+  },
+  {
+    "name": "SSR SuperLok-Dek 16 in. 24 ga",
+    "t": 0.0239,
+    "connector": "clip",
+    "connectorData": {
+      "height": 2.25,
+      "spacing": 16.0
+    }
+  },
+  {
+    "name": "SSR SuperLok-Dek 18 in. 22 ga",
+    "t": 0.0295,
+    "connector": "clip",
+    "connectorData": {
+      "height": 2.25,
+      "spacing": 18.0
+    }
+  },
+  {
+    "name": "SSR SuperLok-Dek 18 in. 24 ga",
+    "t": 0.0239,
+    "connector": "clip",
+    "connectorData": {
+      "height": 2.25,
+      "spacing": 18.0
+    }
+  }
+]
