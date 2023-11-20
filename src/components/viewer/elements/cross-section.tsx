@@ -11,7 +11,7 @@ export function PurlinCrossSection({x, y, rotation = 0, data }: PurlinCrossSecti
         y={y}
         rotation={rotation}
         points={points}
-        stroke="#374151"
+        stroke="#030712"
         strokeWidth={2 * data.t}  // make section thicker for clarity
         // strokeScaleEnabled={false}
       />
