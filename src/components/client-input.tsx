@@ -72,7 +72,7 @@ export default function ClientInput({state, dispatch}: ClientInputProps) {
             )}
           </LabelledSelectField>
         </div>
-        <div className="aspect-video md:flex-1 md:ml-4 py-4 relative">
+        <div className="aspect-video md:flex-1 md:ml-6 mt-6 relative">
           <SectionViewNoSSR
             purlinName={state.crossSection}
             deckName={state.deckType}

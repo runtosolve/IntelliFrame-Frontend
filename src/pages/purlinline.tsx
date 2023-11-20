@@ -5,7 +5,7 @@ import SubmitButton from "@/components/submission/submit-button";
 import Image from "next/image";
 import { useState } from "react";
 
-const DEV_MODE = false;
+const DEV_MODE = true;
 const DEV_DATA = processRawData(SAMPLE_RAW_DATA);
 
 export default function PurlinLine() {

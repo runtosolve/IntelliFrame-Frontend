@@ -20,7 +20,7 @@ export default function SectionView({ purlinName, deckName, rotation = 0 }: Sect
   useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom})
 
   return (
-    <div ref={containerRef} className="absolute w-full h-full bg-gray-100">
+    <div ref={containerRef} className="absolute w-full h-full bg-gray-100 border-1 border-gray-300 rounded">
       <Stage ref={stageRef} draggable={true} scale={{x: 10, y: 10}}>
         <Layer>
           {(Object.keys(purlinSectionLibrary).length != 0) && (
