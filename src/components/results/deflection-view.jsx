@@ -24,7 +24,7 @@ export default function DeflectionView({data, scale = 50, ...props}) {
     <div ref={containerRef} {...props}>
       <LinePlot
         width={containerSize.width}
-        height={containerRef.height}
+        height={containerSize.height}
         dataX={data.nodeLocations}
         dataY={data.nodeDeflections}
         failureAt={data.failureNodeIndex}
@@ -48,6 +48,7 @@ function LinePlot({
   const TOOLTIP_OFFSET = 20; 
 
   const containerRef = useRef(null);
+  const svgRef = useRef(null);
   const toolTipRef = useRef(null);
   const [currentNodeIndex, setCurNodeIndex] = useState(null);
 
@@ -75,7 +76,7 @@ function LinePlot({
       const toolTipWidth = toolTipRef.current.getBoundingClientRect().width;
       const toolTipHeight = toolTipRef.current.getBoundingClientRect().height;
       // Update horizontal position
-      if (mouseX < width / 2) {
+      if (mouseX < rect.width / 2) {
         toolTipX = x(dataX[index]) + TOOLTIP_OFFSET;
       }
       else {
@@ -83,7 +84,7 @@ function LinePlot({
       }
       toolTipRef.current.style.left = `${(toolTipX).toFixed(0)}px`;
       // Update vertical position
-      if (mouseY < height / 2) {
+      if (mouseY < rect.height / 2) {
         toolTipY = y(dataY[index]) + TOOLTIP_OFFSET;
       }
       else {
@@ -100,10 +101,17 @@ function LinePlot({
   const handleMouseOut = () => {
     setCurNodeIndex(null);
   };
+
+  useEffect(() => {
+    const svg = d3.select(svgRef.current);
+
+    return (() => {});
+  },[]);
+
   
   return (
-    <div className="relative w-fit h-fit" ref={containerRef}>
-      <svg width={width} height={height}>
+    <div className="relative w-full aspect-[3/1]" ref={containerRef}>
+      <svg className="w-full h-full" ref={svgRef}>
         <path fill="none" stroke="currentColor" strokeWidth={2} d={line(data)} />
         <circle
           cx={x(xFailure)}

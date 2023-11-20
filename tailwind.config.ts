@@ -10,7 +10,7 @@ const config: Config = {
     extend: {
       borderWidth: {
         '1': '1px',
-      }
+      },
     },
   },
   plugins: [
