@@ -47,6 +47,7 @@ function LinePlot({
 
   const TOOLTIP_OFFSET = 20; 
 
+  const containerRef = useRef(null);
   const toolTipRef = useRef(null);
   const [currentNodeIndex, setCurNodeIndex] = useState(null);
 
@@ -64,10 +65,35 @@ function LinePlot({
   const line = d3.line((d) => x(d.x), (d) => y(d.y));
 
   const handleMouseOverFor = (index) => {
-    return (() => {
+    return ((e) => {
+      const rect = containerRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      let toolTipX = 0;
+      let toolTipY = 0;
+      const toolTipWidth = toolTipRef.current.getBoundingClientRect().width;
+      const toolTipHeight = toolTipRef.current.getBoundingClientRect().height;
+      // Update horizontal position
+      if (mouseX < width / 2) {
+        toolTipX = x(dataX[index]) + TOOLTIP_OFFSET;
+      }
+      else {
+        toolTipX = x(dataX[index]) - toolTipWidth - TOOLTIP_OFFSET;
+      }
+      toolTipRef.current.style.left = `${(toolTipX).toFixed(0)}px`;
+      // Update vertical position
+      if (mouseY < height / 2) {
+        toolTipY = y(dataY[index]) + TOOLTIP_OFFSET;
+      }
+      else {
+        toolTipY = y(dataY[index]) - toolTipHeight - TOOLTIP_OFFSET;
+      }
+      toolTipRef.current.style.top = `${(toolTipY).toFixed(0)}px`;
+
       setCurNodeIndex(index);
-      toolTipRef.current.style.left = `${(x(dataX[index]) + TOOLTIP_OFFSET).toFixed(0)}px`;
-      toolTipRef.current.style.top = `${(y(dataY[index]) + TOOLTIP_OFFSET).toFixed(0)}px`;
+      
+      
     });
   };
 
@@ -76,7 +102,7 @@ function LinePlot({
   };
   
   return (
-    <div className="relative w-fit h-fit">
+    <div className="relative w-fit h-fit" ref={containerRef}>
       <svg width={width} height={height}>
         <path fill="none" stroke="currentColor" strokeWidth={2} d={line(data)} />
         <circle
@@ -98,19 +124,17 @@ function LinePlot({
         </g>
       </svg>
       <div 
-        className={`absolute ${!currentNodeIndex && "hidden"} w-fit rounded border border-gray-950 bg-gray-100 bg-opacity-30 px-2 py-1 text-sm`}
+        className={`absolute ${!currentNodeIndex && "opacity-0"} rounded border border-gray-950 bg-gray-100 bg-opacity-30 px-2 py-1 text-sm`}
         ref={toolTipRef}
       >
-        {currentNodeIndex && 
-          <ul>
-            <li>
-              <span className="font-semibold">deflection: </span>{dataY[currentNodeIndex].toFixed(2)} in.
-            </li>
-            <li>
-              <span className="font-semibold">max deflection: </span>{d3.max(dataY).toFixed(2)} in.
-            </li>
-          </ul>
-        }
+        <ul>
+          <li>
+            <span className="font-semibold">deflection: </span>{currentNodeIndex ? dataY[currentNodeIndex].toPrecision(2) : (0.10)} in.
+          </li>
+          <li>
+            <span className="font-semibold">max deflection: </span>{d3.max(dataY).toPrecision(2)} in.
+          </li>
+        </ul>
       </div>
     </div>
   );
