@@ -23,7 +23,7 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
       })
       .then(data => {
         setSubmitStatus("ready");
-        onUpdate(processRawData(data));
+        onUpdate(processRawData(input, data));
         console.log(data);
       })
       .catch(err => {

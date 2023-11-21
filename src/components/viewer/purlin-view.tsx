@@ -62,7 +62,7 @@ function getBoundingBox(data: Array<PurlinData>) {
   return box;
 }
 
-function calcualtePurlinPosiions(data: Array<PurlinData>) {
+export function calcualtePurlinPosiions(data: Array<PurlinData>) {
   const purlinPositions: Array<{x: number, y: number}> = [];
 
   let curPurlinX = 0
@@ -77,7 +77,7 @@ function calcualtePurlinPosiions(data: Array<PurlinData>) {
   return purlinPositions;
 }
 
-function calculateSupportPositions(data: Array<PurlinData>) {
+export function calculateSupportPositions(data: Array<PurlinData>) {
   const supportPositions: Array<{x: number, y: number}> = [];
 
   let curSupportX = 0

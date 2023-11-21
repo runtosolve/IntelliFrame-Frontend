@@ -9,7 +9,7 @@ import purlinData from "../data/Purlins.json";
 import deckData from "../data/Decks.json";
 
 
-const PurlineViewNoSSR = dynamic(() => import("./viewer/purlin-view"), {
+const PurlineViewNoSSR = dynamic(() => import("@/components/viewer/purlin-view"), {
   ssr: false,
 });
 const SectionViewNoSSR = dynamic(() => import("@/components/viewer/section-view"), {

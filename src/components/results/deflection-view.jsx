@@ -28,6 +28,7 @@ export default function DeflectionView({data, scale = 50, ...props}) {
         dataX={data.nodeLocations}
         dataY={data.nodeDeflections}
         failureAt={data.failureNodeIndex}
+        supportLocations={data.supportLocations}
         deformScale={scale}
       />
     </div>
@@ -39,10 +40,11 @@ function LinePlot({
   dataX,
   dataY,
   failureAt,
+  supportLocations,
   width = 500,
   height = 250,
   margin = 20,
-  deformScale = 50,
+  deformScale = 100,
 }) {
 
   const TOOLTIP_OFFSET = 20; 
@@ -61,9 +63,9 @@ function LinePlot({
   const yFailure = dataY[failureAt];
 
   const L = (d3.max(dataX) - d3.min(dataX));
-  const x = d3.scaleLinear(d3.extent(dataX), [margin, width - margin]);
-  const y = d3.scaleLinear([-L / 2 / deformScale, L / 2 / deformScale], [margin, height - margin]);
-  const line = d3.line((d) => x(d.x), (d) => y(d.y));
+  const mapX = d3.scaleLinear(d3.extent(dataX), [margin, width - margin]);
+  const mapY = d3.scaleLinear([-L / 2 / deformScale, L / 2 / deformScale], [margin, height - margin]);
+  const line = d3.line((d) => mapX(d.x), (d) => mapY(d.y));
 
   const handleMouseOverFor = (index) => {
     return ((e) => {
@@ -77,18 +79,18 @@ function LinePlot({
       const toolTipHeight = toolTipRef.current.getBoundingClientRect().height;
       // Update horizontal position
       if (mouseX < rect.width / 2) {
-        toolTipX = x(dataX[index]) + TOOLTIP_OFFSET;
+        toolTipX = mapX(dataX[index]) + TOOLTIP_OFFSET;
       }
       else {
-        toolTipX = x(dataX[index]) - toolTipWidth - TOOLTIP_OFFSET;
+        toolTipX = mapX(dataX[index]) - toolTipWidth - TOOLTIP_OFFSET;
       }
       toolTipRef.current.style.left = `${(toolTipX).toFixed(0)}px`;
       // Update vertical position
       if (mouseY < rect.height / 2) {
-        toolTipY = y(dataY[index]) + TOOLTIP_OFFSET;
+        toolTipY = mapY(dataY[index]) + TOOLTIP_OFFSET;
       }
       else {
-        toolTipY = y(dataY[index]) - toolTipHeight - TOOLTIP_OFFSET;
+        toolTipY = mapY(dataY[index]) - toolTipHeight - TOOLTIP_OFFSET;
       }
       toolTipRef.current.style.top = `${(toolTipY).toFixed(0)}px`;
 
@@ -102,20 +104,16 @@ function LinePlot({
     setCurNodeIndex(null);
   };
 
-  useEffect(() => {
-    const svg = d3.select(svgRef.current);
 
-    return (() => {});
-  },[]);
+  const supportSymbolSize = 100
 
-  
   return (
     <div className="relative w-full aspect-[3/1]" ref={containerRef}>
       <svg className="w-full h-full" ref={svgRef}>
         <path fill="none" stroke="currentColor" strokeWidth={2} d={line(data)} />
         <circle
-          cx={x(xFailure)}
-          cy={y(yFailure)}
+          cx={mapX(xFailure)}
+          cy={mapY(yFailure)}
           r={10}
           fill="#b91c1c"
           className="animate-pulse"
@@ -123,11 +121,21 @@ function LinePlot({
         <g stroke="currentColor" strokeWidth="1.5">
           {data.map((d, i) => (
             <circle 
-              key={d.x} cx={x(d.x)} cy={y(d.y)} r={5} 
+              key={d.x} cx={mapX(d.x)} cy={mapY(d.y)} r={5} 
               onMouseOver={handleMouseOverFor(i)}
               onMouseOut={handleMouseOut}
               className={(currentNodeIndex != i) ? "opacity-0" : "opacity-100"}
             />
+          ))}
+        </g>
+        <g>
+          {supportLocations.map((x) => (
+            <path
+            key={x}
+            d={d3.symbol().type(d3.symbolTriangle).size(supportSymbolSize)()}
+            fill="currentColor"
+            transform={`translate(${mapX(x)}, ${mapY(0.4)})`}
+          />
           ))}
         </g>
       </svg>
