@@ -1,6 +1,7 @@
 import { generatePurlinViewData } from "../client-input";
 import { PurLinLineState } from "../hooks/use-purlin-line";
-import { calculateSupportPositions } from "../viewer/purlin-view";
+import { calculateSupportPositions } from "../viewer/purlin-view-utils";
+// import { calculateSupportPositions } from "../viewer/purlin-view";
 import DeflectionView from "./deflection-view";
 
 export default function ResultsDisplay({ output: outputData }: ResultsDisplayProps) {
@@ -65,7 +66,7 @@ export function findDeflectionAtFailureLocation(rawData: RawAPIData) {
 function findSupportLocations(inputData: PurLinLineState) {
   const purlinData = generatePurlinViewData(inputData.spans, inputData.lapLength);
 
-  const supportLocations = calculateSupportPositions(purlinData).map(item => item.x * 12); // convert to inches
+  const supportLocations = calculateSupportPositions(purlinData, 0, 0).map(item => item.x * 12);
 
   return supportLocations;
 }
