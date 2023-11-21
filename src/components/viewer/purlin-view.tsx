@@ -5,6 +5,7 @@ import { useResponsiveStage } from "../hooks/use-responsive-stage";
 import SteelBeam from "./elements/steel-beam";
 import DistanceDimension from "./elements/dimension";
 import UniformLoad from "./elements/uniform-load";
+import { calcualtePurlinPosiions, calculateSupportPositions } from "./purlin-view-utils";
 
 
 export default function PurlinView({ purlinData, frameFlangeWidth }: PurLinViewProps) {
@@ -62,38 +63,9 @@ function getBoundingBox(data: Array<PurlinData>) {
   return box;
 }
 
-function calcualtePurlinPosiions(data: Array<PurlinData>) {
-  const purlinPositions: Array<{x: number, y: number}> = [];
-
-  let curPurlinX = 0
-  let curPurlinY = PURLIN_LAP_OFFSET_Y / 2;
-  data.forEach((item, index) => {
-    purlinPositions.push({x: curPurlinX, y:curPurlinY});
-    curPurlinX += item.span - item.rightLap;
-    curPurlinY = (curPurlinY < 0) ? (PURLIN_LAP_OFFSET_Y / 2) : (-PURLIN_LAP_OFFSET_Y / 2);
-
-  });
-
-  return purlinPositions;
-}
-
-function calculateSupportPositions(data: Array<PurlinData>) {
-  const supportPositions: Array<{x: number, y: number}> = [];
-
-  let curSupportX = 0
-  let curSupportY = PURLIN_HEIGHT + PURLIN_LAP_OFFSET_Y
-  data.forEach((item, index) => {
-    if (index == 0) supportPositions.push({x: curSupportX, y: curSupportY});
-    curSupportX += item.span - item.rightLap / 2 - item.leftLap / 2;
-    supportPositions.push({x: curSupportX, y: curSupportY});
-  });
-
-  return supportPositions;
-}
-
 
 const generateUniformLoad = (data: Array<PurlinData>, zoom: number) => {
-  const supportPositions = calculateSupportPositions(data);
+  const supportPositions = calculateSupportPositions(data, PURLIN_LAP_OFFSET_Y, PURLIN_HEIGHT);
   const loadWidth = Math.max(...supportPositions.map(item => item.x)) - Math.min(...supportPositions.map(item => item.x));
 
   return (
@@ -107,9 +79,10 @@ const generateUniformLoad = (data: Array<PurlinData>, zoom: number) => {
 
 }
 
+
 const generatePurlins = (data: Array<PurlinData>, zoom: number) => {
   
-  const purlinPositions = calcualtePurlinPosiions(data);
+  const purlinPositions = calcualtePurlinPosiions(data, PURLIN_LAP_OFFSET_Y);
 
   return (
     purlinPositions.map((item, index) => {
@@ -127,8 +100,9 @@ const generatePurlins = (data: Array<PurlinData>, zoom: number) => {
   }))
 }
 
+
 const generateSupports = (data: Array<PurlinData>, zoom: number, frameFlangeWidth: number) => {
-  const supportPositions = calculateSupportPositions(data);
+  const supportPositions = calculateSupportPositions(data, PURLIN_LAP_OFFSET_Y, PURLIN_HEIGHT);
   const numberSupport = supportPositions.length;
 
   const w = frameFlangeWidth / 12;  // Convert to ft
@@ -172,12 +146,14 @@ const generateSupports = (data: Array<PurlinData>, zoom: number, frameFlangeWidt
   );
 }
 
+
 type PurLinViewProps = {
   purlinData: Array<PurlinData>,
   frameFlangeWidth: number,
 }
 
-type PurlinData = {
+
+export type PurlinData = {
   id: string,
   index: number,
   leftLap: number,

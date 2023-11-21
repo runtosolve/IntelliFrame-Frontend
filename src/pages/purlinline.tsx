@@ -6,14 +6,14 @@ import Image from "next/image";
 import { useState } from "react";
 
 const DEV_MODE = false;
-const DEV_DATA = processRawData(SAMPLE_RAW_DATA);
 
 export default function PurlinLine() {
 
+  
   const [inputData, inputDataDispatch] = usePurlinLine();
+  const DEV_DATA = processRawData(inputData, SAMPLE_RAW_DATA);
   const [outputData, setOutputData] = useState<AnalaysisData | null>(!DEV_MODE ? (null) : (DEV_DATA)); 
   // Change to null when done debugging
-
 
   return (
     <>
@@ -35,7 +35,7 @@ export default function PurlinLine() {
         </div>
         {outputData && 
           <div className="flex justify-center">
-            <ResultsDisplay data={outputData}/>
+            <ResultsDisplay output={outputData}/>
           </div>
         }
         <div className="pt-6 flex justify-center">

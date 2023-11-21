@@ -1,18 +1,22 @@
+import { generatePurlinViewData } from "../client-input";
+import { PurLinLineState } from "../hooks/use-purlin-line";
+import { calculateSupportPositions } from "../viewer/purlin-view-utils";
+// import { calculateSupportPositions } from "../viewer/purlin-view";
 import DeflectionView from "./deflection-view";
 
-export default function ResultsDisplay({ data }: ResultsDisplayProps) {
+export default function ResultsDisplay({ output: outputData }: ResultsDisplayProps) {
 
   return (
     <div className="w-1/2 mt-12">
       <ReportCard title="Allowable gravity roof pressure">
-        {`${data.capacity.value} ${data.capacity.unit}`}
+        {`${outputData.capacity.value} ${outputData.capacity.unit}`}
       </ReportCard>
       <ReportCard title="Predicted failure limit state">
-        {`${data.failureLimitState}`} 
+        {`${outputData.failureLimitState}`} 
       </ReportCard>
       <ReportCard title="Purlin deflection and failure location">
         <div>
-          <DeflectionView data={data} scale={100}/>
+          <DeflectionView data={outputData} scale={100}/>
         </div>
         
       </ReportCard>
@@ -34,17 +38,18 @@ function ReportCard({title, children}: React.ComponentProps<"div">) {
   );
 }
 
-export function processRawData(rawData: RawAPIData): AnalaysisData {
+export function processRawData(inputData: PurLinLineState, rawData: RawAPIData): AnalaysisData {
   return {
     capacity: {
-      value: (rawData.applied_pressure * 1000 * 144).toPrecision(3),
+      value: (rawData.applied_pressure * 1000 * 144).toPrecision(3), // convert from ksi to psf
       unit: "psf"
     },
     failureLimitState: rawData.failure_limit_state[0].toLocaleUpperCase() + rawData.failure_limit_state.slice(1),
     failureLocation: rawData.failure_location,
     nodeLocations: rawData.input_z,
     nodeDeflections: rawData.output_v, // downward being positive
-    failureNodeIndex: findDeflectionAtFailureLocation(rawData)
+    failureNodeIndex: findDeflectionAtFailureLocation(rawData),
+    supportLocations: findSupportLocations(inputData),
   }
 }
 
@@ -58,8 +63,17 @@ export function findDeflectionAtFailureLocation(rawData: RawAPIData) {
   return null
 }
 
+function findSupportLocations(inputData: PurLinLineState) {
+  const purlinData = generatePurlinViewData(inputData.spans, inputData.lapLength);
+
+  const supportLocations = calculateSupportPositions(purlinData, 0, 0).map(item => item.x * 12);
+
+  return supportLocations;
+}
+
+
 type ResultsDisplayProps = {
-  data: AnalaysisData
+  output: AnalaysisData
 }
 
 export type AnalaysisData = {
@@ -72,6 +86,7 @@ export type AnalaysisData = {
   nodeLocations: Array<number>,
   nodeDeflections: Array<number>,
   failureNodeIndex: number | null, 
+  supportLocations: Array<number>,
 }
 
 
