@@ -55,7 +55,7 @@ function LinePlot({
   const [currentNodeIndex, setCurNodeIndex] = useState(null);
 
   const data = []
-  for (let index = 0; index < (dataX.length - 1); index++) {
+  for (let index = 0; index < dataX.length; index++) {
     data.push({x: dataX[index], y: dataY[index]});
   }
 
@@ -103,7 +103,6 @@ function LinePlot({
   const handleMouseOut = () => {
     setCurNodeIndex(null);
   };
-
 
   const supportSymbolSize = 100
 
