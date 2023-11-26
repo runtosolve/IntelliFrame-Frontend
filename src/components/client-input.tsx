@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import dynamic from "next/dynamic";
 import purlinData from "../data/Purlins.json";
 import deckData from "../data/Decks.json";
+import { generatePurlinViewData } from "./viewer/purlin-view-utils";
 
 
 const PurlineViewNoSSR = dynamic(() => import("@/components/viewer/purlin-view"), {
@@ -91,10 +92,10 @@ export default function ClientInput({state, dispatch}: ClientInputProps) {
         })}
       />
       <LabelledInputField
-        label="Lap length (in.)"
+        label="Lap length (ft.)"
         name="lapLength"
         defaultValue={INITIAL_PURLIN_STATE.lapLength.toFixed(2)}
-        minValue={2.5}
+        minValue={0.5}
         setField={(v) => dispatch({
           type: "set",
           field: "lapLength",
@@ -141,20 +142,3 @@ const DECK_OPTIONS = deckData.map(item => {
 });
 
 
-/**
- * Convert state's raw span data into format consumable for PurLinView componet
- * @param spans 
- * @param lapLength unit: inches
- */
-export function generatePurlinViewData(spans: Array<{id: string, value: number}>, lapLength: number) {
-
-  const data = spans.map((item, index) => {
-    let leftLap = (index == 0) ? (0) : (lapLength / 12);
-    let rightLap = (index == (spans.length - 1)) ? (0) : (lapLength / 12)
-    
-    return {id: item.id, index, leftLap, span: item.value, rightLap}
-  })
-
-  return data
-
-}

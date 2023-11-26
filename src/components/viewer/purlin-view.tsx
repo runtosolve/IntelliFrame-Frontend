@@ -50,7 +50,7 @@ const LOAD_OFFSET_Y = 3;
 function getBoundingBox(data: Array<PurlinData>) {
   let width = 0;
   data.forEach(item => {
-    width += item.span - item.rightLap;
+    width += item.span;
   })
   
   const box = {
@@ -91,7 +91,7 @@ const generatePurlins = (data: Array<PurlinData>, zoom: number) => {
         key={item.x}
         x={item.x}
         y={item.y}
-        width={data[index].span}
+        width={data[index].length}
         height={PURLIN_HEIGHT}
         strokeWidth={1.25 / zoom}
         {...PURLIN_STYLE}
@@ -159,4 +159,5 @@ export type PurlinData = {
   leftLap: number,
   span: number,
   rightLap: number,
+  length: number
 }
