@@ -23,7 +23,7 @@ export default function Home() {
           <div className="card-body">
             <h4 className="card-title">Cold-formed steel</h4>
             <p>
-              Strength prediction, topology optimization, and design of cold-formed using finite analysis and Direct Strength Mehtod (DSM) by AISI S100
+              Strength prediction, topology optimization, and design of cold-formed steel using finite analysis and Direct Strength Method (DSM) by AISI S100
             </p>
           </div>
         </div>
