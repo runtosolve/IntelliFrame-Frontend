@@ -7,7 +7,7 @@ export default function Home() {
     <Layout>
       <div className="max-w-3xl text-center">
         <h1 className="font-bold text-8xl mb-4">
-          Get the <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-rose-400 to-lime-400">answer</span>
+          Get the <span className="bg-clip-text text-transparent bg-gradient-to-l from-green-300 via-blue-500 to-purple-600">answer</span>
         </h1>
         {/* <p className="text-lg text-gray-600 mx-auto">
           We are a team of structural engineers, PhDs and software developers solving problems in unconventional ways
@@ -25,6 +25,13 @@ export default function Home() {
             <p>
               Strength prediction, optimization, and design of cold-formed steel using data-driven models which are based on existing physcial testing data
             </p>
+            <div className="mt-4 card-actions">
+              <button className="btn btn-outline rounded-lg">
+                <Link href="https://crismoen.quarto.pub/cold-formed-steel-framing-design-with-data-driven-models/#/title-slide">
+                  See latest models
+                </Link>
+              </button>
+            </div>
           </div>
         </div>
         <div className="basis-72 card card-bordered card-compact">
@@ -42,7 +49,7 @@ export default function Home() {
               Develop specialized structural engineering software as standalone web applications or integrate into your existing solutions
             </p>
             <div className="mt-4 card-actions">
-              <button className="btn btn-outline rounded-lg">
+              <button className="btn btn-outline btn-smrounded-lg">
                 <Link href="/purlinline">
                   Go to PurlinLine.jl
                 </Link>

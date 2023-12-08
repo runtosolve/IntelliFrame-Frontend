@@ -13,3 +13,9 @@
       -webkit-appearance: none;
   }
 }
+
+@layer components {
+  .btn{
+    text-transform: none;
+  }
+}
