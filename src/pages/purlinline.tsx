@@ -4,10 +4,9 @@ import Footer from "@/components/layout/footer";
 import Layout from "@/components/layout/layout";
 import ResultsDisplay, { AnalaysisData, SAMPLE_RAW_DATA, processRawData } from "@/components/results/results-display";
 import SubmitButton from "@/components/submission/submit-button";
-import Image from "next/image";
 import { useState } from "react";
 
-const DEV_MODE = false;
+const DEV_MODE = true;
 
 export default function PurlinLine() {
 
@@ -20,13 +19,9 @@ export default function PurlinLine() {
   return (
     <>
     <Layout>
-      <div className="w-full flex justify-center">
-        <ClientInput state={inputData} dispatch={inputDataDispatch}/>
-      </div>
+      <ClientInput state={inputData} dispatch={inputDataDispatch}/>
       {outputData && 
-        <div className="flex justify-center">
-          <ResultsDisplay output={outputData}/>
-        </div>
+        <ResultsDisplay output={outputData}/>
       }
       <div className="pt-6 flex justify-center">
         <SubmitButton input={inputData} onUpdate={setOutputData}/>

@@ -1,13 +1,12 @@
 import { generatePurlinViewData } from "../viewer/purlin-view-utils";
 import { PurLinLineState } from "../hooks/use-purlin-line";
 import { calculateSupportPositions } from "../viewer/purlin-view-utils";
-// import { calculateSupportPositions } from "../viewer/purlin-view";
 import DeflectionView from "./deflection-view";
 
 export default function ResultsDisplay({ output: outputData }: ResultsDisplayProps) {
 
   return (
-    <div className="w-1/2 mt-12">
+    <div className="w-full max-w-screen-md mt-12 space-y-2">
       <ReportCard title="Allowable gravity roof pressure">
         {`${outputData.capacity.value} ${outputData.capacity.unit}`}
       </ReportCard>

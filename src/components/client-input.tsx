@@ -21,7 +21,7 @@ const SectionViewNoSSR = dynamic(() => import("@/components/viewer/section-view"
 export default function ClientInput({state, dispatch}: ClientInputProps) {
 
   return (
-    <div className="w-1/2 space-y-3">
+    <div className="w-full max-w-screen-md space-y-3 px-4">
       <div className="aspect-video rounded overflow-hidden mb-8">
         <PurlineViewNoSSR
           purlinData={generatePurlinViewData(state.spans, state.lapLength)}
