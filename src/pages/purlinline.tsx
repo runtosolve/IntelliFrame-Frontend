@@ -6,7 +6,7 @@ import ResultsDisplay, { AnalaysisData, SAMPLE_RAW_DATA, processRawData } from "
 import SubmitButton from "@/components/submission/submit-button";
 import { useState } from "react";
 
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 export default function PurlinLine() {
 
