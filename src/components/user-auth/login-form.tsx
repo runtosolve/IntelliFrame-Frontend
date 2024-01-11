@@ -2,7 +2,8 @@ import { useState } from "react";
 import logo from "/public/RunToSolveLogo.svg";
 import Image from "next/image";
 
-export default function LoginForm({ isOpen, setIsOpen }) {
+
+export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
   // const { login, error } = useUserAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -78,4 +79,9 @@ export default function LoginForm({ isOpen, setIsOpen }) {
       </div>
     </dialog>
   );
+}
+
+type LoginFormProps = {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
 }
