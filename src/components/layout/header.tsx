@@ -1,11 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import logo from "/public/RunToSolveLogo.svg";
+import { useState } from "react";
+import LoginForm from "../user-auth/login-form";
 
 export default function Header() {
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <>
       <header className="nav-bar h-16 border-b-1 bg-white text-gray-900 flex items-center place-content-between ">
+        
         <div className="ml-6 md:hidden dropdown">
           <div tabIndex={0} role="button">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -27,7 +33,14 @@ export default function Header() {
             />
           </Link>
         </div>
+
         <div className="hidden mr-6 md:flex gap-6 font-semibold">
+          <div>
+            <button className="btn btn-outline btn-sm rounded-lg" onClick={() => setIsModalOpen(true)}>
+              Sign in
+            </button>
+          </div>
+
           <Link href="/purlinline">
             <button className="btn btn-outline btn-sm rounded-lg">
               PurlinLine.jl
@@ -44,6 +57,9 @@ export default function Header() {
             </button>
           </Link>
         </div>
+
+        <LoginForm isOpen={isModalOpen} setIsOpen={setIsModalOpen}/>
+
       </header>
     </>
   );
