@@ -15,6 +15,7 @@ const AuthContext = createContext<AuthContextProps>({
   loginStatus: LoginStatus.LoggedOut,
   logInUser: () => { },
   logOutUser: () => { },
+  refreshUser: () => { },
 });
 export default AuthContext;
 
@@ -26,10 +27,9 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   const [refreshToken, setRefreshToken] = useState("");
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("authToken");
-    if (storedToken) {
-      handleTokenUpdate(JSON.parse(storedToken));
-      setLoginStatus(LoginStatus.LoggedIn);
+    const storedTokenString = localStorage.getItem("authToken");
+    if (storedTokenString) {
+      refreshUser(JSON.parse(storedTokenString).refresh);
     }
   }, []);
 
@@ -39,6 +39,8 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     setUsername(username)
     setAccessToken(authToken.access);
     setRefreshToken(authToken.refresh);
+    localStorage.setItem("authToken", JSON.stringify(authToken));
+    setLoginStatus(LoginStatus.LoggedIn);
   }
 
   const logInUser = async (e: FormEvent<HTMLFormElement>) => {
@@ -51,7 +53,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       password: { value: string },
     }
 
-    let response = await fetch("http://localhost:8000/api/user/token/", {
+    const response = await fetch("http://localhost:8000/api/user/token/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,8 +67,6 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
 
     if (response.status === 200) {
       handleTokenUpdate(data);
-      localStorage.setItem("authToken", JSON.stringify(data));
-      setLoginStatus(LoginStatus.LoggedIn);
     }
     else setLoginStatus(LoginStatus.Failure);
   }
@@ -79,6 +79,33 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     localStorage.removeItem("authToken");
   }
 
+  const refreshUser = async (token: string) => {
+    const response = await fetch("http://localhost:8000/api/user/token/refresh/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        refresh: token,
+      }),
+    });
+
+    let data = await response.json();
+
+    if (response.status === 200) {
+      let authToken = {
+        username: (jwtDecode(data.access) as typeof data & { username: string }).username,
+        access: data.access,
+        refresh: token,
+      }
+      handleTokenUpdate(authToken);
+    }
+    else {
+      setLoginStatus(LoginStatus.Failure);
+      logOutUser();
+    }
+  }
+
   const authContextValue = {
     loginStatus,
     username,
@@ -86,6 +113,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     refreshToken,
     logInUser,
     logOutUser,
+    refreshUser,
   };
 
   return (
@@ -103,6 +131,7 @@ type AuthContextProps = {
   loginStatus: LoginStatus,
   logInUser: (e: FormEvent<HTMLFormElement>) => void,
   logOutUser: () => void,
+  refreshUser: (token: string) => void,
 }
 
 type AuthContextProviderProps = {
