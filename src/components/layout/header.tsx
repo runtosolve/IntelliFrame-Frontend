@@ -1,10 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import logo from "/public/RunToSolveLogo.svg";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import LoginForm from "../user-auth/login-form";
+import AuthContext from "../user-auth/auth-context";
 
 export default function Header() {
+
+  const authContextValue = useContext(AuthContext);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -35,12 +38,6 @@ export default function Header() {
         </div>
 
         <div className="hidden mr-6 md:flex gap-6 font-semibold">
-          <div>
-            <button className="btn btn-outline btn-sm rounded-lg" onClick={() => setIsModalOpen(true)}>
-              Sign in
-            </button>
-          </div>
-
           <Link href="/purlinline">
             <button className="btn btn-outline btn-sm rounded-lg">
               PurlinLine.jl
@@ -56,6 +53,11 @@ export default function Header() {
               Contact us
             </button>
           </Link>
+          <div>
+            <button className="btn btn-outline btn-sm rounded-lg" onClick={() => setIsModalOpen(true)}>
+              Sign in
+            </button>
+          </div>
         </div>
 
         <LoginForm isOpen={isModalOpen} setIsOpen={setIsModalOpen}/>
