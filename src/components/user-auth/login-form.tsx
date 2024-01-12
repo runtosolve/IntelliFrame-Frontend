@@ -14,11 +14,12 @@ export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
   };
 
   return (
-    <dialog className={`modal ${isOpen && 'modal-open'} modal-bottom sm:modal-middle`} id="my_modal_1">
+    <dialog className={`modal ${isOpen && 'modal-open'} modal-bottom sm:modal-middle`}>
       <div className="modal-box">
         <form>
           <div className="modal-action">
             <button
+              type="button"
               className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
               onClick={() => setIsOpen(false)}
             >
@@ -43,7 +44,6 @@ export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
                 <input
                   id="username"
                   type="text"
-                  placeholder="Username"
                   className="input input-bordered w-full"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -60,7 +60,6 @@ export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
                 <input
                   id="password"
                   type="password"
-                  placeholder="Password"
                   className="input input-bordered w-full"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
