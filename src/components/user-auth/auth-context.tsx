@@ -1,10 +1,10 @@
-import { FormEvent, createContext, useState } from "react";
+import { FormEvent, createContext, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
 export enum LoginStatus {
-  Idle,
+  LoggedOut,
   Pending,
-  Success,
+  LoggedIn,
   Failure,
 }
 
@@ -12,25 +12,41 @@ const AuthContext = createContext<AuthContextProps>({
   username: "",
   accessToken: "",
   refreshToken: "",
-  loginStatus: LoginStatus.Idle,
-  loginUser: () => {},
-  logOutUser: () => {},
+  loginStatus: LoginStatus.LoggedOut,
+  logInUser: () => { },
+  logOutUser: () => { },
 });
 export default AuthContext;
 
 export function AuthContextProvider({ children }: AuthContextProviderProps) {
 
-  const [loginStatus, setLoginStatus] = useState(LoginStatus.Idle); // used to display toggle login failure status
+  const [loginStatus, setLoginStatus] = useState(LoginStatus.LoggedOut); // used to display toggle login failure status
   const [username, setUsername] = useState("");
-  const [accessToken, setAccessToken] = useState("");
+  const [accessToken, setAccessToken] = useState((""));
   const [refreshToken, setRefreshToken] = useState("");
 
-  const loginUser = async (e: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    const storedToken = localStorage.getItem("authToken");
+    if (storedToken) {
+      handleTokenUpdate(JSON.parse(storedToken));
+      setLoginStatus(LoginStatus.LoggedIn);
+    }
+  }, []);
+
+  const handleTokenUpdate = (authToken: AuthToken) => {
+    const decodedToken = jwtDecode(authToken.access);
+    const username = (decodedToken as typeof decodedToken & { username: string }).username;
+    setUsername(username)
+    setAccessToken(authToken.access);
+    setRefreshToken(authToken.refresh);
+  }
+
+  const logInUser = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setLoginStatus(LoginStatus.Pending);
 
-    const target = e.target as typeof e.target & { 
+    const target = e.target as typeof e.target & {
       username: { value: string },
       password: { value: string },
     }
@@ -46,26 +62,21 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       }),
     });
     let data = await response.json();
-    console.log(data);
 
     if (response.status === 200) {
-      const decodedToken = jwtDecode(data.access);
-      const username = (decodedToken as typeof decodedToken & {username: string}).username;
-      setUsername(username)
-      setAccessToken(data.access);
-      setRefreshToken(data.refresh);
-      localStorage.setItem("authTokens", JSON.stringify(data));
-      setLoginStatus(LoginStatus.Success);
+      handleTokenUpdate(data);
+      localStorage.setItem("authToken", JSON.stringify(data));
+      setLoginStatus(LoginStatus.LoggedIn);
     }
     else setLoginStatus(LoginStatus.Failure);
   }
-  
+
   const logOutUser = () => {
-    setLoginStatus(LoginStatus.Idle);
+    setLoginStatus(LoginStatus.LoggedOut);
     setUsername("");
     setAccessToken("");
     setRefreshToken("");
-    localStorage.removeItem("authTokens");
+    localStorage.removeItem("authToken");
   }
 
   const authContextValue = {
@@ -73,7 +84,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     username,
     accessToken,
     refreshToken,
-    loginUser,
+    logInUser,
     logOutUser,
   };
 
@@ -90,7 +101,7 @@ type AuthContextProps = {
   accessToken: string,
   refreshToken: string,
   loginStatus: LoginStatus,
-  loginUser: (e: FormEvent<HTMLFormElement>) => void,
+  logInUser: (e: FormEvent<HTMLFormElement>) => void,
   logOutUser: () => void,
 }
 
@@ -98,3 +109,8 @@ type AuthContextProviderProps = {
   children: React.ReactNode,
 }
 
+type AuthToken = {
+  username: string,
+  access: string,
+  refresh: string,
+}

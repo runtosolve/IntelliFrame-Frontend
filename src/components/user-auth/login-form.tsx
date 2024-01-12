@@ -15,7 +15,7 @@ export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
   return (
     <dialog className={`modal ${isOpen && 'modal-open'} modal-bottom sm:modal-middle`}>
       <div className="modal-box">
-        <form onSubmit={authContextValue.loginUser}>
+        <form onSubmit={authContextValue.logInUser}>
           <div className="modal-action">
             <button
               type="button"
@@ -81,7 +81,7 @@ export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
           </div>
         }
         {
-          authContextValue.loginStatus === LoginStatus.Success &&
+          authContextValue.loginStatus === LoginStatus.LoggedIn &&
           <div role="alert" className="mt-4 bg-green-100 text-green-700 px-4 py-2 rounded-md">
             You have successfully signed in.
           </div>

@@ -55,7 +55,7 @@ export default function Header() {
             </button>
           </Link>
           <div>
-            {authContextValue.loginStatus !== LoginStatus.Success ? (
+            {authContextValue.loginStatus !== LoginStatus.LoggedIn ? (
               <button className="btn btn-neutral btn-sm rounded-lg" onClick={() => setIsModalOpen(true)}>
                 Sign in
               </button>
