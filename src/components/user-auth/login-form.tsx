@@ -44,6 +44,7 @@ export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
                   name="username" 
                   id="username"
                   type="text"
+                  autoComplete="username"
                   className="input input-bordered w-full"
                   required
                 />
@@ -59,6 +60,7 @@ export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
                   name="password"
                   id="password"
                   type="password"
+                  autoComplete="current-password"
                   className="input input-bordered w-full"
                   required
                 />
