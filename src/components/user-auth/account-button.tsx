@@ -5,20 +5,20 @@ export default function AccountButton() {
 
   const authContextValue = useContext(AuthContext);
 
-  const handleTestRun = async () => {
-    const response = await fetch("http://localhost:8000/api/purlinline/submit_job/", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + String(authContextValue.accessToken),
-      }
-    });
+  // const handleTestRun = async () => {
+  //   const response = await fetch("http://localhost:8000/api/purlinline/submit_job/", {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'Authorization': 'Bearer ' + String(authContextValue.accessToken),
+  //     }
+  //   });
 
-    let data = await response.json();
+  //   let data = await response.json();
 
-    console.log(data);
+  //   console.log(data);
 
-  }
+  // }
 
   return (
     <div className="dropdown dropdown-end">
@@ -27,9 +27,9 @@ export default function AccountButton() {
         <li>
           <div>Signed in as {authContextValue.username}</div>
         </li>
-        <li>
+        {/* <li>
           <div onClick={handleTestRun}>Test purlinline run</div>
-        </li>
+        </li> */}
         <li>
           <div onClick={() => authContextValue.logOutUser()}>Sign out</div>
         </li>

@@ -1,21 +1,29 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { PurLinLineState } from "../hooks/use-purlin-line";
 import { mapStateToJSON } from "./submission-utils";
 import { AnalaysisData, processRawData } from "../results/results-display";
+import AuthContext from "../user-auth/auth-context";
 
 const HOST = {
   url: "https://purlinline.runtosolve.com/api",
+  // url: "http://localhost:8000/api/purlinline",
 }
 
 export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
+
+  const authContextValue = useContext(AuthContext);
 
   const [submitStaus, setSubmitStatus] = useState<SubmitStatus>("not-submitted")
 
   const handleClick = () => {
     setSubmitStatus("analyzing");
     onUpdate(null);
-    fetch(`${HOST.url}/submit_job`, {
+    fetch(`${HOST.url}/submit_job/`, {
       method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + String(authContextValue.accessToken)
+      },
       body: mapStateToJSON(input)
     })
       .then(response => {
