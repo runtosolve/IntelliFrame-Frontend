@@ -14,7 +14,7 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
   const handleClick = () => {
     setSubmitStatus("analyzing");
     onUpdate(null);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/submit_job/`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/purlinline/submit_job/`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json',
