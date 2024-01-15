@@ -4,10 +4,6 @@ import { mapStateToJSON } from "./submission-utils";
 import { AnalaysisData, processRawData } from "../results/results-display";
 import AuthContext from "../user-auth/auth-context";
 
-const HOST = {
-  url: "https://api.runtosolve.com/purlinline", // production api
-  // url: "http://localhost:8000/purlinline", // local api
-}
 
 export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
 
@@ -18,7 +14,7 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
   const handleClick = () => {
     setSubmitStatus("analyzing");
     onUpdate(null);
-    fetch(`${HOST.url}/submit_job/`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/submit_job/`, {
       method: "POST",
       headers: {
         'Content-Type': 'application/json',
