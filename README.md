@@ -24,7 +24,7 @@ The `pages/api` directory is mapped to `/api/*`. Files in this directory are tre
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
-### Environemtnal variables
+### Environment variables
 API route `NEXT_PUBLIC_API_URL = "https://api.runtosolve.com"`
 
 (Need to add NEXT_PUBLIC because the relevant data fetching is done on client-side instead server-side)
