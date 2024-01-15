@@ -5,8 +5,8 @@ import { AnalaysisData, processRawData } from "../results/results-display";
 import AuthContext from "../user-auth/auth-context";
 
 const HOST = {
-  url: "https://purlinline.runtosolve.com/api",
-  // url: "http://localhost:8000/api/purlinline",
+  url: "https://api.runtosolve.com/purlinline", // production api
+  // url: "http://localhost:8000/purlinline", // local api
 }
 
 export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
