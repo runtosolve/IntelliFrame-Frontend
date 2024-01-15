@@ -8,8 +8,6 @@ export enum LoginStatus {
   Failure,
 }
 
-const HOST = "https://api.runtosolve.com";
-
 const AuthContext = createContext<AuthContextProps>({
   username: "",
   accessToken: "",
@@ -55,7 +53,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       password: { value: string },
     }
 
-    const response = await fetch(`${HOST}/user/token/`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/token/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -82,7 +80,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   }
 
   const refreshUser = async (token: string) => {
-    const response = await fetch(`${HOST}/user/token/refresh/`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/token/refresh/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
