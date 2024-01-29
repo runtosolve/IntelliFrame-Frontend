@@ -16,6 +16,7 @@ const AuthContext = createContext<AuthContextProps>({
   logInUser: () => { },
   logOutUser: () => { },
   refreshUser: () => { },
+  registerUser: () => { },
 });
 export default AuthContext;
 
@@ -106,6 +107,10 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     }
   }
 
+  const registerUser = async (e: FormEvent<HTMLFormElement>) => {
+
+  }
+
   const authContextValue = {
     loginStatus,
     username,
@@ -114,6 +119,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     logInUser,
     logOutUser,
     refreshUser,
+    registerUser,
   };
 
   return (
@@ -132,6 +138,7 @@ type AuthContextProps = {
   logInUser: (e: FormEvent<HTMLFormElement>) => void,
   logOutUser: () => void,
   refreshUser: (token: string) => void,
+  registerUser: (e: FormEvent<HTMLFormElement>) => void,
 }
 
 type AuthContextProviderProps = {

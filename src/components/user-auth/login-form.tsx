@@ -8,9 +8,6 @@ import { LoginStatus } from "./auth-context";
 export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
   
   const authContextValue = useContext(AuthContext);
-  
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
 
   return (
     <dialog className={`modal ${isOpen && 'modal-open'} modal-bottom sm:modal-middle`}>
