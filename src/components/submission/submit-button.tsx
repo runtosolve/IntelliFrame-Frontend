@@ -11,29 +11,38 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
 
   const [submitStaus, setSubmitStatus] = useState<SubmitStatus>("not-submitted")
 
-  const handleClick = () => {
+  const handleClick = async () => {
     setSubmitStatus("analyzing");
     onUpdate(null);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/purlinline/submit_job/`, {
-      method: "POST",
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + String(authContextValue.accessToken)
-      },
-      body: mapStateToJSON(input)
-    })
-      .then(response => {
-        return response.json();
-      })
-      .then(data => {
-        setSubmitStatus("ready");
-        onUpdate(processRawData(input, data));
-        console.log(data);
-      })
-      .catch(err => {
-        setSubmitStatus("error");
-        console.log(err);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purlinline/submit_job/`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + String(authContextValue.accessToken)
+        },
+        body: mapStateToJSON(input)
       });
+      
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          setSubmitStatus("not-authenticated");
+          throw new Error("User is not authenticated");
+        }
+        else {
+          setSubmitStatus("error");
+          throw new Error("Server error");
+        }
+      }
+
+      const data = await response.json();
+      setSubmitStatus("ready");
+      onUpdate(processRawData(input, data));
+
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (
@@ -43,20 +52,20 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
         className="w-36 h-10 bg-gray-800 hover:bg-gray-600 text-gray-100 rounded"
         onClick={handleClick}>
         <div className="w-full h-full flex justify-center items-center space-x-2">
-          {(submitStaus == "analyzing") && <Spinner/>}
+          {(submitStaus == "analyzing") && <Spinner />}
           <span>
             {(submitStaus == "analyzing") ? ("Running") : ("Run")}
           </span>
         </div>
       </button>
-      <StatusAlert status={submitStaus}/>
+      <StatusAlert status={submitStaus} />
     </div>
   );
 }
 
-const StatusAlert = ({status}: StatusAlertProps) => {
+const StatusAlert = ({ status }: StatusAlertProps) => {
   switch (status) {
-    case "ready": 
+    case "ready":
       return (
         <label
           htmlFor="submit-button"
@@ -70,6 +79,14 @@ const StatusAlert = ({status}: StatusAlertProps) => {
           htmlFor="submit-button"
           className="bg-red-100 text-red-700 text-center text-sm px-2 py-0.5">
           Sorry, there is a problem with server
+        </label >
+      );
+    case "not-authenticated":
+      return (
+        <label
+          htmlFor="submit-button"
+          className="bg-orange-100 text-orange-700 text-center text-sm px-2 py-0.5">
+          Please login first to run analysis
         </label >
       );
     default:
@@ -87,7 +104,8 @@ type SubmitStatus =
   | "submitted"
   | "analyzing"
   | "ready"
-  | "error";
+  | "error"
+  | "not-authenticated";
 
 
 type StatusAlertProps = {
