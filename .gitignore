@@ -40,3 +40,6 @@ next-env.d.ts
 # prototyping
 /src/pages/*playground.tsx
 /src/components/plain-canvas.tsx
+
+# Local envs
+.env.local

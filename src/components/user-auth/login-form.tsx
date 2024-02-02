@@ -2,15 +2,12 @@ import { useContext, useState } from "react";
 import logo from "/public/RunToSolveLogo.svg";
 import Image from "next/image";
 import AuthContext from "./auth-context";
-import { LoginStatus } from "./auth-context";
+import { AuthStatus } from "./auth-context";
 
 
 export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
   
   const authContextValue = useContext(AuthContext);
-  
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
 
   return (
     <dialog className={`modal ${isOpen && 'modal-open'} modal-bottom sm:modal-middle`}>
@@ -75,13 +72,13 @@ export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
           </div>
         </form>
         {
-          authContextValue.loginStatus === LoginStatus.Failure &&
+          authContextValue.loginStatus === AuthStatus.Failure &&
           <div role="alert" className="mt-4 bg-red-100 text-red-700 px-4 py-2 rounded-md">
             Sign-in has failed. Please try again.
           </div>
         }
         {
-          authContextValue.loginStatus === LoginStatus.LoggedIn &&
+          authContextValue.loginStatus === AuthStatus.LoggedIn &&
           <div role="alert" className="mt-4 bg-green-100 text-green-700 px-4 py-2 rounded-md">
             You have successfully signed in.
           </div>

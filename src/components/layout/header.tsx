@@ -3,7 +3,7 @@ import Image from "next/image";
 import logo from "/public/RunToSolveLogo.svg";
 import { useContext, useState } from "react";
 import LoginForm from "../user-auth/login-form";
-import AuthContext, { LoginStatus } from "../user-auth/auth-context";
+import AuthContext, { AuthStatus } from "../user-auth/auth-context";
 import AccountButton from "../user-auth/account-button";
 
 export default function Header() {
@@ -39,7 +39,7 @@ export default function Header() {
         </div>
 
         <div className="hidden mr-6 md:flex gap-6 font-semibold">
-          <Link href="/purlinline">
+          {/* <Link href="/purlinline">
             <button className="btn btn-outline btn-sm rounded-lg">
               PurlinLine.jl
             </button>
@@ -48,20 +48,26 @@ export default function Header() {
             <button className="btn btn-outline btn-sm rounded-lg">
               GitHub
             </button>
-          </Link>
+          </Link> */}
           <Link href="https://www.linkedin.com/in/cris-moen-3b42a34/">
             <button className="btn btn-outline btn-sm rounded-lg">
               Contact us
             </button>
           </Link>
           <div>
-            {authContextValue.loginStatus !== LoginStatus.LoggedIn ? (
-              <button className="btn btn-neutral btn-sm rounded-lg" onClick={() => setIsModalOpen(true)}>
-                Sign in
+            {authContextValue.loginStatus !== AuthStatus.LoggedIn ? (
+              <button className="btn btn-outline btn-primary btn-sm rounded-lg" onClick={() => setIsModalOpen(true)}>
+                Login
               </button>
             ) : (<AccountButton />)}
-
           </div>
+          {authContextValue.loginStatus !== AuthStatus.LoggedIn && (
+            <Link href="/register">
+              <button className="btn btn-primary btn-sm rounded-lg">
+                Sign up free
+              </button>
+            </Link>
+          )}
         </div>
 
         <LoginForm isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
