@@ -7,7 +7,7 @@ export default function Layout({ children }: LayoutProps) {
 
 
   return (
-    <body className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <AuthContextProvider>
         <Header />
         <main className="flex-1 w-full my-12 flex flex-col justify-center items-center">
@@ -15,7 +15,7 @@ export default function Layout({ children }: LayoutProps) {
         </main>
         <Footer />
       </AuthContextProvider>
-    </body>
+    </div>
   );
 }
 

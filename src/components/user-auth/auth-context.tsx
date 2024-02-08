@@ -11,6 +11,7 @@ export enum AuthStatus {
 
 const AuthContext = createContext<AuthContextProps>({
   username: "",
+  name: "",
   accessToken: "",
   refreshToken: "",
   loginStatus: AuthStatus.LoggedOut,
@@ -25,6 +26,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
 
   const [loginStatus, setLoginStatus] = useState(AuthStatus.LoggedOut); // used to display toggle login failure status
   const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [accessToken, setAccessToken] = useState((""));
   const [refreshToken, setRefreshToken] = useState("");
 
@@ -36,9 +38,13 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   }, []);
 
   const handleTokenUpdate = (authToken: AuthToken) => {
-    const decodedToken = jwtDecode(authToken.access);
-    const username = (decodedToken as typeof decodedToken & { username: string }).username;
+    const decodedToken = jwtDecode(authToken.access) as typeof jwtDecode & { username: string, name: string };
+    const username = decodedToken.username;
+    const name = decodedToken.name;
     setUsername(username)
+    if (name && name !== " ") {
+      setName(name);
+    }
     setAccessToken(authToken.access);
     setRefreshToken(authToken.refresh);
     localStorage.setItem("authToken", JSON.stringify(authToken));
@@ -50,7 +56,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
 
     setLoginStatus(AuthStatus.Pending);
     const target = e.target as typeof e.target & {
-      username: { value: string },
+      email: { value: string },
       password: { value: string },
     }
 
@@ -61,7 +67,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: target.username.value,
+          username: target.email.value,
           password: target.password.value,
         }),
       });
@@ -158,6 +164,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   const authContextValue = {
     loginStatus,
     username,
+    name,
     accessToken,
     refreshToken,
     logInUser,
@@ -176,6 +183,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
 
 type AuthContextProps = {
   username: string,
+  name: string,
   accessToken: string,
   refreshToken: string,
   loginStatus: AuthStatus,
