@@ -7,15 +7,15 @@ export default function Layout({ children }: LayoutProps) {
 
 
   return (
-    <>
+    <body className="min-h-screen flex flex-col">
       <AuthContextProvider>
         <Header />
-        <main className="w-full my-12 flex flex-col justify-center items-center">
+        <main className="flex-1 w-full my-12 flex flex-col justify-center items-center">
           {children}
         </main>
         <Footer />
       </AuthContextProvider>
-    </>
+    </body>
   );
 }
 
