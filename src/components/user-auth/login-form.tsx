@@ -33,15 +33,15 @@ export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="username" className="block font-medium text-gray-900">
-                Username
+              <label htmlFor="email" className="block font-medium text-gray-900">
+                Email
               </label>
               <div className="mt-2">
                 <input
-                  name="username" 
-                  id="username"
+                  name="email" 
+                  id="email"
                   type="text"
-                  autoComplete="username"
+                  autoComplete="email"
                   className="input input-bordered w-full"
                   required
                 />

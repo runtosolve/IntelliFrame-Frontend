@@ -30,6 +30,23 @@ export default function ClientInput({state, dispatch}: ClientInputProps) {
       </div>
       <div className="flex flex-wrap gap-6">
         <div className="basis-96 grow space-y-1">
+          <LabelledSelectField
+            label="Load direction"
+            name="loadDirection"
+            defaultValue={INITIAL_PURLIN_STATE.loadDirection}
+            onChange={(e) => dispatch({
+              type: "set",
+              field: "loadDirection",
+              payload: e.target.value
+            })}
+          >
+            <option value="gravity">
+              Gravity
+            </option>
+            <option value="uplift">
+              Uplift
+            </option>
+          </LabelledSelectField>
           <LabelledInputField
             label="Roof slope (deg.)"
             name="roofSlope"
@@ -51,7 +68,7 @@ export default function ClientInput({state, dispatch}: ClientInputProps) {
             })}
           >
             {CROSS_SECTION_OPTIONS.map(item => 
-              <option value={item.value} key={uuidv4()}>
+              <option value={item.value} key={item.value}>
                 {item.label}
               </option>  
             )}
@@ -67,7 +84,7 @@ export default function ClientInput({state, dispatch}: ClientInputProps) {
             })}
           >
             {DECK_OPTIONS.map(item => 
-              <option value={item.value} key={uuidv4()}>
+              <option value={item.value} key={item.value}>
                 {item.label}
               </option>  
             )}
