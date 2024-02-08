@@ -17,6 +17,7 @@ function reducer(state: PurLinLineState, action: ReducerAction): PurLinLineState
 }
 
 export const INITIAL_PURLIN_STATE: PurLinLineState = {
+  loadDirection: "gravity",
   roofSlope: 1 / 12,
   deckType: "SSR Ultra-Dek 18 in. 24 ga",
   crossSection: "Z8x2.5 060",
@@ -32,6 +33,7 @@ export const INITIAL_PURLIN_STATE: PurLinLineState = {
 // Use only the following props for now:
 // span length, lap length, and cross-section type
 export type PurLinLineState = {
+  loadDirection: string,
   roofSlope: number, // unit: degrees
   deckType: string, 
   crossSection: string, 
@@ -45,7 +47,7 @@ export type PurLinLineStateDispatch = Dispatch<ReducerAction>
 
 type ReducerAction = 
   | { type: "set", field: "roofSlope" | "lapLength" | "spacing" | "frameFlangeWidth", payload: number }
-  | { type: "set", field: "deckType" | "crossSection", payload: string }
+  | { type: "set", field: "deckType" | "crossSection" | "loadDirection", payload: string }
   | { type: "set", field: "spans", payload: Array<{id: string, value: number}>}
 
 

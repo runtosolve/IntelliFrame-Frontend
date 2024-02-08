@@ -10,6 +10,7 @@ export function mapStateToJSON(state: PurLinLineState) {
     frame_flange_width: state.frameFlangeWidth,
     roof_slope: state.roofSlope,
     deck_type: state.deckType,
+    loading_direction: state.loadDirection,
   };
 
   return JSON.stringify(data);
