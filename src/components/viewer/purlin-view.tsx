@@ -8,7 +8,7 @@ import UniformLoad from "./elements/uniform-load";
 import { calcualtePurlinPosiions, calculateSupportPositions } from "./purlin-view-utils";
 
 
-export default function PurlinView({ purlinData, frameFlangeWidth }: PurLinViewProps) {
+export default function PurlinView({ purlinData, frameFlangeWidth, loadDirection }: PurLinViewProps) {
 
   const box = getBoundingBox(purlinData);
 
@@ -26,7 +26,7 @@ export default function PurlinView({ purlinData, frameFlangeWidth }: PurLinViewP
         <Layer>
           {generatePurlins(purlinData, zoom)}
           {generateSupports(purlinData, zoom, frameFlangeWidth)}
-          {generateUniformLoad(purlinData, zoom)}
+          {generateUniformLoad(purlinData, zoom, loadDirection === "uplift")}
         </Layer>
       </Stage>
     </div>
@@ -64,16 +64,17 @@ function getBoundingBox(data: Array<PurlinData>) {
 }
 
 
-const generateUniformLoad = (data: Array<PurlinData>, zoom: number) => {
+const generateUniformLoad = (data: Array<PurlinData>, zoom: number, isUplift = false) => {
   const supportPositions = calculateSupportPositions(data, PURLIN_LAP_OFFSET_Y, PURLIN_HEIGHT);
   const loadWidth = Math.max(...supportPositions.map(item => item.x)) - Math.min(...supportPositions.map(item => item.x));
 
   return (
     <UniformLoad
       x={0}
-      y={-LOAD_OFFSET_Y}
+      y={-0.1 * loadWidth}
       width={loadWidth}
       zoom={zoom}
+      rotation={isUplift ? 180 : 0}
     />
   );  
 
@@ -150,6 +151,7 @@ const generateSupports = (data: Array<PurlinData>, zoom: number, frameFlangeWidt
 type PurLinViewProps = {
   purlinData: Array<PurlinData>,
   frameFlangeWidth: number,
+  loadDirection: string,
 }
 
 
