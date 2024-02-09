@@ -26,6 +26,7 @@ export default function ClientInput({state, dispatch}: ClientInputProps) {
         <PurlineViewNoSSR
           purlinData={generatePurlinViewData(state.spans, state.lapLength)}
           frameFlangeWidth={state.frameFlangeWidth}
+          loadDirection={state.loadDirection}
         />
       </div>
       <div className="flex flex-wrap gap-6">

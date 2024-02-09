@@ -1,8 +1,8 @@
 import { Arrow, Group, Line } from "react-konva";
 
-export default function UniformLoad({x = 0., y = 0., width, zoom = 1}: UniformLoadProps) {
+export default function UniformLoad({x = 0., y = 0., width, zoom = 1, rotation = 0}: UniformLoadProps) {
 
-  const nominalSpacing = 25 / zoom;
+  const nominalSpacing = 25 / zoom; // arrow spacing
   const realSpacing = width / Math.round(width / nominalSpacing);
   const height = width / 25;
   const pointerWidth = 5 / zoom;
@@ -16,9 +16,11 @@ export default function UniformLoad({x = 0., y = 0., width, zoom = 1}: UniformLo
 
   return (
     <Group
-      x={x}
+      x={x + width / 2}
       y={y}
-      offsetY={height}
+      offsetX={width / 2}
+      offsetY={height / 2}
+      rotation={rotation}
     >
       {positions.map((x) => (
         <Arrow
@@ -45,4 +47,5 @@ type UniformLoadProps = {
   y?: number,
   width: number,
   zoom?: number,
+  rotation?: number,
 }
