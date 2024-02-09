@@ -14,32 +14,32 @@ export default function Header() {
 
   return (
     <>
-      <header className="nav-bar h-16 border-b-1 bg-white text-gray-900 flex items-center place-content-between ">
-
-        <div className="ml-6 md:hidden dropdown">
-          <div tabIndex={0} role="button" title="menu-dropdown">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
+      <header className="nav-bar h-16 border-b-1 bg-white text-gray-900 flex justify-center">
+        <div className="flex-1 max-w-screen-xl h-full flex items-center place-content-between">
+          <div className="ml-6 md:hidden dropdown">
+            <div tabIndex={0} role="button" title="menu-dropdown">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+            </div>
+            <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded">
+              <li><Link href="/purlinline">PurlineLine.jl</Link></li>
+              <li><Link href="https://github.com/runtosolve">GitHub</Link></li>
+              <li><Link href="https://www.linkedin.com/in/cris-moen-3b42a34/">Contact us</Link></li>
+            </ul>
           </div>
-          <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded">
-            <li><Link href="/purlinline">PurlineLine.jl</Link></li>
-            <li><Link href="https://github.com/runtosolve">GitHub</Link></li>
-            <li><Link href="https://www.linkedin.com/in/cris-moen-3b42a34/">Contact us</Link></li>
-          </ul>
-        </div>
 
-        <div className="ml-6 w-52">
-          <Link href="/" className="w-full h-full">
-            <Image
-              src={logo}
-              alt="Logo"
-            />
-          </Link>
-        </div>
+          <div className="ml-6 w-52">
+            <Link href="/" className="w-full h-full">
+              <Image
+                src={logo}
+                alt="Logo"
+              />
+            </Link>
+          </div>
 
-        <div className="hidden mr-6 md:flex gap-6 font-semibold">
-          {/* <Link href="/purlinline">
+          <div className="hidden mr-6 md:flex gap-6 font-semibold">
+            {/* <Link href="/purlinline">
             <button className="btn btn-outline btn-sm rounded-lg">
               PurlinLine.jl
             </button>
@@ -49,28 +49,29 @@ export default function Header() {
               GitHub
             </button>
           </Link> */}
-          <Link href="https://www.linkedin.com/in/cris-moen-3b42a34/">
-            <button className="btn btn-outline btn-sm rounded-lg">
-              Contact us
-            </button>
-          </Link>
-          <div>
-            {authContextValue.loginStatus !== AuthStatus.LoggedIn ? (
-              <button className="btn btn-outline btn-primary btn-sm rounded-lg" onClick={() => setIsModalOpen(true)}>
-                Login
-              </button>
-            ) : (<AccountButton />)}
-          </div>
-          {authContextValue.loginStatus !== AuthStatus.LoggedIn && (
-            <Link href="/register">
-              <button className="btn btn-primary btn-sm rounded-lg">
-                Sign up free
+            <Link href="https://www.linkedin.com/in/cris-moen-3b42a34/">
+              <button className="btn btn-outline btn-sm rounded-lg">
+                Contact us
               </button>
             </Link>
-          )}
-        </div>
+            <div>
+              {authContextValue.loginStatus !== AuthStatus.LoggedIn ? (
+                <button className="btn btn-outline btn-primary btn-sm rounded-lg" onClick={() => setIsModalOpen(true)}>
+                  Login
+                </button>
+              ) : (<AccountButton />)}
+            </div>
+            {authContextValue.loginStatus !== AuthStatus.LoggedIn && (
+              <Link href="/register">
+                <button className="btn btn-primary btn-sm rounded-lg">
+                  Sign up free
+                </button>
+              </Link>
+            )}
+          </div>
 
-        <LoginForm isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
+          <LoginForm isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
+        </div>
 
       </header>
     </>
