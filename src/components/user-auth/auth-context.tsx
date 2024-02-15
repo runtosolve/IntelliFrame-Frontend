@@ -1,5 +1,6 @@
 import { FormEvent, createContext, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/router";
 
 export enum AuthStatus {
   LoggedOut,
@@ -29,6 +30,8 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   const [name, setName] = useState("");
   const [accessToken, setAccessToken] = useState((""));
   const [refreshToken, setRefreshToken] = useState("");
+
+  const router = useRouter();
 
   useEffect(() => {
     const storedTokenString = localStorage.getItem("authToken");
@@ -75,6 +78,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   
       if (response.status === 200) {
         handleTokenUpdate(data);
+        router.push("/");
       }
       else setLoginStatus(AuthStatus.Failure);
     } catch (error) {
@@ -90,6 +94,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     setAccessToken("");
     setRefreshToken("");
     localStorage.removeItem("authToken");
+    router.push("/");
   }
 
   const refreshUser = async (token: string) => {

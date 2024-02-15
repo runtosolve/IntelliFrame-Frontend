@@ -5,86 +5,75 @@ import AuthContext from "./auth-context";
 import { AuthStatus } from "./auth-context";
 
 
-export default function LoginForm({ isOpen, setIsOpen }: LoginFormProps) {
-  
+export default function LoginForm() {
+
   const authContextValue = useContext(AuthContext);
 
   return (
-    <dialog className={`modal ${isOpen && 'modal-open'} modal-bottom sm:modal-middle`}>
-      <div className="modal-box">
-        <form onSubmit={authContextValue.logInUser}>
-          <div className="modal-action">
-            <button
-              type="button"
-              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-              onClick={() => setIsOpen(false)}
-            >
-              ✕
-            </button>
-          </div>
+    <div className="w-full min-w-80 max-w-lg px-4">
+      <form onSubmit={authContextValue.logInUser}>
 
-          <div className="flex justify-center">
-            <Image
-              src={logo}
-              alt="Logo"
-              className="w-1/2 min-w-[160px]"
-            />
-          </div>
+        <div className="flex justify-center">
+          <Image
+            src={logo}
+            alt="Logo"
+            className="w-1/2 min-w-[160px]"
+          />
+        </div>
 
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block font-medium text-gray-900">
-                Email
-              </label>
-              <div className="mt-2">
-                <input
-                  name="email" 
-                  id="email"
-                  type="text"
-                  autoComplete="email"
-                  className="input input-bordered w-full"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="username" className="block font-medium text-gray-900">
-                Password
-              </label>
-              <div className="mt-2">
-                <input
-                  name="password"
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  className="input input-bordered w-full"
-                  required
-                />
-              </div>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block font-medium text-gray-900">
+              Email
+            </label>
+            <div className="mt-2">
+              <input
+                name="email"
+                id="email"
+                type="text"
+                autoComplete="email"
+                className="input input-bordered w-full"
+                required
+              />
             </div>
           </div>
 
-          <div className="flex justify-center mt-8">
-            <button type="submit" className="btn btn-neutral btn-block sm:btn-wide">
-              Sign in
-            </button>
+          <div>
+            <label htmlFor="username" className="block font-medium text-gray-900">
+              Password
+            </label>
+            <div className="mt-2">
+              <input
+                name="password"
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                className="input input-bordered w-full"
+                required
+              />
+            </div>
           </div>
-        </form>
-        {
-          authContextValue.loginStatus === AuthStatus.Failure &&
-          <div role="alert" className="mt-4 bg-red-100 text-red-700 px-4 py-2 rounded-md">
-            Sign-in has failed. Please try again.
-          </div>
-        }
-        {
-          authContextValue.loginStatus === AuthStatus.LoggedIn &&
-          <div role="alert" className="mt-4 bg-green-100 text-green-700 px-4 py-2 rounded-md">
-            You have successfully signed in.
-          </div>
-        }
-      </div>
-    </dialog>
+        </div>
+
+        <div className="flex justify-center mt-8">
+          <button type="submit" className="btn btn-neutral btn-block sm:btn-wide">
+            Sign in
+          </button>
+        </div>
+      </form>
+      {
+        authContextValue.loginStatus === AuthStatus.Failure &&
+        <div role="alert" className="mt-4 bg-red-100 text-red-700 px-4 py-2 rounded-md">
+          Sign-in has failed. Please try again.
+        </div>
+      }
+      {
+        authContextValue.loginStatus === AuthStatus.LoggedIn &&
+        <div role="alert" className="mt-4 bg-green-100 text-green-700 px-4 py-2 rounded-md">
+          You have successfully signed in.
+        </div>
+      }
+    </div>
   );
 }
 
