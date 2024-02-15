@@ -2,15 +2,12 @@ import Link from "next/link";
 import Image from "next/image";
 import logo from "/public/RunToSolveLogo.svg";
 import { useContext, useState } from "react";
-import LoginForm from "../user-auth/login-form";
 import AuthContext, { AuthStatus } from "../user-auth/auth-context";
 import AccountButton from "../user-auth/account-button";
 
 export default function Header() {
 
   const authContextValue = useContext(AuthContext);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <>
@@ -54,13 +51,13 @@ export default function Header() {
                 Contact us
               </button>
             </Link>
-            <div>
-              {authContextValue.loginStatus !== AuthStatus.LoggedIn ? (
-                <button className="btn btn-outline btn-primary btn-sm rounded-lg" onClick={() => setIsModalOpen(true)}>
+            {authContextValue.loginStatus !== AuthStatus.LoggedIn ? (
+              <Link href="/login">
+                <button className="btn btn-outline btn-primary btn-sm rounded-lg">
                   Login
                 </button>
-              ) : (<AccountButton />)}
-            </div>
+              </Link>
+            ) : (<AccountButton />)}
             {authContextValue.loginStatus !== AuthStatus.LoggedIn && (
               <Link href="/register">
                 <button className="btn btn-primary btn-sm rounded-lg">
@@ -70,7 +67,6 @@ export default function Header() {
             )}
           </div>
 
-          <LoginForm isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
         </div>
 
       </header>
