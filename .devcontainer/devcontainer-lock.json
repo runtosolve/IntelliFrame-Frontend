@@ -1,0 +1,14 @@
+{
+  "features": {
+    "ghcr.io/devcontainers-extra/features/claude-code:2": {
+      "version": "2.0.2",
+      "resolved": "ghcr.io/devcontainers-extra/features/claude-code@sha256:64df717f3bb4d985f8597905f539ad04730d131e22fb9b738b82fb5a669b8fa8",
+      "integrity": "sha256:64df717f3bb4d985f8597905f539ad04730d131e22fb9b738b82fb5a669b8fa8"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "1.1.0",
+      "resolved": "ghcr.io/devcontainers/features/github-cli@sha256:d22f50b70ed75339b4eed1ba9ecde3a1791f90e88d37936517e3bace0bbad671",
+      "integrity": "sha256:d22f50b70ed75339b4eed1ba9ecde3a1791f90e88d37936517e3bace0bbad671"
+    }
+  }
+}
