@@ -1,83 +1,30 @@
-import Link from "next/link";
+import ClientInput from "@/components/client-input";
+import usePurlinLine from "@/components/hooks/use-purlin-line";
 import Layout from "@/components/layout/layout";
-import Head from 'next/head'
+import ResultsDisplay, { AnalaysisData, SAMPLE_RAW_DATA, processRawData } from "@/components/results/results-display";
+import SubmitButton from "@/components/submission/submit-button";
+import Head from "next/head";
+import { useState } from "react";
+
+const DEV_MODE = false;
 
 export default function Home() {
+  const [inputData, inputDataDispatch] = usePurlinLine();
+  const DEV_DATA = processRawData(inputData, SAMPLE_RAW_DATA);
+  const [outputData, setOutputData] = useState<AnalaysisData | null>(!DEV_MODE ? null : DEV_DATA);
+
   return (
     <>
       <Head>
-        <title>RunToSolve</title>
+        <title>PurlinLine | RunToSolve</title>
       </Head>
       <Layout>
-        <div className="max-w-3xl text-center">
-          <h1 className="font-bold text-8xl mb-4">
-            Get the <span className="bg-clip-text text-transparent bg-gradient-to-l from-green-300 via-blue-500 to-purple-600">answer</span>.
-          </h1>
-          {/* <p className="text-lg text-gray-600 mx-auto">
-          We are a team of structural engineers, PhDs and software developers solving problems in unconventional ways
-        </p> */}
-          {/* <div className="mt-6 flex justify-center">
-          <Link href="https://www.linkedin.com/in/cris-moen-3b42a34/">
-          <button className="btn btn-neutral rounded-lg">Contact us</button>
-        </Link>
-        </div> */}
-        </div>
-        <div className="mt-12 max-w-3xl flex flex-wrap gap-6 justify-center">
-          <div className="basis-72 card card-bordered card-compact">
-            <div className="card-body">
-              <h4 className="card-title">Data-driven</h4>
-              <p>
-                Strength prediction, optimization, and design of cold-formed steel using data-driven models which are based on existing physcial testing data
-              </p>
-              <div className="mt-4 card-actions">
-                <button className="btn btn-outline rounded-lg">
-                  <Link href="https://crismoen.quarto.pub/cold-formed-steel-framing-design-with-data-driven-models/#/title-slide">
-                    See latest models
-                  </Link>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="basis-72 card card-bordered card-compact">
-            <div className="card-body">
-              <h4 className="card-title">Simulations</h4>
-              <p>
-                Nonlinear finite element simulation of steel structural systems using Abaqus and LS-DYNA
-              </p>
-            </div>
-          </div>
-          <div className="basis-72 card card-bordered card-compact">
-            <div className="card-body">
-              <h4 className="card-title">Software</h4>
-              <p>
-                Develop specialized structural engineering software as standalone web applications or integrate into your existing solutions
-              </p>
-              <div className="mt-4 card-actions">
-                <button className="btn btn-outline btn-smrounded-lg">
-                  <Link href="/purlinline">
-                    Go to PurlinLine.jl
-                  </Link>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="basis-72 card card-bordered card-compact">
-            <div className="card-body">
-              <h4 className="card-title">Open-source</h4>
-              <p>
-                Various open-source structural engineering software packages developed by our team in C#, julia and Typescript
-              </p>
-              <div className="mt-4 card-actions">
-                <button className="btn btn-outline rounded-lg">
-                  <Link href="https://github.com/runtosolve">
-                    Go to GitHub repos
-                  </Link>
-                </button>
-              </div>
-            </div>
-          </div>
+        <ClientInput state={inputData} dispatch={inputDataDispatch} />
+        {outputData && <ResultsDisplay output={outputData} />}
+        <div className="pt-6 flex justify-center">
+          <SubmitButton input={inputData} onUpdate={setOutputData} />
         </div>
       </Layout>
     </>
-  )
+  );
 }
