@@ -3,7 +3,7 @@ import { PurLinLineState } from "../hooks/use-purlin-line";
 import { mapStateToJSON } from "./submission-utils";
 import { AnalaysisData, processRawData } from "../results/results-display";
 
-export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
+export default function SubmitButton({ input, onUpdate, accessToken }: SubmitButtonProps) {
   const [submitStaus, setSubmitStatus] = useState<SubmitStatus>("idle");
 
   const handleClick = async () => {
@@ -11,10 +11,11 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
     onUpdate(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/purlinline/submit_job/`, {
+      const response = await fetch(`https://api.runtosolve.com/purlinline`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: mapStateToJSON(input)
       });
@@ -72,6 +73,7 @@ const StatusAlert = ({ status }: StatusAlertProps) => {
 type SubmitButtonProps = {
   input: PurLinLineState;
   onUpdate: (data: AnalaysisData | null) => void;
+  accessToken: string;
 };
 
 type SubmitStatus = "idle" | "running" | "ready" | "error";

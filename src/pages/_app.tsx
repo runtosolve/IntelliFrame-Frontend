@@ -1,9 +1,13 @@
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
-import Head from 'next/head';
+import dynamic from 'next/dynamic'
+
+const CognitoAuthProvider = dynamic(() => import('@/components/auth-provider'), { ssr: false })
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <Component {...pageProps} />
-  );
+    <CognitoAuthProvider>
+      <Component {...pageProps} />
+    </CognitoAuthProvider>
+  )
 }

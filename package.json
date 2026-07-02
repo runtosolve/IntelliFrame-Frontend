@@ -13,9 +13,11 @@
     "jwt-decode": "^4.0.0",
     "konva": "^9.2.1",
     "next": "latest",
+    "oidc-client-ts": "^3.5.0",
     "react": "latest",
     "react-dom": "latest",
     "react-konva": "^18.2.10",
+    "react-oidc-context": "^3.3.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
