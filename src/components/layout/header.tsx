@@ -8,7 +8,7 @@ export default function Header() {
 
   const signOut = async () => {
     const clientId = "57mvrdlt25lavm7epi144h67h3";
-    const logoutUri = "https://purlinline-app.runtosolve.com";
+    const logoutUri = "https://purlinline-app.runtosolve.com/logout";
     const cognitoDomain = "https://runtosolve-auth.auth.us-east-1.amazoncognito.com";
     await auth.removeUser();
     window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
@@ -29,9 +29,13 @@ export default function Header() {
           <Link href="https://www.linkedin.com/in/cris-moen-3b42a34/">
             <button className="btn btn-outline btn-sm rounded-lg">Contact us</button>
           </Link>
-          {auth.isAuthenticated && (
+          {auth.isAuthenticated ? (
             <button className="btn btn-outline btn-sm rounded-lg" onClick={signOut}>
               Sign out
+            </button>
+          ) : (
+            <button className="btn btn-outline btn-sm rounded-lg" onClick={() => auth.signinRedirect()}>
+              Sign in
             </button>
           )}
         </div>

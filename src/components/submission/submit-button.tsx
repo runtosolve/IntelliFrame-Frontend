@@ -11,7 +11,7 @@ export default function SubmitButton({ input, onUpdate, accessToken }: SubmitBut
     onUpdate(null);
 
     try {
-      const response = await fetch(`https://api.runtosolve.com/purlinline`, {
+      const response = await fetch(`https://api.runtosolve.com/purlinline/base`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',

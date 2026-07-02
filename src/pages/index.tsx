@@ -19,11 +19,6 @@ export default function Home() {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  if (!auth.isAuthenticated) {
-    auth.signinRedirect();
-    return <div className="flex items-center justify-center min-h-screen">Redirecting to login...</div>;
-  }
-
   return (
     <>
       <Head>
