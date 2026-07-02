@@ -6,10 +6,11 @@ import { useAuth } from "react-oidc-context";
 export default function Header() {
   const auth = useAuth();
 
-  const signOut = () => {
+  const signOut = async () => {
     const clientId = "57mvrdlt25lavm7epi144h67h3";
     const logoutUri = "https://purlinline-app.runtosolve.com";
     const cognitoDomain = "https://runtosolve-auth.auth.us-east-1.amazoncognito.com";
+    await auth.removeUser();
     window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
   };
 
