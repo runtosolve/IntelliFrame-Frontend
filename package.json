@@ -11,16 +11,15 @@
   "dependencies": {
     "@ant-design/cssinjs": "^2.1.2",
     "@ant-design/icons": "^6.3.2",
+    "amazon-cognito-identity-js": "^6.3.18",
     "antd": "^6.5.0",
     "d3": "^7.8.5",
     "jwt-decode": "^4.0.0",
     "konva": "^9.2.1",
     "next": "latest",
-    "oidc-client-ts": "^3.5.0",
     "react": "latest",
     "react-dom": "latest",
     "react-konva": "^18.2.10",
-    "react-oidc-context": "^3.3.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

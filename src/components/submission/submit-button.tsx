@@ -4,11 +4,18 @@ import { ThunderboltOutlined } from "@ant-design/icons";
 import { PurLinLineState } from "../hooks/use-purlin-line";
 import { mapStateToJSON } from "./submission-utils";
 import { AnalaysisData, processRawData } from "../results/results-display";
+import { useAuthContext } from "../user-auth/auth-context";
 
-export default function SubmitButton({ input, onUpdate, accessToken }: SubmitButtonProps) {
+export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
+  const { isAuthenticated, accessToken, openLoginModal } = useAuthContext();
   const [submitStaus, setSubmitStatus] = useState<SubmitStatus>("idle");
 
   const handleClick = async () => {
+    if (!isAuthenticated) {
+      openLoginModal();
+      return;
+    }
+
     setSubmitStatus("running");
     onUpdate(null);
 
@@ -23,6 +30,11 @@ export default function SubmitButton({ input, onUpdate, accessToken }: SubmitBut
       });
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          setSubmitStatus("not-authenticated");
+          openLoginModal();
+          throw new Error("User is not authenticated");
+        }
         setSubmitStatus("error");
         throw new Error("Server error");
       }
@@ -59,11 +71,15 @@ const StatusAlert = ({ status }: StatusAlertProps) => {
   switch (status) {
     case "ready":
       return (
-        <Alert type="success" showIcon message="Analysis has been completed" />
+        <Alert type="success" showIcon title="Analysis has been completed" />
       );
     case "error":
       return (
-        <Alert type="error" showIcon message="Sorry, there is a problem with server" />
+        <Alert type="error" showIcon title="Sorry, there is a problem with server" />
+      );
+    case "not-authenticated":
+      return (
+        <Alert type="warning" showIcon title="Please sign in to run analysis" />
       );
     default:
       return <></>;
@@ -73,10 +89,9 @@ const StatusAlert = ({ status }: StatusAlertProps) => {
 type SubmitButtonProps = {
   input: PurLinLineState;
   onUpdate: (data: AnalaysisData | null) => void;
-  accessToken: string;
 };
 
-type SubmitStatus = "idle" | "running" | "ready" | "error";
+type SubmitStatus = "idle" | "running" | "ready" | "error" | "not-authenticated";
 
 type StatusAlertProps = {
   status: SubmitStatus;

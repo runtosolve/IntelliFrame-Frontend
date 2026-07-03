@@ -1,9 +1,8 @@
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { ConfigProvider } from 'antd'
-import dynamic from 'next/dynamic'
-
-const CognitoAuthProvider = dynamic(() => import('@/components/auth-provider'), { ssr: false })
+import { AuthContextProvider } from '@/components/user-auth/auth-context'
+import LoginModal from '@/components/user-auth/login-modal'
 
 // Control styling mirrors the SMI Composite Deck Calculator theme
 const theme = {
@@ -27,10 +26,11 @@ const theme = {
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <CognitoAuthProvider>
+    <AuthContextProvider>
       <ConfigProvider theme={theme}>
         <Component {...pageProps} />
+        <LoginModal />
       </ConfigProvider>
-    </CognitoAuthProvider>
+    </AuthContextProvider>
   )
 }
