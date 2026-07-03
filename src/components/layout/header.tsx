@@ -3,7 +3,7 @@ import Image from "next/image";
 import logo from "/public/RunToSolveLogo.svg";
 import { Button, Dropdown } from "antd";
 import { MenuOutlined } from "@ant-design/icons";
-import { useAuth } from "react-oidc-context";
+import { useAuthContext } from "../user-auth/auth-context";
 
 const MOBILE_MENU_ITEMS = [
   {
@@ -21,15 +21,7 @@ const MOBILE_MENU_ITEMS = [
 ];
 
 export default function Header() {
-  const auth = useAuth();
-
-  const signOut = async () => {
-    const clientId = "57mvrdlt25lavm7epi144h67h3";
-    const logoutUri = "https://purlinline-app.runtosolve.com/logout";
-    const cognitoDomain = "https://runtosolve-auth.auth.us-east-1.amazoncognito.com";
-    await auth.removeUser();
-    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
-  };
+  const auth = useAuthContext();
 
   return (
     <header className="nav-bar h-16 border-b border-gray-200 bg-white text-gray-900 flex justify-center">
@@ -48,15 +40,15 @@ export default function Header() {
 
         <div className="hidden mr-6 md:flex items-center gap-3">
           {auth.isAuthenticated && (
-            <span className="text-sm text-gray-600">{auth.user?.profile.email}</span>
+            <span className="text-sm text-gray-600">{auth.email}</span>
           )}
           <Link href="https://www.linkedin.com/in/cris-moen-3b42a34/">
             <Button>Contact us</Button>
           </Link>
           {auth.isAuthenticated ? (
-            <Button onClick={signOut}>Sign out</Button>
+            <Button onClick={auth.signOut}>Sign out</Button>
           ) : (
-            <Button type="primary" onClick={() => auth.signinRedirect()}>
+            <Button type="primary" onClick={auth.openLoginModal}>
               Sign in
             </Button>
           )}

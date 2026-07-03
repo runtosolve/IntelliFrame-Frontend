@@ -24,6 +24,15 @@ body {
   }
 }
 
+/* Tailwind preflight's [type='button'] { background-color: transparent } ties in
+   specificity with antd v6's button background rule, so injection order decided
+   which won. Restore antd's variable-driven background with higher specificity. */
+.ant-btn[type='button']:not(:disabled),
+.ant-btn[type='submit']:not(:disabled),
+.ant-btn[type='reset']:not(:disabled) {
+  background-color: var(--ant-btn-bg-color);
+}
+
 /* SMI-style panel accent colours (light tint + 4px left bar on headers) */
 .panel-blue .ant-card-head,
 .ant-collapse-item.panel-blue > .ant-collapse-header {
