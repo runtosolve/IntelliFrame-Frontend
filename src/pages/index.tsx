@@ -1,59 +1,47 @@
-import Link from "next/link";
+import ClientInput, { ViewerCard } from "@/components/client-input";
+import usePurlinLine from "@/components/hooks/use-purlin-line";
 import Layout from "@/components/layout/layout";
-import Head from 'next/head'
-import { Button, Card } from "antd";
-import { ArrowRightOutlined, GithubOutlined } from "@ant-design/icons";
+import ResultsDisplay, { AnalaysisData, SAMPLE_RAW_DATA, processRawData } from "@/components/results/results-display";
+import SubmitButton from "@/components/submission/submit-button";
+import Head from "next/head";
+import { useState } from "react";
+import { useAuth } from "react-oidc-context";
+
+const DEV_MODE = false;
 
 export default function Home() {
+  const auth = useAuth();
+  const [inputData, inputDataDispatch] = usePurlinLine();
+  const DEV_DATA = processRawData(inputData, SAMPLE_RAW_DATA);
+  const [outputData, setOutputData] = useState<AnalaysisData | null>(!DEV_MODE ? null : DEV_DATA);
+
+  if (auth.isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
   return (
     <>
       <Head>
-        <title>RunToSolve</title>
+        <title>PurlinLine | RunToSolve</title>
       </Head>
-      <Layout>
-        <div className="max-w-3xl text-center">
-          <h1 className="font-bold text-8xl mb-4">
-            Get the <span className="bg-clip-text text-transparent bg-gradient-to-l from-green-300 via-blue-500 to-purple-600">answer</span>.
-          </h1>
-        </div>
-        <div className="mt-12 max-w-3xl flex flex-wrap gap-6 justify-center px-4">
-          <Card title="Data-driven" className="basis-72 grow shadow-sm" hoverable>
-            <p className="text-gray-600">
-              Strength prediction, optimization, and design of cold-formed steel using data-driven models which are based on existing physcial testing data
-            </p>
-            <Link href="https://crismoen.quarto.pub/cold-formed-steel-framing-design-with-data-driven-models/#/title-slide">
-              <Button className="mt-4" icon={<ArrowRightOutlined />}>
-                See latest models
-              </Button>
-            </Link>
-          </Card>
-          <Card title="Simulations" className="basis-72 grow shadow-sm" hoverable>
-            <p className="text-gray-600">
-              Nonlinear finite element simulation of steel structural systems using Abaqus and LS-DYNA
-            </p>
-          </Card>
-          <Card title="Software" className="basis-72 grow shadow-sm" hoverable>
-            <p className="text-gray-600">
-              Develop specialized structural engineering software as standalone web applications or integrate into your existing solutions
-            </p>
-            <Link href="/purlinline">
-              <Button className="mt-4" type="primary" icon={<ArrowRightOutlined />}>
-                Go to PurlinLine.jl
-              </Button>
-            </Link>
-          </Card>
-          <Card title="Open-source" className="basis-72 grow shadow-sm" hoverable>
-            <p className="text-gray-600">
-              Various open-source structural engineering software packages developed by our team in C#, julia and Typescript
-            </p>
-            <Link href="https://github.com/runtosolve">
-              <Button className="mt-4" icon={<GithubOutlined />}>
-                Go to GitHub repos
-              </Button>
-            </Link>
-          </Card>
+      <Layout align="top">
+        <div className="w-full max-w-screen-2xl px-4 lg:px-6 space-y-6">
+          <SubmitButton
+            input={inputData}
+            onUpdate={setOutputData}
+            accessToken={auth.user?.access_token ?? ""}
+          />
+          <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+            <div className="w-full lg:w-[420px] lg:shrink-0 space-y-6">
+              <ClientInput state={inputData} dispatch={inputDataDispatch} />
+            </div>
+            <div className="flex-1 w-full min-w-0 space-y-6">
+              <ViewerCard state={inputData} />
+              {outputData && <ResultsDisplay output={outputData} />}
+            </div>
+          </div>
         </div>
       </Layout>
     </>
-  )
+  );
 }
