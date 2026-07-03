@@ -1,6 +1,8 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import logo from "/public/RunToSolveLogo.svg";
 import Image from "next/image";
+import { Alert, Button, Input } from "antd";
+import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import AuthContext from "./auth-context";
 import { AuthStatus } from "./auth-context";
 
@@ -23,61 +25,67 @@ export default function LoginForm() {
 
         <div className="space-y-4">
           <div>
-            <label htmlFor="email" className="block font-medium text-gray-900">
+            <label htmlFor="email" className="block text-[13px] font-medium text-[#555] mb-1">
               Email
             </label>
-            <div className="mt-2">
-              <input
-                name="email"
-                id="email"
-                type="text"
-                autoComplete="email"
-                className="input input-bordered w-full"
-                required
-              />
-            </div>
+            <Input
+              name="email"
+              id="email"
+              type="text"
+              autoComplete="email"
+              size="large"
+              prefix={<MailOutlined className="text-gray-400" />}
+              placeholder="Your email address"
+              required
+            />
           </div>
 
           <div>
-            <label htmlFor="username" className="block font-medium text-gray-900">
+            <label htmlFor="password" className="block text-[13px] font-medium text-[#555] mb-1">
               Password
             </label>
-            <div className="mt-2">
-              <input
-                name="password"
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                className="input input-bordered w-full"
-                required
-              />
-            </div>
+            <Input.Password
+              name="password"
+              id="password"
+              autoComplete="current-password"
+              size="large"
+              prefix={<LockOutlined className="text-gray-400" />}
+              placeholder="Your password"
+              required
+            />
           </div>
         </div>
 
         <div className="flex justify-center mt-8">
-          <button type="submit" className="btn btn-neutral btn-block sm:btn-wide">
+          <Button
+            type="primary"
+            size="large"
+            htmlType="submit"
+            className="w-full sm:w-64"
+            loading={authContextValue.loginStatus === AuthStatus.Pending}
+          >
             Sign in
-          </button>
+          </Button>
         </div>
       </form>
       {
         authContextValue.loginStatus === AuthStatus.Failure &&
-        <div role="alert" className="mt-4 bg-red-100 text-red-700 px-4 py-2 rounded-md">
-          Sign-in has failed. Please try again.
-        </div>
+        <Alert
+          className="mt-4"
+          type="error"
+          showIcon
+          message="Sign-in has failed. Please try again."
+        />
       }
       {
         authContextValue.loginStatus === AuthStatus.LoggedIn &&
-        <div role="alert" className="mt-4 bg-green-100 text-green-700 px-4 py-2 rounded-md">
-          You have successfully signed in.
-        </div>
+        <Alert
+          className="mt-4"
+          type="success"
+          showIcon
+          message="You have successfully signed in."
+        />
       }
     </div>
   );
-}
-
-type LoginFormProps = {
-  isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
 }

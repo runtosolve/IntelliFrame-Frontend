@@ -1,11 +1,12 @@
 import { useState } from "react";
 import React from "react";
+import { InputNumber } from "antd";
 
 export default function LabelledInputField({ label, name, ...props }: LabelledInputFieldProps) {
 
   return (
     <div>
-      <label htmlFor={name} className="block text-lg font-medium text-gray-900">
+      <label htmlFor={name} className="block text-[13px] font-medium text-[#555] mb-1">
         {label}
       </label>
       <InputField
@@ -17,14 +18,12 @@ export default function LabelledInputField({ label, name, ...props }: LabelledIn
 }
 
 export function InputField({ name, defaultValue, minValue = 0, setField, ...props }: InputFieldProps) {
-  
-  const [inputValue, setInputValue] = useState(defaultValue);
-  const [isValid, setIsValid] = useState(false);
+
+  const [isValid, setIsValid] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const handleOnChange = (e: React.FormEvent<HTMLInputElement>) => {
-    setInputValue(e.currentTarget.value);
-    const v = parseFloat(e.currentTarget.value)
+  const handleOnChange = (value: number | null) => {
+    const v = value === null ? NaN : value;
 
     const { valid, msg } = checkValidity(v, minValue)
     setIsValid(valid);
@@ -37,15 +36,17 @@ export function InputField({ name, defaultValue, minValue = 0, setField, ...prop
 
   return (
     <div {...props}>
-      <input
-        className="block w-full no-spinner outline-none border-0 rounded ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 px-2 py-1.5"
+      <InputNumber
+        style={{ width: "100%" }}
+        id={name}
         name={name}
-        value={inputValue}
-        type="number"
+        defaultValue={parseFloat(defaultValue)}
+        status={isValid ? "" : "error"}
+        controls={false}
         onChange={handleOnChange}
       />
       {!isValid &&
-        <div className="text-sm text-red-500">
+        <div className="text-sm text-red-500 mt-1">
           {errorMsg}
         </div>
       }
@@ -53,11 +54,11 @@ export function InputField({ name, defaultValue, minValue = 0, setField, ...prop
   );
 }
 
-interface InputFieldProps extends React.ComponentProps<"div"> {
+interface InputFieldProps extends Omit<React.ComponentProps<"div">, "onChange"> {
   name: string,
   defaultValue: string,
   minValue?: number,
-  setField: (v: number) => void  
+  setField: (v: number) => void
 }
 
 

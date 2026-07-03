@@ -1,4 +1,4 @@
-import ClientInput from "@/components/client-input";
+import ClientInput, { ViewerCard } from "@/components/client-input";
 import usePurlinLine from "@/components/hooks/use-purlin-line";
 import Footer from "@/components/layout/footer";
 import Layout from "@/components/layout/layout";
@@ -22,13 +22,20 @@ export default function TopHat() {
     <Head>
       <title>TopHat | RunToSolve</title>
     </Head>
-      <Layout>
-        <ClientInput state={inputData} dispatch={inputDataDispatch} />
-        {outputData &&
-          <ResultsDisplay output={outputData} />
-        }
-        <div className="pt-6 flex justify-center">
+      <Layout align="top">
+        <div className="w-full max-w-screen-2xl px-4 lg:px-6 space-y-6">
           <SubmitButton input={inputData} onUpdate={setOutputData} />
+          <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+            <div className="w-full lg:w-[420px] lg:shrink-0 space-y-6">
+              <ClientInput state={inputData} dispatch={inputDataDispatch} />
+            </div>
+            <div className="flex-1 w-full min-w-0 space-y-6">
+              <ViewerCard state={inputData} />
+              {outputData &&
+                <ResultsDisplay output={outputData} />
+              }
+            </div>
+          </div>
         </div>
       </Layout>
     </>

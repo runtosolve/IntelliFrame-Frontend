@@ -1,4 +1,6 @@
 import { useContext, useState } from "react";
+import { Alert, Button } from "antd";
+import { ThunderboltOutlined } from "@ant-design/icons";
 import { PurLinLineState } from "../hooks/use-purlin-line";
 import { mapStateToJSON } from "./submission-utils";
 import { AnalaysisData, processRawData } from "../results/results-display";
@@ -24,7 +26,7 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
         },
         body: mapStateToJSON(input)
       });
-      
+
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
           setSubmitStatus("not-authenticated");
@@ -41,25 +43,25 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
       onUpdate(processRawData(input, data));
 
     } catch (err) {
+      // Network failures reject before a status is set; don't leave the button loading forever
+      setSubmitStatus(prev => prev === "running" ? "error" : prev);
       console.error(err);
     }
   }
 
   return (
-    <div className="flex flex-col items-center space-y-2">
-      <button
+    <div className="bg-white rounded-lg shadow-sm px-4 py-2.5 flex items-center gap-3">
+      <Button
         name="submit-button"
-        className="w-36 h-10 bg-gray-800 hover:bg-gray-600 text-gray-100 rounded"
+        type="primary"
+        className="w-28"
+        style={{ background: "#f5a623", borderColor: "#f5a623", fontWeight: 600 }}
+        icon={<ThunderboltOutlined />}
+        loading={submitStaus == "running"}
         onClick={handleClick}
-        disabled={submitStaus == "running"}
-        >
-        <div className="w-full h-full flex justify-center items-center space-x-2">
-          {(submitStaus == "running") && (<span className="loading loading-bars loading-sm text-success"></span>)}
-          <span>
-            {(submitStaus == "running") ? ("Running") : ("Run")}
-          </span>
-        </div>
-      </button>
+      >
+        {(submitStaus == "running") ? ("Running") : ("Run")}
+      </Button>
       <StatusAlert status={submitStaus} />
     </div>
   );
@@ -69,27 +71,15 @@ const StatusAlert = ({ status }: StatusAlertProps) => {
   switch (status) {
     case "ready":
       return (
-        <label
-          htmlFor="submit-button"
-          className="bg-green-100 text-green-700 text-center text-sm px-2 py-0.5">
-          Analysis has been completed
-        </label >
+        <Alert type="success" showIcon message="Analysis has been completed" />
       );
     case "error":
       return (
-        <label
-          htmlFor="submit-button"
-          className="bg-red-100 text-red-700 text-center text-sm px-2 py-0.5">
-          Sorry, there is a problem with server
-        </label >
+        <Alert type="error" showIcon message="Sorry, there is a problem with server" />
       );
     case "not-authenticated":
       return (
-        <label
-          htmlFor="submit-button"
-          className="bg-orange-100 text-orange-700 text-center text-sm px-2 py-0.5">
-          Please login first to run analysis
-        </label >
+        <Alert type="warning" showIcon message="Please login first to run analysis" />
       );
     default:
       return (<></>);

@@ -1,5 +1,7 @@
 import logo from "/public/RunToSolveLogo.svg";
 import Image from "next/image";
+import { Alert, Button, Input } from "antd";
+import { BankOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 
 import AuthContext, { AuthStatus } from "./auth-context";
 import { useContext } from "react";
@@ -10,7 +12,7 @@ export default function RegisterForm(props: React.HTMLProps<HTMLDivElement>) {
 
   return (
     <div {...props}>
-      <div className="max-w-screen-md">
+      <div className="w-full min-w-80 max-w-lg px-4">
         <div className="flex justify-center">
           <Image
             src={logo}
@@ -19,7 +21,7 @@ export default function RegisterForm(props: React.HTMLProps<HTMLDivElement>) {
           />
         </div>
 
-        <h1 className="text-center text-3xl font-bold mt-2 mb-4">
+        <h1 className="text-center text-3xl font-bold mt-2 mb-6">
           Create your account for free
         </h1>
 
@@ -27,106 +29,114 @@ export default function RegisterForm(props: React.HTMLProps<HTMLDivElement>) {
           <div className="space-y-4">
 
             <div>
-              <label htmlFor="email" className="block font-medium text-gray-900">
+              <label htmlFor="email" className="block text-[13px] font-medium text-[#555] mb-1">
                 Email
               </label>
-              <div className="mt-2">
-                <input
-                  name="email"
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="Your email address"
-                  className="input input-bordered w-full"
-                  required
-                />
-              </div>
+              <Input
+                name="email"
+                id="email"
+                type="email"
+                autoComplete="email"
+                size="large"
+                prefix={<MailOutlined className="text-gray-400" />}
+                placeholder="Your email address"
+                required
+              />
             </div>
 
             <div>
-              <label htmlFor="password" className="block font-medium text-gray-900">
+              <label htmlFor="password" className="block text-[13px] font-medium text-[#555] mb-1">
                 Password
               </label>
-              <div className="mt-2">
-                <input
-                  name="password"
-                  id="password_register"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Your password"
-                  className="input input-bordered w-full"
-                  required
-                />
-              </div>
+              <Input.Password
+                name="password"
+                id="password_register"
+                autoComplete="new-password"
+                size="large"
+                prefix={<LockOutlined className="text-gray-400" />}
+                placeholder="Your password"
+                required
+              />
             </div>
 
             <div className="flex space-x-4">
               <div className="flex-1">
-                <label htmlFor="first name" className="block font-medium text-gray-900">
+                <label htmlFor="first_name" className="block text-[13px] font-medium text-[#555] mb-1">
                   First name
                 </label>
-                <div className="mt-2">
-                  <input
-                    name="first_name"
-                    id="first_name"
-                    type="text"
-                    autoComplete="given-name"
-                    placeholder="Your first name"
-                    className="input input-bordered w-full"
-                    required
-                  />
-                </div>
+                <Input
+                  name="first_name"
+                  id="first_name"
+                  type="text"
+                  autoComplete="given-name"
+                  size="large"
+                  placeholder="Your first name"
+                  required
+                />
               </div>
               <div className="flex-1">
-                <label htmlFor="last name" className="block font-medium text-gray-900">
+                <label htmlFor="last_name" className="block text-[13px] font-medium text-[#555] mb-1">
                   Last name
                 </label>
-                <div className="mt-2">
-                  <input
-                    name="last_name"
-                    id="last_name"
-                    type="text"
-                    autoComplete="family-name"
-                    placeholder="Your last name"
-                    className="input input-bordered w-full"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="company" className="block font-medium text-gray-900">
-                Organization
-              </label>
-              <div className="mt-2">
-                <input
-                  name="organization"
-                  id="organization"
+                <Input
+                  name="last_name"
+                  id="last_name"
                   type="text"
-                  autoComplete="organization"
-                  placeholder="Your organization name"
-                  className="input input-bordered w-full"
+                  autoComplete="family-name"
+                  size="large"
+                  placeholder="Your last name"
                   required
                 />
               </div>
             </div>
 
-
+            <div>
+              <label htmlFor="organization" className="block text-[13px] font-medium text-[#555] mb-1">
+                Organization
+              </label>
+              <Input
+                name="organization"
+                id="organization"
+                type="text"
+                autoComplete="organization"
+                size="large"
+                prefix={<BankOutlined className="text-gray-400" />}
+                placeholder="Your organization name"
+                required
+              />
+            </div>
 
             <div className="flex justify-center mt-8">
-              <button type="submit" className="btn btn-neutral btn-block sm:btn-wide">
+              <Button
+                type="primary"
+                size="large"
+                htmlType="submit"
+                className="w-full sm:w-64"
+              >
                 Create an account
-              </button>
+              </Button>
             </div>
           </div>
 
         </form>
         {
           authContextValue.loginStatus === AuthStatus.RegisterSuccess && (
-            <div role="alert" className="mt-4 bg-green-100 text-green-700 px-4 py-2 rounded-md">
-              You have successfully registered. Please simply login.
-            </div>
+            <Alert
+              className="mt-4"
+              type="success"
+              showIcon
+              message="You have successfully registered. Please simply login."
+            />
+          )
+        }
+        {
+          authContextValue.loginStatus === AuthStatus.Failure && (
+            <Alert
+              className="mt-4"
+              type="error"
+              showIcon
+              message="Registration has failed. Please try again."
+            />
           )
         }
 

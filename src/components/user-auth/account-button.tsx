@@ -1,22 +1,35 @@
 import { useContext } from "react";
+import { Button, Dropdown } from "antd";
+import { DownOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
 import AuthContext from "./auth-context";
 
 export default function AccountButton() {
 
   const authContextValue = useContext(AuthContext);
 
+  const items = [
+    {
+      key: "signed-in-as",
+      icon: <UserOutlined />,
+      label: `Signed in as ${authContextValue.name || authContextValue.username}`,
+      disabled: true,
+    },
+    {
+      type: "divider" as const,
+    },
+    {
+      key: "sign-out",
+      icon: <LogoutOutlined />,
+      label: "Sign out",
+      onClick: () => authContextValue.logOutUser(),
+    },
+  ];
+
   return (
-    <div className="dropdown dropdown-end">
-      <div tabIndex={0} role="button" className="btn btn-neutral btn-sm">Account</div>
-      <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-        <li>
-          <div>Signed in as {authContextValue.name || authContextValue.username}</div>
-        </li>
-        <li>
-          <div onClick={() => authContextValue.logOutUser()}>Sign out</div>
-        </li>
-      </ul>
-    </div>
+    <Dropdown menu={{ items }} placement="bottomRight" trigger={["click"]}>
+      <Button icon={<UserOutlined />}>
+        Account <DownOutlined className="text-xs" />
+      </Button>
+    </Dropdown>
   );
 }
-
