@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* DaisyUI's light theme used to set these; keep the app light-only */
+html {
+  color-scheme: light;
+}
+
+body {
+  background-color: #fff;
+  color: rgb(17 24 39);
+}
+
 @layer components {
   .no-spinner {
       -moz-appearance: textfield;
@@ -14,8 +24,29 @@
   }
 }
 
-@layer components {
-  .btn{
-    text-transform: none;
-  }
+/* SMI-style panel accent colours (light tint + 4px left bar on headers) */
+.panel-blue .ant-card-head,
+.ant-collapse-item.panel-blue > .ant-collapse-header {
+  background: #e8eef6 !important;
+  border-left: 4px solid #1F365C;
+}
+.panel-green .ant-card-head,
+.ant-collapse-item.panel-green > .ant-collapse-header {
+  background: #e8f5e9 !important;
+  border-left: 4px solid #2e9963;
+}
+.panel-orange .ant-card-head,
+.ant-collapse-item.panel-orange > .ant-collapse-header {
+  background: #fef6e6 !important;
+  border-left: 4px solid #FDB842;
+}
+.panel-teal .ant-card-head,
+.ant-collapse-item.panel-teal > .ant-collapse-header {
+  background: #e0f7fa !important;
+  border-left: 4px solid #007599;
+}
+.panel-purple .ant-card-head,
+.ant-collapse-item.panel-purple > .ant-collapse-header {
+  background: #f3e5f5 !important;
+  border-left: 4px solid #6a1b9a;
 }

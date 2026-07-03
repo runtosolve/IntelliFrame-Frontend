@@ -2,38 +2,48 @@ import { generatePurlinViewData } from "../viewer/purlin-view-utils";
 import { PurLinLineState } from "../hooks/use-purlin-line";
 import { calculateSupportPositions } from "../viewer/purlin-view-utils";
 import DeflectionView from "./deflection-view";
+import { Collapse, Statistic } from "antd";
 
 export default function ResultsDisplay({ output: outputData }: ResultsDisplayProps) {
 
-  return (
-    <div className="w-full max-w-screen-md mt-12 space-y-2">
-      <ReportCard title="Allowable gravity roof pressure">
-        {`${outputData.capacity.value} ${outputData.capacity.unit}`}
-      </ReportCard>
-      <ReportCard title="Predicted failure limit state">
-        {`${outputData.failureLimitState}`} 
-      </ReportCard>
-      <ReportCard title="Purlin deflection and failure location">
+  const items = [
+    {
+      key: "capacity",
+      label: "Allowable gravity roof pressure",
+      className: "panel-teal",
+      children: (
+        <Statistic
+          value={outputData.capacity.value}
+          suffix={outputData.capacity.unit}
+        />
+      ),
+    },
+    {
+      key: "limit-state",
+      label: "Predicted failure limit state",
+      className: "panel-orange",
+      children: outputData.failureLimitState,
+    },
+    {
+      key: "deflection",
+      label: "Purlin deflection and failure location",
+      className: "panel-purple",
+      children: (
         <div>
           <DeflectionView data={outputData} scale={100}/>
         </div>
-        
-      </ReportCard>
-    </div>
-  );
-}
+      ),
+    },
+  ];
 
-function ReportCard({title, children}: React.ComponentProps<"div">) {
   return (
-    <div className="collapse collapse-arrow bg-base-100 border borer-base-300">
-        <input type="checkbox"/> 
-        <div className="collapse-title text-lg font-medium">
-          {title}
-        </div>
-        <div className="collapse-content">
-          {children}
-        </div>
-      </div>
+    <div className="w-full">
+      <Collapse
+        items={items}
+        defaultActiveKey={["capacity", "limit-state"]}
+        className="bg-white shadow-sm"
+      />
+    </div>
   );
 }
 

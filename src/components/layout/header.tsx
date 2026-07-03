@@ -1,7 +1,24 @@
 import Link from "next/link";
 import Image from "next/image";
 import logo from "/public/RunToSolveLogo.svg";
+import { Button, Dropdown } from "antd";
+import { MenuOutlined } from "@ant-design/icons";
 import { useAuth } from "react-oidc-context";
+
+const MOBILE_MENU_ITEMS = [
+  {
+    key: "purlinline",
+    label: <Link href="/">PurlinLine.jl</Link>,
+  },
+  {
+    key: "github",
+    label: <Link href="https://github.com/runtosolve">GitHub</Link>,
+  },
+  {
+    key: "contact",
+    label: <Link href="https://www.linkedin.com/in/cris-moen-3b42a34/">Contact us</Link>,
+  },
+];
 
 export default function Header() {
   const auth = useAuth();
@@ -15,28 +32,33 @@ export default function Header() {
   };
 
   return (
-    <header className="nav-bar h-16 border-b-1 bg-white text-gray-900 flex justify-center">
+    <header className="nav-bar h-16 border-b border-gray-200 bg-white text-gray-900 flex justify-center">
       <div className="flex-1 max-w-screen-xl h-full flex items-center place-content-between">
+        <div className="ml-6 md:hidden">
+          <Dropdown menu={{ items: MOBILE_MENU_ITEMS }} trigger={["click"]}>
+            <Button type="text" title="menu-dropdown" icon={<MenuOutlined />} />
+          </Dropdown>
+        </div>
+
         <div className="ml-6 w-52">
           <Link href="/" className="w-full h-full">
             <Image src={logo} alt="Logo" />
           </Link>
         </div>
-        <div className="mr-6 flex items-center gap-4">
+
+        <div className="hidden mr-6 md:flex items-center gap-3">
           {auth.isAuthenticated && (
             <span className="text-sm text-gray-600">{auth.user?.profile.email}</span>
           )}
           <Link href="https://www.linkedin.com/in/cris-moen-3b42a34/">
-            <button className="btn btn-outline btn-sm rounded-lg">Contact us</button>
+            <Button>Contact us</Button>
           </Link>
           {auth.isAuthenticated ? (
-            <button className="btn btn-outline btn-sm rounded-lg" onClick={signOut}>
-              Sign out
-            </button>
+            <Button onClick={signOut}>Sign out</Button>
           ) : (
-            <button className="btn btn-outline btn-sm rounded-lg" onClick={() => auth.signinRedirect()}>
+            <Button type="primary" onClick={() => auth.signinRedirect()}>
               Sign in
-            </button>
+            </Button>
           )}
         </div>
       </div>

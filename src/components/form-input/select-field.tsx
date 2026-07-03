@@ -1,24 +1,30 @@
-import { ComponentProps } from "react";
+import { Select } from "antd";
 
-export default function LabelledSelectField({label, name, children, ...props}: LabelledSelectFieldProps) {
+export default function LabelledSelectField({ label, name, options, value, defaultValue, onChange }: LabelledSelectFieldProps) {
   return (
     <div>
-      <label htmlFor={name} className="block text-lg font-medium text-gray-900">
+      <label htmlFor={name} className="block text-[13px] font-medium text-[#555] mb-1">
         {label}
       </label>
-      <div className="mt-2">
-        <select
-          className="block w-full outline-none border-0 rounded ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 px-2 py-1.5"
-          id={name}
-          {...props}
-        >
-          {children}
-        </select>
-      </div>
+      <Select
+        className="w-full"
+        id={name}
+        options={options}
+        value={value}
+        defaultValue={defaultValue}
+        onChange={onChange}
+        showSearch
+        optionFilterProp="label"
+      />
     </div>
   )
 }
 
-interface LabelledSelectFieldProps extends ComponentProps<"select"> {
+interface LabelledSelectFieldProps {
   label: string,
+  name: string,
+  options: Array<{ label: string, value: string }>,
+  value?: string,
+  defaultValue?: string,
+  onChange: (value: string) => void,
 }

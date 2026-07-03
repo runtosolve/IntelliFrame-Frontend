@@ -21,7 +21,7 @@ export default function PurlinView({ purlinData, frameFlangeWidth, loadDirection
   useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom})
 
   return (
-    <div ref={containerRef} className="w-full h-full bg-gray-300">
+    <div ref={containerRef} className="w-full h-full">
       <Stage ref={stageRef}>
         <Layer>
           {generatePurlins(purlinData, zoom)}
