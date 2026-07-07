@@ -30,25 +30,18 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
       return;
     }
 
-    const submitWith = (token: string) =>
-      fetch(`https://api.runtosolve.com/purlinline/base`, {
+    try {
+      // The API Gateway Lambda authorizer verifies Cognito ACCESS tokens
+      // (tokenUse: "access"). Send the access token — an id token is rejected
+      // with a 403 that carries no CORS headers, which the browser then blocks.
+      const response = await fetch(`https://api.runtosolve.com/purlinline/base`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${tokens.accessToken}`,
         },
         body: mapStateToJSON(input)
       });
-
-    try {
-      // The API Gateway JWT authorizer matches the token's aud claim, which
-      // only the ID token carries; fall back to the access token in case the
-      // authorizer is configured for it instead.
-      let response = await submitWith(tokens.idToken);
-      if (response.status === 401 || response.status === 403) {
-        response = await submitWith(tokens.accessToken);
-        if (response.ok) console.info("API accepted the access token; ID token was rejected");
-      }
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
