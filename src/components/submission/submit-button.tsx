@@ -7,7 +7,7 @@ import { AnalaysisData, processRawData } from "../results/results-display";
 import { useAuthContext } from "../user-auth/auth-context";
 
 export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
-  const { isAuthenticated, accessToken, openLoginModal } = useAuthContext();
+  const { isAuthenticated, getFreshTokens, openLoginModal } = useAuthContext();
   const [submitStaus, setSubmitStatus] = useState<SubmitStatus>("idle");
 
   const handleClick = async () => {
@@ -19,15 +19,36 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
     setSubmitStatus("running");
     onUpdate(null);
 
+    // Refresh tokens first; getSession silently renews them via the refresh
+    // token, so a page left open past the 1h token lifetime still works.
+    let tokens: { accessToken: string; idToken: string };
     try {
-      const response = await fetch(`https://api.runtosolve.com/purlinline/base`, {
+      tokens = await getFreshTokens();
+    } catch {
+      setSubmitStatus("not-authenticated");
+      openLoginModal();
+      return;
+    }
+
+    const submitWith = (token: string) =>
+      fetch(`https://api.runtosolve.com/purlinline/base`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: mapStateToJSON(input)
       });
+
+    try {
+      // The API Gateway JWT authorizer matches the token's aud claim, which
+      // only the ID token carries; fall back to the access token in case the
+      // authorizer is configured for it instead.
+      let response = await submitWith(tokens.idToken);
+      if (response.status === 401 || response.status === 403) {
+        response = await submitWith(tokens.accessToken);
+        if (response.ok) console.info("API accepted the access token; ID token was rejected");
+      }
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {

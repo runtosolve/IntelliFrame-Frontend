@@ -24,6 +24,7 @@ type AuthContextValue = {
   signUp: (email: string, password: string) => Promise<void>;
   confirmSignUp: (email: string, code: string) => Promise<void>;
   signOut: () => void;
+  getFreshTokens: () => Promise<{ accessToken: string; idToken: string }>;
 };
 
 const AuthContext = createContext<AuthContextValue>({
@@ -37,6 +38,7 @@ const AuthContext = createContext<AuthContextValue>({
   signUp: async () => {},
   confirmSignUp: async () => {},
   signOut: () => {},
+  getFreshTokens: async () => ({ accessToken: "", idToken: "" }),
 });
 
 export default AuthContext;
@@ -50,16 +52,22 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
   const [accessToken, setAccessToken] = useState("");
   const [loginModalOpen, setLoginModalOpen] = useState(false);
 
+  // The pool signs users in by email alias, so getUsername() returns the
+  // internal UUID; read the display name from the ID token's email claim.
+  const applySession = useCallback((session: any) => {
+    setEmail(session.getIdToken().payload?.email ?? "");
+    setAccessToken(session.getAccessToken().getJwtToken());
+  }, []);
+
   // Restore an existing session from local storage (client only)
   useEffect(() => {
     const currentUser = getUserPool().getCurrentUser();
     if (!currentUser) return;
     currentUser.getSession((err: Error | null, session: any) => {
       if (err || !session?.isValid()) return;
-      setEmail(currentUser.getUsername());
-      setAccessToken(session.getAccessToken().getJwtToken());
+      applySession(session);
     });
-  }, []);
+  }, [applySession]);
 
   const signIn = useCallback((username: string, password: string) => {
     return new Promise<void>((resolve, reject) => {
@@ -68,15 +76,39 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
         new AuthenticationDetails({ Username: username, Password: password }),
         {
           onSuccess: (session) => {
-            setEmail(username);
-            setAccessToken(session.getAccessToken().getJwtToken());
+            applySession(session);
             resolve();
           },
           onFailure: reject,
         },
       );
     });
-  }, []);
+  }, [applySession]);
+
+  // getSession silently refreshes expired tokens with the refresh token,
+  // so long-lived pages keep working without a re-login.
+  const getFreshTokens = useCallback(() => {
+    return new Promise<{ accessToken: string; idToken: string }>((resolve, reject) => {
+      const currentUser = getUserPool().getCurrentUser();
+      if (!currentUser) {
+        reject(new Error("Not signed in"));
+        return;
+      }
+      currentUser.getSession((err: Error | null, session: any) => {
+        if (err || !session?.isValid()) {
+          setEmail("");
+          setAccessToken("");
+          reject(err ?? new Error("Session expired"));
+          return;
+        }
+        applySession(session);
+        resolve({
+          accessToken: session.getAccessToken().getJwtToken(),
+          idToken: session.getIdToken().getJwtToken(),
+        });
+      });
+    });
+  }, [applySession]);
 
   const signUp = useCallback((username: string, password: string) => {
     return new Promise<void>((resolve, reject) => {
@@ -114,6 +146,7 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
     signUp,
     confirmSignUp,
     signOut,
+    getFreshTokens,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
