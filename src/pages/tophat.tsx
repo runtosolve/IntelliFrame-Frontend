@@ -1,7 +1,7 @@
 import ClientInput, { ViewerCard } from "@/components/client-input";
 import usePurlinLine from "@/components/hooks/use-purlin-line";
 import Layout from "@/components/layout/layout";
-import ResultsDisplay, { AnalaysisData, SAMPLE_RAW_DATA, processRawData } from "@/components/results/results-display";
+import { DeflectionCard, ResultStats, AnalaysisData, SAMPLE_RAW_DATA, processRawData } from "@/components/results/results-display";
 import SubmitButton from "@/components/submission/submit-button";
 import Head from "next/head";
 import { useState } from "react";
@@ -24,10 +24,11 @@ export default function TopHat() {
           <div className="flex flex-col lg:flex-row lg:items-start gap-6">
             <div className="w-full lg:w-[420px] lg:shrink-0 space-y-6">
               <ClientInput state={inputData} dispatch={inputDataDispatch} />
+              <ResultStats output={outputData} />
             </div>
             <div className="flex-1 w-full min-w-0 space-y-6">
               <ViewerCard state={inputData} />
-              <ResultsDisplay output={outputData} />
+              <DeflectionCard output={outputData} />
             </div>
           </div>
         </div>
