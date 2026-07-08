@@ -22,14 +22,14 @@ export function ViewerCard({ state }: { state: PurLinLineState }) {
   return (
     <Card title="Preview" className="shadow-sm panel-teal">
       <div className="bg-[#fafafa] border border-[#eeeeee] rounded-md p-3">
-        <div className="relative h-64">
+        <div className="relative h-40">
           <SectionViewNoSSR
             purlinName={state.crossSection}
             deckName={state.deckType}
             rotation={-state.roofSlope}
           />
         </div>
-        <div className="h-64">
+        <div className="h-48">
           <PurlineViewNoSSR
             purlinData={generatePurlinViewData(state.spans, state.lapLength)}
             frameFlangeWidth={state.frameFlangeWidth}

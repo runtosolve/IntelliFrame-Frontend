@@ -27,7 +27,7 @@ export default function Home() {
             </div>
             <div className="flex-1 w-full min-w-0 space-y-6">
               <ViewerCard state={inputData} />
-              {outputData && <ResultsDisplay output={outputData} />}
+              <ResultsDisplay output={outputData} />
             </div>
           </div>
         </div>
