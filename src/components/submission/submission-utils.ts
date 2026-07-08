@@ -11,7 +11,7 @@ export function mapStateToJSON(state: PurLinLineState) {
     roof_slope: state.roofSlope,
     deck_type: state.deckType,
     loading_direction: state.loadDirection,
-    generate_report: false,
+    generate_report: true,
   };
 
   return JSON.stringify(data);
