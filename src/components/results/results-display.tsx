@@ -2,47 +2,31 @@ import { generatePurlinViewData } from "../viewer/purlin-view-utils";
 import { PurLinLineState } from "../hooks/use-purlin-line";
 import { calculateSupportPositions } from "../viewer/purlin-view-utils";
 import DeflectionView from "./deflection-view";
-import { Collapse, Statistic } from "antd";
+import { Card, Statistic } from "antd";
 
-export default function ResultsDisplay({ output: outputData }: ResultsDisplayProps) {
+const BLANK = <span className="text-gray-300">—</span>;
 
-  const items = [
-    {
-      key: "capacity",
-      label: "Allowable gravity roof pressure",
-      className: "panel-teal",
-      children: (
-        <Statistic
-          value={outputData.capacity.value}
-          suffix={outputData.capacity.unit}
-        />
-      ),
-    },
-    {
-      key: "limit-state",
-      label: "Predicted failure limit state",
-      className: "panel-orange",
-      children: outputData.failureLimitState,
-    },
-    {
-      key: "deflection",
-      label: "Purlin deflection and failure location",
-      className: "panel-purple",
-      children: (
-        <div>
-          <DeflectionView data={outputData} scale={100}/>
-        </div>
-      ),
-    },
-  ];
-
+// Deflection chart — lives in the right column, directly under the Preview.
+export function DeflectionCard({ output }: ResultsDisplayProps) {
   return (
-    <div className="w-full">
-      <Collapse
-        items={items}
-        defaultActiveKey={["capacity", "limit-state"]}
-        className="bg-white shadow-sm"
-      />
+    <Card title="Purlin deflection and failure location" className="shadow-sm panel-purple">
+      {output ? <DeflectionView data={output} scale={100} /> : <div className="h-24" />}
+    </Card>
+  );
+}
+
+// Headline result cards — always visible (blank until a run completes).
+export function ResultStats({ output }: ResultsDisplayProps) {
+  return (
+    <div className="space-y-6">
+      <Card title="Allowable gravity roof pressure" className="shadow-sm panel-teal">
+        {output
+          ? <Statistic value={output.capacity.value} suffix={output.capacity.unit} />
+          : BLANK}
+      </Card>
+      <Card title="Predicted failure limit state" className="shadow-sm panel-orange">
+        {output ? output.failureLimitState : BLANK}
+      </Card>
     </div>
   );
 }
@@ -82,7 +66,7 @@ function findSupportLocations(inputData: PurLinLineState) {
 
 
 type ResultsDisplayProps = {
-  output: AnalaysisData
+  output: AnalaysisData | null
 }
 
 export type AnalaysisData = {

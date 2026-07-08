@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, Button } from "antd";
+import { Button, message } from "antd";
 import { ThunderboltOutlined } from "@ant-design/icons";
 import { PurLinLineState } from "../hooks/use-purlin-line";
 import { mapStateToJSON } from "./submission-utils";
@@ -8,65 +8,62 @@ import { useAuthContext } from "../user-auth/auth-context";
 
 export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
   const { isAuthenticated, getFreshTokens, openLoginModal } = useAuthContext();
-  const [submitStaus, setSubmitStatus] = useState<SubmitStatus>("idle");
+  const [running, setRunning] = useState(false);
 
   const handleClick = async () => {
     if (!isAuthenticated) {
+      message.warning("Please sign in to run analysis");
       openLoginModal();
       return;
     }
 
-    setSubmitStatus("running");
+    setRunning(true);
     onUpdate(null);
 
     // Refresh tokens first; getSession silently renews them via the refresh
     // token, so a page left open past the 1h token lifetime still works.
-    let tokens: { accessToken: string; idToken: string };
+    let accessToken: string;
     try {
-      tokens = await getFreshTokens();
+      accessToken = (await getFreshTokens()).accessToken;
     } catch {
-      setSubmitStatus("not-authenticated");
+      setRunning(false);
+      message.warning("Please sign in to run analysis");
       openLoginModal();
       return;
     }
 
-    const submitWith = (token: string) =>
-      fetch(`https://api.runtosolve.com/purlinline/base`, {
+    try {
+      // The API Gateway Lambda authorizer verifies Cognito ACCESS tokens.
+      const response = await fetch(`https://api.runtosolve.com/purlinline/base`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: mapStateToJSON(input)
       });
 
-    try {
-      // The API Gateway JWT authorizer matches the token's aud claim, which
-      // only the ID token carries; fall back to the access token in case the
-      // authorizer is configured for it instead.
-      let response = await submitWith(tokens.idToken);
-      if (response.status === 401 || response.status === 403) {
-        response = await submitWith(tokens.accessToken);
-        if (response.ok) console.info("API accepted the access token; ID token was rejected");
-      }
-
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
-          setSubmitStatus("not-authenticated");
+          message.warning("Please sign in to run analysis");
           openLoginModal();
           throw new Error("User is not authenticated");
         }
-        setSubmitStatus("error");
+        message.error("Sorry, there is a problem with the server");
         throw new Error("Server error");
       }
 
       const data = await response.json();
-      setSubmitStatus("ready");
       onUpdate(processRawData(input, data));
+      message.success("Analysis has been completed");
     } catch (err) {
-      // Network failures reject before a status is set; don't leave the button loading forever
-      setSubmitStatus(prev => prev === "running" ? "error" : prev);
+      // Network failures reject before a status is set; surface a generic error.
+      if (err instanceof TypeError) {
+        message.error("Sorry, there is a problem with the server");
+      }
       console.error(err);
+    } finally {
+      setRunning(false);
     }
   };
 
@@ -78,42 +75,16 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
         className="w-28"
         style={{ background: "#f5a623", borderColor: "#f5a623", fontWeight: 600 }}
         icon={<ThunderboltOutlined />}
-        loading={submitStaus == "running"}
+        loading={running}
         onClick={handleClick}
       >
-        {(submitStaus == "running") ? ("Running") : ("Run")}
+        {running ? "Running" : "Run"}
       </Button>
-      <StatusAlert status={submitStaus} />
     </div>
   );
 }
 
-const StatusAlert = ({ status }: StatusAlertProps) => {
-  switch (status) {
-    case "ready":
-      return (
-        <Alert type="success" showIcon title="Analysis has been completed" />
-      );
-    case "error":
-      return (
-        <Alert type="error" showIcon title="Sorry, there is a problem with server" />
-      );
-    case "not-authenticated":
-      return (
-        <Alert type="warning" showIcon title="Please sign in to run analysis" />
-      );
-    default:
-      return <></>;
-  }
-};
-
 type SubmitButtonProps = {
   input: PurLinLineState;
   onUpdate: (data: AnalaysisData | null) => void;
-};
-
-type SubmitStatus = "idle" | "running" | "ready" | "error" | "not-authenticated";
-
-type StatusAlertProps = {
-  status: SubmitStatus;
 };
