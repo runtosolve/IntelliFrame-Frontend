@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import logo from "/public/RunToSolveLogo.svg";
+import logo from "/public/ImetcoLogo.svg";
 import { Button, Dropdown } from "antd";
 import { MenuOutlined } from "@ant-design/icons";
 import { useAuthContext } from "../user-auth/auth-context";
@@ -25,20 +25,20 @@ export default function Header() {
 
   return (
     <header className="nav-bar h-16 border-b border-gray-200 bg-white text-gray-900 flex justify-center">
-      <div className="flex-1 max-w-screen-xl h-full flex items-center place-content-between">
-        <div className="ml-6 md:hidden">
+      <div className="w-full max-w-screen-2xl px-4 lg:px-6 h-full flex items-center place-content-between">
+        <div className="md:hidden">
           <Dropdown menu={{ items: MOBILE_MENU_ITEMS }} trigger={["click"]}>
             <Button type="text" title="menu-dropdown" icon={<MenuOutlined />} />
           </Dropdown>
         </div>
 
-        <div className="ml-6 w-52">
+        <div className="w-52">
           <Link href="/" className="w-full h-full">
             <Image src={logo} alt="Logo" />
           </Link>
         </div>
 
-        <div className="hidden mr-6 md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3">
           {auth.isAuthenticated && (
             <span className="text-sm text-gray-600">{auth.email}</span>
           )}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Image from "next/image";
-import logo from "/public/RunToSolveLogo.svg";
+import logo from "/public/ImetcoLogo.svg";
 import { Alert, Button, Input, Modal, Tabs } from "antd";
 import { LockOutlined, MailOutlined, SafetyOutlined } from "@ant-design/icons";
 import { useAuthContext } from "./auth-context";
