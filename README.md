@@ -21,4 +21,4 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 ### Environment variables
 API route `NEXT_PUBLIC_API_URL = "https://api.runtosolve.com"`
 
-(Need to add NEXT_PUBLIC because the relevant data fetching is done on client-side instead server-side)
+(Need to add NEXT_PUBLIC because the relevant data fetching is done on client-side instead server-side).
