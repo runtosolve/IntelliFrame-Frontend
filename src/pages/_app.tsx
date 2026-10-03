@@ -1,36 +1,59 @@
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { ConfigProvider } from 'antd'
-import { AuthContextProvider } from '@/components/user-auth/auth-context'
-import LoginModal from '@/components/user-auth/login-modal'
+import AuthGate from '@/auth/auth-gate'
 
-// Control styling mirrors the SMI Composite Deck Calculator theme
 const theme = {
   token: {
-    colorPrimary: "#1F365C",
-    colorLink: "#2575fc",
-    borderRadius: 6,
-    fontSize: 13,
-    colorBorder: "#dde2e8",
-    fontFamily: "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    colorPrimary: "#173c5e",
+    colorInfo: "#173c5e",
+    colorLink: "#175f88",
+    colorText: "#172b3f",
+    colorTextSecondary: "#64748b",
+    colorBorder: "#dbe4ea",
+    colorBgLayout: "#f4f7f9",
+    borderRadius: 8,
+    borderRadiusLG: 14,
+    controlHeight: 38,
+    fontSize: 14,
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    boxShadowSecondary: "0 12px 40px rgba(23, 60, 94, 0.12)",
   },
   components: {
     Card: {
-      headerBg: "#e8eef6",
+      headerBg: "#ffffff",
+      headerHeight: 64,
+      paddingLG: 22,
     },
-    Collapse: {
-      headerBg: "#e8eef6",
+    Tabs: {
+      itemColor: "#64748b",
+      itemHoverColor: "#173c5e",
+      itemSelectedColor: "#173c5e",
+      inkBarColor: "#173c5e",
+      horizontalItemPadding: "12px 4px",
+      horizontalItemGutter: 30,
+    },
+    Button: {
+      primaryShadow: "0 6px 16px rgba(23, 60, 94, 0.18)",
+      fontWeight: 600,
+    },
+    Segmented: {
+      itemSelectedBg: "#ffffff",
+      trackBg: "#eef3f6",
+    },
+    Select: {
+      optionSelectedBg: "#edf4f8",
+      zIndexPopup: 50,
     },
   },
 };
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <AuthContextProvider>
-      <ConfigProvider theme={theme}>
+    <ConfigProvider theme={theme}>
+      <AuthGate>
         <Component {...pageProps} />
-        <LoginModal />
-      </ConfigProvider>
-    </AuthContextProvider>
+      </AuthGate>
+    </ConfigProvider>
   )
 }

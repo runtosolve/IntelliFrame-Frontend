@@ -15,6 +15,7 @@ function getUserPool() {
 
 type AuthContextValue = {
   isAuthenticated: boolean;
+  sessionChecked: boolean;
   email: string;
   accessToken: string;
   loginModalOpen: boolean;
@@ -29,6 +30,7 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue>({
   isAuthenticated: false,
+  sessionChecked: false,
   email: "",
   accessToken: "",
   loginModalOpen: false,
@@ -50,22 +52,23 @@ export function useAuthContext() {
 export function AuthContextProvider({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState("");
   const [accessToken, setAccessToken] = useState("");
+  const [sessionChecked, setSessionChecked] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
 
-  // The pool signs users in by email alias, so getUsername() returns the
-  // internal UUID; read the display name from the ID token's email claim.
   const applySession = useCallback((session: any) => {
     setEmail(session.getIdToken().payload?.email ?? "");
     setAccessToken(session.getAccessToken().getJwtToken());
   }, []);
 
-  // Restore an existing session from local storage (client only)
   useEffect(() => {
     const currentUser = getUserPool().getCurrentUser();
-    if (!currentUser) return;
+    if (!currentUser) {
+      setSessionChecked(true);
+      return;
+    }
     currentUser.getSession((err: Error | null, session: any) => {
-      if (err || !session?.isValid()) return;
-      applySession(session);
+      if (!err && session?.isValid()) applySession(session);
+      setSessionChecked(true);
     });
   }, [applySession]);
 
@@ -85,8 +88,6 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
     });
   }, [applySession]);
 
-  // getSession silently refreshes expired tokens with the refresh token,
-  // so long-lived pages keep working without a re-login.
   const getFreshTokens = useCallback(() => {
     return new Promise<{ accessToken: string; idToken: string }>((resolve, reject) => {
       const currentUser = getUserPool().getCurrentUser();
@@ -137,6 +138,7 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
 
   const value: AuthContextValue = {
     isAuthenticated: !!accessToken,
+    sessionChecked,
     email,
     accessToken,
     loginModalOpen,

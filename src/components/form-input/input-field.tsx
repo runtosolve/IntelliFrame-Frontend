@@ -2,12 +2,13 @@ import { useState } from "react";
 import React from "react";
 import { InputNumber } from "antd";
 
-export default function LabelledInputField({ label, name, ...props }: LabelledInputFieldProps) {
+export default function LabelledInputField({ label, unit, name, ...props }: LabelledInputFieldProps) {
 
   return (
     <div>
-      <label htmlFor={name} className="block text-[13px] font-medium text-[#555] mb-1">
-        {label}
+      <label htmlFor={name} className="field-label">
+        <span>{label}</span>
+        {unit && <span className="field-unit">{unit}</span>}
       </label>
       <InputField
         name={name}
@@ -43,10 +44,11 @@ export function InputField({ name, defaultValue, minValue = 0, setField, ...prop
         defaultValue={parseFloat(defaultValue)}
         status={isValid ? "" : "error"}
         controls={false}
+        aria-describedby={!isValid ? `${name}-error` : undefined}
         onChange={handleOnChange}
       />
       {!isValid &&
-        <div className="text-sm text-red-500 mt-1">
+        <div id={`${name}-error`} role="alert" className="field-error">
           {errorMsg}
         </div>
       }
@@ -64,6 +66,7 @@ interface InputFieldProps extends Omit<React.ComponentProps<"div">, "onChange"> 
 
 interface LabelledInputFieldProps extends InputFieldProps {
   label: string,
+  unit?: string,
 }
 
 function checkValidity(v: number, minValue: number) {
@@ -71,7 +74,6 @@ function checkValidity(v: number, minValue: number) {
     return { valid: false, msg: "Input must be a number" }
   }
 
-  // Check negative
   if (v < minValue) {
     return { valid: false, msg: `Input must not be smaller than ${minValue}`};
   }

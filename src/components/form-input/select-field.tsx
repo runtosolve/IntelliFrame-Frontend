@@ -3,12 +3,13 @@ import { Select } from "antd";
 export default function LabelledSelectField({ label, name, options, value, defaultValue, onChange }: LabelledSelectFieldProps) {
   return (
     <div>
-      <label htmlFor={name} className="block text-[13px] font-medium text-[#555] mb-1">
+      <label htmlFor={name} className="field-label">
         {label}
       </label>
       <Select
         className="w-full"
         id={name}
+        aria-label={label}
         options={options}
         value={value}
         defaultValue={defaultValue}

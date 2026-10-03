@@ -1,10 +1,10 @@
 export default function Footer() {
-
-  const currentYear = new Date().getFullYear();
-
   return (
-    <footer className="bg-gray-900 text-gray-300 text-sm text-center py-4">
-      <p>Copyright © {currentYear} - All right reserved by RunToSolve, LLC</p>
+    <footer className="app-footer">
+      <div className="footer-inner">
+        <p>© 2026 RunToSolve, LLC. All rights reserved.</p>
+        <p>Engineering tools powered by <strong>RunToSolve</strong></p>
+      </div>
     </footer>
   );
 }

@@ -12,7 +12,7 @@ export function PurlinCrossSection({x, y, rotation = 0, data }: PurlinCrossSecti
         rotation={rotation}
         points={points}
         stroke="#030712"
-        strokeWidth={2 * data.t}  // make section thicker for clarity
+        strokeWidth={2 * data.t}
         // strokeScaleEnabled={false}
       />
     </>
@@ -23,12 +23,11 @@ type PurlinCrossSectionProps = {
   data: PurlinSectionData,
   x: number,
   y: number,
-  rotation?: number, // unit: degrees
+  rotation?: number,
 }
 
 function getCeeSectionPoints(data: PurlinSectionData) {
   const {shape, D, B, H, t, r, webAngle, flangeAngle, lipAngle} = data;
-  // Origin is at the top left corner of the section
   let coordinates: Array<{x: number, y:number}> = [];
   if (shape === "C") {
     coordinates = [
@@ -38,7 +37,7 @@ function getCeeSectionPoints(data: PurlinSectionData) {
       {x: 0, y: H},
       {x: B, y: H},
       {x: (B + D * Math.cos(Math.abs(lipAngle * Math.PI / 180))), y: H - D * Math.sin(Math.abs(lipAngle * Math.PI / 180))},
-    ]; // unit: inches
+    ];
   }
   else if (shape === "Z") {
     coordinates = [
@@ -48,7 +47,7 @@ function getCeeSectionPoints(data: PurlinSectionData) {
       {x: 0, y: H},
       {x: -B, y: H},
       {x: -(B + D * Math.cos(Math.abs(lipAngle * Math.PI / 180))), y: H - D * Math.sin(Math.abs(lipAngle * Math.PI / 180))},
-    ]; // unit: inches
+    ];
   }
 
   const points: Array<number> = []

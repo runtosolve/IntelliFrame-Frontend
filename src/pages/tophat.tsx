@@ -23,7 +23,8 @@ export default function TopHat() {
           <SubmitButton input={inputData} onUpdate={setOutputData} />
           <div className="flex flex-col lg:flex-row lg:items-start gap-6">
             <div className="w-full lg:w-[420px] lg:shrink-0 space-y-6">
-              <ClientInput state={inputData} dispatch={inputDataDispatch} />
+              <ClientInput state={inputData} dispatch={inputDataDispatch} part="section" />
+              <ClientInput state={inputData} dispatch={inputDataDispatch} part="geometry" />
               <ResultStats output={outputData} />
             </div>
             <div className="flex-1 w-full min-w-0 space-y-6">

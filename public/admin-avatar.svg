@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Default admin profile">
+  <defs>
+    <linearGradient id="pa-bg" x1="12" y1="6" x2="84" y2="92" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f5f9fd"/>
+      <stop offset="1" stop-color="#d3e1f1"/>
+    </linearGradient>
+    <linearGradient id="pa-head" x1="35" y1="20" x2="63" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34699f"/>
+      <stop offset="1" stop-color="#1e4370"/>
+    </linearGradient>
+    <linearGradient id="pa-suit" x1="16" y1="62" x2="80" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#27547f"/>
+      <stop offset="1" stop-color="#112741"/>
+    </linearGradient>
+    <clipPath id="pa-clip">
+      <circle cx="48" cy="48" r="48"/>
+    </clipPath>
+  </defs>
+
+  <circle cx="48" cy="48" r="48" fill="url(#pa-bg)"/>
+
+  <g clip-path="url(#pa-clip)">
+    <path d="M43.9 44h8.2v16h-8.2z" fill="#1a3a60"/>
+    <circle cx="48" cy="34" r="14.4" fill="url(#pa-head)"/>
+    <path d="M33.6 33.6C33.6 22.6 40 16 48 16s14.4 6.6 14.4 17.6c-2.6-6.2-7.1-8.8-14.4-8.8s-11.8 2.6-14.4 8.8z" fill="#12253d"/>
+    <path d="M16 96c0-21.3 14.3-38.4 32-38.4S80 74.7 80 96z" fill="url(#pa-suit)"/>
+    <path d="M39.2 59.4h17.6L48 78z" fill="#f7fafd"/>
+    <path d="M48 62.4l3.4 4.4-1.8 16.4h-3.2L44.6 66.8z" fill="#e67a12"/>
+  </g>
+
+  <circle cx="48" cy="48" r="46.5" fill="none" stroke="#ffffff" stroke-opacity="0.9" stroke-width="3"/>
+</svg>

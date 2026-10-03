@@ -10,15 +10,13 @@ import { calcualtePurlinPosiions, calculateSupportPositions } from "./purlin-vie
 
 export default function PurlinView({ purlinData, frameFlangeWidth, loadDirection }: PurLinViewProps) {
 
-  const box = getBoundingBox(purlinData);
+  const box = getBoundingBox(purlinData, frameFlangeWidth);
 
   const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null!);
   const stageRef = useRef<Konva.Stage>(null!);
 
-  // Make stage responsive to container size
-  // And make stage repsonsive to content by centering purlin spans
-  useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom})
+  useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom, padding: STAGE_PADDING })
 
   return (
     <div ref={containerRef} className="w-full h-full">
@@ -44,23 +42,23 @@ const SUPPORT_STYLE = {
 const PURLIN_LAP_OFFSET_Y = 0.2;
 const PURLIN_HEIGHT = 8 / 12;
 
-const LOAD_OFFSET_Y = 3;
+const STAGE_PADDING = { top: 44, right: 16, bottom: 84, left: 16 };
 
-
-function getBoundingBox(data: Array<PurlinData>) {
+function getBoundingBox(data: Array<PurlinData>, frameFlangeWidth: number) {
   let width = 0;
   data.forEach(item => {
     width += item.span;
   })
-  
-  const box = {
-    x: width / 2,
-    y: 0,
-    width: width,
-    height: PURLIN_HEIGHT,
-  }
 
-  return box;
+  const top = -0.12 * width;
+  const bottom = PURLIN_HEIGHT + PURLIN_LAP_OFFSET_Y + 3 * (frameFlangeWidth / 12);
+
+  return {
+    x: width / 2,
+    y: (top + bottom) / 2,
+    width: width,
+    height: bottom - top,
+  };
 }
 
 
@@ -106,7 +104,7 @@ const generateSupports = (data: Array<PurlinData>, zoom: number, frameFlangeWidt
   const supportPositions = calculateSupportPositions(data, PURLIN_LAP_OFFSET_Y, PURLIN_HEIGHT);
   const numberSupport = supportPositions.length;
 
-  const w = frameFlangeWidth / 12;  // Convert to ft
+  const w = frameFlangeWidth / 12;
   const h = 3 * w;
   const tf = w / 13.7;
   const tw = (h - 2 * tf) / 49.6;

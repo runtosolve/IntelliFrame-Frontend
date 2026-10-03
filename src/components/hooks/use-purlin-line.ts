@@ -30,17 +30,15 @@ export const INITIAL_PURLIN_STATE: PurLinLineState = {
   frameFlangeWidth: 6, 
 }
 
-// Use only the following props for now:
-// span length, lap length, and cross-section type
 export type PurLinLineState = {
   loadDirection: string,
-  roofSlope: number, // unit: degrees
+  roofSlope: number,
   deckType: string, 
   crossSection: string, 
-  spans: Array<{id: string, value: number}>, // unit: ft
-  lapLength: number, // unit: ft
-  spacing: number, // unit: ft
-  frameFlangeWidth: number, // unit: in.
+  spans: Array<{id: string, value: number}>,
+  lapLength: number,
+  spacing: number,
+  frameFlangeWidth: number,
 }
 
 export type PurLinLineStateDispatch = Dispatch<ReducerAction>

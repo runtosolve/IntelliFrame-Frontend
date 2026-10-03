@@ -13,14 +13,17 @@ export default function ReportView({
 }) {
   if (!output) {
     return (
-      <div className="flex items-center justify-center h-[70vh] bg-white rounded-lg shadow-sm">
-        <Empty description="Run a calculation first to generate the report" />
+      <div className="report-empty">
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="Run an analysis to generate the engineering report"
+        />
       </div>
     );
   }
 
   return (
-    <div className="w-full h-[80vh] rounded-lg overflow-hidden shadow-sm">
+    <div className="report-shell">
       <PDFViewer width="100%" height="100%" showToolbar>
         <ReportDocument input={input} output={output} />
       </PDFViewer>

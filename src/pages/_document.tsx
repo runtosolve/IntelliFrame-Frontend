@@ -13,7 +13,6 @@ export default function MyDocument() {
   )
 }
 
-// Inline antd cssinjs styles on the server so components render styled on first paint
 MyDocument.getInitialProps = async (ctx: DocumentContext) => {
   const cache = createCache()
   const originalRenderPage = ctx.renderPage

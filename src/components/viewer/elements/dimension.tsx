@@ -9,13 +9,11 @@ export default function DistanceDimension({startPoint, endPoint, distanceValue, 
   const fontSize = 14 * scale
   const lineWidth = 0.5 * scale
 
-  // Convert to local coordinate
   const distance = Math.sqrt(Math.pow(endPoint.x - startPoint.x, 2) + Math.pow(endPoint.y - startPoint.y, 2))
   const localStart = {x: 0, y: 0}
   const localEnd = {x: distance, y: 0}
   const globalRotation = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x) * 180.0 / Math.PI
 
-  // Define key 
   const dimStart = {x: localStart.x, y: localStart.y + extensionLength}
   const dimEnd = {x: localEnd.x, y: localEnd.y + extensionLength}
   const extend1Start = {x: localStart.x, y: localStart.y + extendBeyond}
@@ -23,7 +21,6 @@ export default function DistanceDimension({startPoint, endPoint, distanceValue, 
   const extend2Start = {x: localEnd.x, y: localEnd.y + extendBeyond}
   const extend2End = {x: localEnd.x, y: localEnd.y + extensionLength + extendBeyond}
 
-  // Define text
   if (!distanceValue) distanceValue = distance
   const text = `${distanceValue.toFixed(1)} ${distanceUnit}`
 
@@ -33,7 +30,6 @@ export default function DistanceDimension({startPoint, endPoint, distanceValue, 
       x={startPoint.x}
       y={startPoint.y}
     >
-      {/* Dimension  */}
       <Arrow
         points={[...Object.values(dimStart), ...Object.values(dimEnd)]}
         stroke="#020617"
@@ -44,13 +40,11 @@ export default function DistanceDimension({startPoint, endPoint, distanceValue, 
         pointerAtBeginning={true}
         pointerAtEnding={true}
       />
-      {/* Left extension line */}
       <Line
         points={[...Object.values(extend1Start), ...Object.values(extend1End)]}
         stroke="#020617"
         strokeWidth={lineWidth}
       />
-      {/* Right extension line */}
       <Line
         points={[...Object.values(extend2Start), ...Object.values(extend2End)]}
         stroke="#020617"

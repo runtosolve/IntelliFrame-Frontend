@@ -1,10 +1,5 @@
 import { PurlinData } from "./purlin-view";
 
-/**
- * Convert state's raw span data into format consumable for PurLinView componet
- * @param spans 
- * @param lapLength unit: ft
- */
 export function generatePurlinViewData(spans: Array<{id: string, value: number}>, lapLength: number) {
 
   const data = spans.map((item, index) => {

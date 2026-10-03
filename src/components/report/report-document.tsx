@@ -67,7 +67,7 @@ export default function ReportDocument({
         <Text style={styles.sectionTitle}>Results</Text>
         <View style={{ marginBottom: 8 }}>
           <Text style={{ color: "#555", marginBottom: 2 }}>
-            Allowable gravity roof pressure
+            Allowable roof pressure
           </Text>
           <Text style={styles.bigValue}>
             {output.capacity.value} {output.capacity.unit}

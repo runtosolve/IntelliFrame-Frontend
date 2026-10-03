@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Image from "next/image";
-import logo from "/public/ImetcoLogo.svg";
+import logo from "/public/Imetcologo.svg";
 import { Alert, Button, Input, Modal, Tabs } from "antd";
 import { LockOutlined, MailOutlined, SafetyOutlined } from "@ant-design/icons";
 import { useAuthContext } from "./auth-context";
@@ -15,7 +15,7 @@ export default function LoginModal() {
       onCancel={closeLoginModal}
       footer={null}
       width={400}
-      destroyOnClose
+      destroyOnHidden
     >
       <div className="flex justify-center mt-2 mb-1">
         <Image src={logo} alt="Logo" className="w-40" />
@@ -133,7 +133,6 @@ function SignUpForm({ onDone }: { onDone: () => void }) {
     setPending(true);
     try {
       await confirmSignUp(email.trim(), code.trim());
-      // Account confirmed; sign the user in right away
       try {
         await signIn(email.trim(), password);
         closeLoginModal();

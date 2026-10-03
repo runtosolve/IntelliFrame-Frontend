@@ -17,11 +17,11 @@ export default function SectionView({ purlinName, deckName, rotation = 0 }: Sect
 
   const box = getBoundingBox(purlinSectionLibrary[purlinName]);
 
-  useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom})
+  useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom, padding: SECTION_PADDING })
 
   return (
     <div ref={containerRef} className="absolute w-full h-full">
-      <Stage ref={stageRef} scale={{x: 10, y: 10}}>
+      <Stage ref={stageRef}>
         <Layer>
           {(Object.keys(purlinSectionLibrary).length != 0) && (
             <PurlinCrossSection
@@ -36,6 +36,8 @@ export default function SectionView({ purlinName, deckName, rotation = 0 }: Sect
     </div>
   );
 }
+
+const SECTION_PADDING = { top: 40, bottom: 12 };
 
 type SectionViewProps = {
   purlinName: string,

@@ -4,19 +4,21 @@ import { Button } from "antd";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { InputField } from "./input-field";
 
-export default function DynamicInputFiled({ label, name, value, setField }: DynamicInputFiledProps) {
+export default function DynamicInputFiled({ label, unit, name, value, setField }: DynamicInputFiledProps) {
 
   return (
     <div>
-      <label htmlFor={name} className="block text-[13px] font-medium text-[#555] mb-1">
-        {label}
-      </label>
-      <div className="space-y-3">
+      <div className="field-label">
+        <span>{label}</span>
+        {unit && <span className="field-unit">{unit}</span>}
+      </div>
+      <div className="space-y-2.5">
         {value.map((span, spanIndex) => (
           <div
-            className="flex items-center"
+            className="flex items-center gap-2"
             key={span.id}
             >
+            <span className="span-index" aria-hidden>{spanIndex + 1}</span>
             <InputField
               className="flex-1"
               name={`span-${spanIndex}`}
@@ -29,7 +31,6 @@ export default function DynamicInputFiled({ label, name, value, setField }: Dyna
               }}
             />
             <Button
-              className="ml-4"
               type="text"
               shape="circle"
               danger
@@ -55,6 +56,7 @@ export default function DynamicInputFiled({ label, name, value, setField }: Dyna
 
 type DynamicInputFiledProps = {
   label: string,
+  unit?: string,
   name: string,
   value: Array<{id: string, value: number}>
   setField: (v: Array<{id: string, value: number}>) => void
