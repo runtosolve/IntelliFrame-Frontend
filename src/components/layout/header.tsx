@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import logo from "/public/Imetcologo.svg";
+import logo from "/public/ImetcoLogo.svg";
 import UserProfile from "../user-auth/user-profile";
 
 export default function Header() {
