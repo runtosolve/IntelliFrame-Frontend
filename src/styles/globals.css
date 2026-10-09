@@ -934,9 +934,9 @@ input:focus-visible {
    spans only re-fits the framing layout instead of growing the cross section. */
 .analysis-preview {
   position: sticky;
-  top: 16px;
+  top: calc(var(--header-height) + 16px);
   display: flex;
-  height: clamp(560px, calc(100dvh - var(--header-height) - 72px), 780px);
+  height: clamp(480px, calc(100dvh - var(--header-height) - 48px), 780px);
 }
 
 .preview-card {
@@ -1134,6 +1134,7 @@ input:focus-visible {
 
 .preview-section {
   border-bottom: 1px solid #e1e8ed;
+  scroll-margin-top: calc(var(--header-height) + 56px);
 }
 
 .preview-label {

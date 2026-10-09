@@ -20,7 +20,8 @@ export const INITIAL_PURLIN_STATE: PurLinLineState = {
   loadDirection: "gravity",
   roofSlope: 1 / 12,
   deckType: "SSR Ultra-Dek 18 in. 24 ga",
-  crossSection: "2x4.5x2.5 16g",
+  crossSection: "Z8x2.5 060",
+  intelliFrameSection: "2x4.5x2.5 16g",
   spans: [
     {id: uuidv4(), value: 16},
     {id: uuidv4(), value: 20},
@@ -34,7 +35,8 @@ export type PurLinLineState = {
   loadDirection: string,
   roofSlope: number,
   deckType: string, 
-  crossSection: string, 
+  crossSection: string,
+  intelliFrameSection: string,
   spans: Array<{id: string, value: number}>,
   lapLength: number,
   spacing: number,
@@ -45,7 +47,7 @@ export type PurLinLineStateDispatch = Dispatch<ReducerAction>
 
 type ReducerAction = 
   | { type: "set", field: "roofSlope" | "lapLength" | "spacing" | "frameFlangeWidth", payload: number }
-  | { type: "set", field: "deckType" | "crossSection" | "loadDirection", payload: string }
+  | { type: "set", field: "deckType" | "crossSection" | "intelliFrameSection" | "loadDirection", payload: string }
   | { type: "set", field: "spans", payload: Array<{id: string, value: number}>}
 
 

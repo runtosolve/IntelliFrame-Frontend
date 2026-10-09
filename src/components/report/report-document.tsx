@@ -80,6 +80,7 @@ export default function ReportDocument({
         <Row label="Load direction" value={input.loadDirection} />
         <Row label="Roof slope (deg.)" value={String(input.roofSlope)} />
         <Row label="Cross section" value={input.crossSection} />
+        <Row label="IntelliFrame section" value={input.intelliFrameSection} />
         <Row label="Deck type" value={input.deckType} />
 
         <Text style={styles.sectionTitle}>Geometry</Text>

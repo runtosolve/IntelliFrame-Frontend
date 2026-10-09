@@ -200,11 +200,16 @@ export default function Home() {
             dispatch={inputDataDispatch}
             part="section"
             fixedLoadDirection={direction}
+            sectionCatalog={scope === "retrofit" ? "intelliframe" : "purlin"}
           />
           <ClientInput state={inputData} dispatch={inputDataDispatch} part="geometry" />
         </aside>
         <section className="analysis-preview" aria-label="Model preview">
-          <ViewerCard state={inputData} loadDirection={direction} />
+          <ViewerCard
+            state={inputData}
+            loadDirection={direction}
+            sectionCatalog={scope === "retrofit" ? "intelliframe" : "purlin"}
+          />
         </section>
       </div>
     </div>
@@ -224,8 +229,12 @@ export default function Home() {
             <strong>{inputData.loadDirection === "uplift" ? "Uplift" : "Gravity"}</strong>
           </div>
           <div>
-            <span>Cross section</span>
+            <span>Existing cross section</span>
             <strong>{inputData.crossSection}</strong>
+          </div>
+          <div>
+            <span>IntelliFrame section</span>
+            <strong>{inputData.intelliFrameSection}</strong>
           </div>
           <div>
             <span>Deck</span>

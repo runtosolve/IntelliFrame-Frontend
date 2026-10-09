@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react"
 
-export default function useSectionData(): [PurlinSectionLibrary, DeckSectionLibrary] {
+export default function useSectionData(): [PurlinSectionLibrary, PurlinSectionLibrary, DeckSectionLibrary] {
   const [purlinSectionLibrary, setPurlinSectionLibrary] = useState<PurlinSectionLibrary>({});
+  const [intelliFrameLibrary, setIntelliFrameLibrary] = useState<PurlinSectionLibrary>({});
   const [deckSectionLibrary, setDeckSectionLibrary] = useState<DeckSectionLibrary>({});
 
   useEffect(() => {
-    fetch("/data/IntelliFrameRF.json")
+    fetch("/data/Purlins.json")
       .then((res) => res.json())
       .then((data) => {
         setPurlinSectionLibrary(createSectionLibrary(data) as PurlinSectionLibrary);
+      });
+    fetch("/data/IntelliFrameRF.json")
+      .then((res) => res.json())
+      .then((data) => {
+        setIntelliFrameLibrary(createSectionLibrary(data) as PurlinSectionLibrary);
       });
   }, []);
 
@@ -21,7 +27,7 @@ export default function useSectionData(): [PurlinSectionLibrary, DeckSectionLibr
   }, []);
 
 
-  return [purlinSectionLibrary, deckSectionLibrary];
+  return [purlinSectionLibrary, intelliFrameLibrary, deckSectionLibrary];
 }
 
 

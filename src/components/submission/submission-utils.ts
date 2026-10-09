@@ -1,10 +1,8 @@
 import { PurLinLineState } from "../hooks/use-purlin-line";
 
-const DEFAULT_EXISTING_PURLIN = "Z8x2.5 060";
-
 export function mapGeometryToJSON(state: PurLinLineState) {
   return JSON.stringify({
-    purlin_types: [DEFAULT_EXISTING_PURLIN],
+    purlin_types: [state.crossSection],
     purlin_spans: state.spans.map(item => item.value),
     purlin_size_span_assignment: state.spans.map(() => 1),
     purlin_laps: Array(2 * (state.spans.length - 1)).fill(state.lapLength / 2),
@@ -13,7 +11,7 @@ export function mapGeometryToJSON(state: PurLinLineState) {
     roof_slope: state.roofSlope,
     deck_type: state.deckType,
     loading_direction: state.loadDirection,
-    intelli_frame_type: state.crossSection,
+    intelli_frame_type: state.intelliFrameSection,
     purlin_frame_connection: "Clip-mounted",
   });
 }

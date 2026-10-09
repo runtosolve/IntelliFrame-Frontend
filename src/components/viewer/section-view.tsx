@@ -1,11 +1,11 @@
 import Konva from "konva";
 import { useEffect, useRef, useState } from "react";
 import { Layer, Rect, Stage } from "react-konva";
-import { PurlinCrossSection } from "@/components/viewer/elements/cross-section";
+import { getSectionCoordinates, PurlinCrossSection } from "@/components/viewer/elements/cross-section";
 import useSectionData, { PurlinSectionData } from "@/components/hooks/use-section-data";
 import { useResponsiveStage } from "../hooks/use-responsive-stage";
 
-export default function SectionView({ purlinName, deckName, rotation = 0 }: SectionViewProps) {
+export default function SectionView({ purlinName, deckName, catalog = "purlin", rotation = 0 }: SectionViewProps) {
 
   const name = "Z10x2.5 060"
 
@@ -13,9 +13,11 @@ export default function SectionView({ purlinName, deckName, rotation = 0 }: Sect
   const containerRef = useRef<HTMLDivElement>(null!);
   const stageRef = useRef<Konva.Stage>(null!);
   
-  const [purlinSectionLibrary, deckSectionLibrary] = useSectionData();
+  const [purlinSectionLibrary, intelliFrameLibrary] = useSectionData();
+  const sectionLibrary = catalog === "intelliframe" ? intelliFrameLibrary : purlinSectionLibrary;
+  const section = sectionLibrary[purlinName];
 
-  const box = getBoundingBox(purlinSectionLibrary[purlinName]);
+  const box = getBoundingBox(section);
 
   useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom, padding: SECTION_PADDING })
 
@@ -23,12 +25,12 @@ export default function SectionView({ purlinName, deckName, rotation = 0 }: Sect
     <div ref={containerRef} className="absolute w-full h-full">
       <Stage ref={stageRef}>
         <Layer>
-          {(Object.keys(purlinSectionLibrary).length != 0) && (
+          {section && (
             <PurlinCrossSection
               x={0}
               y={0}
               rotation={rotation}
-              data={purlinSectionLibrary[purlinName]}
+              data={section}
             />
           )}
         </Layer>
@@ -37,34 +39,36 @@ export default function SectionView({ purlinName, deckName, rotation = 0 }: Sect
   );
 }
 
-const SECTION_PADDING = { top: 40, bottom: 12 };
+const SECTION_PADDING = { top: 40, bottom: 24, left: 28, right: 28 };
 
 type SectionViewProps = {
   purlinName: string,
   deckName: string,
+  catalog?: "purlin" | "intelliframe",
   rotation: number,
 }
 
 function getBoundingBox(data: PurlinSectionData) {
-  if (data) {
-    const bottom = data.B_bottom ?? data.B;
-    const top = data.B_top ?? data.B;
-    const lipReach = top + data.D * Math.cos(data.lipAngle * Math.PI / 180);
-    const framed = data.B_bottom != null || data.B_top != null;
-    const width = framed ? Math.max(bottom, lipReach) : (data.shape == "C" ? data.B : 2 * data.B);
-    return ({
-      x: framed || data.shape == "C" ? width / 2 : 0,
-      y: data.H / 2,
-      width,
-      height: data.H,
-    });
+  if (!data) {
+    return { x: 0, y: 0, width: 10, height: 10 };
   }
-  else {
-    return ({
-      x: 0,
-      y: 0,
-      width: 10,
-      height: 10,
-    });
-  } 
+
+  const points = getSectionCoordinates(data);
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  points.forEach((point) => {
+    minX = Math.min(minX, point.x);
+    maxX = Math.max(maxX, point.x);
+    minY = Math.min(minY, point.y);
+    maxY = Math.max(maxY, point.y);
+  });
+
+  return {
+    x: (minX + maxX) / 2,
+    y: (minY + maxY) / 2,
+    width: Math.max(maxX - minX, 0.1),
+    height: Math.max(maxY - minY, 0.1),
+  };
 }

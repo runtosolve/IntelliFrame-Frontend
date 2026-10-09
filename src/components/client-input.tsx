@@ -5,7 +5,8 @@ import { PurLinLineState, PurLinLineStateDispatch, INITIAL_PURLIN_STATE } from "
 import React from "react";
 import { Card, Tag } from "antd";
 import dynamic from "next/dynamic";
-import purlinData from "../data/IntelliFrameRF.json";
+import purlinData from "../data/Purlins.json";
+import intelliFrameData from "../data/IntelliFrameRF.json";
 import deckData from "../data/Decks.json";
 import { generatePurlinViewData } from "./viewer/purlin-view-utils";
 import {
@@ -23,7 +24,8 @@ const SectionViewNoSSR = dynamic(() => import("@/components/viewer/section-view"
 });
 
 
-export function ViewerCard({ state, loadDirection = state.loadDirection }: ViewerCardProps) {
+export function ViewerCard({ state, loadDirection = state.loadDirection, sectionCatalog = "purlin" }: ViewerCardProps) {
+  const sectionName = sectionCatalog === "intelliframe" ? state.intelliFrameSection : state.crossSection;
   return (
     <Card
       title={
@@ -42,8 +44,9 @@ export function ViewerCard({ state, loadDirection = state.loadDirection }: Viewe
         <div className="preview-section">
           <div className="preview-label">Cross section</div>
           <SectionViewNoSSR
-            purlinName={state.crossSection}
+            purlinName={sectionName}
             deckName={state.deckType}
+            catalog={sectionCatalog}
             rotation={-state.roofSlope}
           />
         </div>
@@ -60,7 +63,8 @@ export function ViewerCard({ state, loadDirection = state.loadDirection }: Viewe
   );
 }
 
-export default function ClientInput({state, dispatch, part, fixedLoadDirection}: ClientInputProps) {
+export default function ClientInput({state, dispatch, part, fixedLoadDirection, sectionCatalog = "purlin"}: ClientInputProps) {
+  const intelliFrame = sectionCatalog === "intelliframe";
   return (
     <Card
       title={
@@ -115,11 +119,11 @@ export default function ClientInput({state, dispatch, part, fixedLoadDirection}:
             <LabelledSelectField
               label="Cross section"
               name="crossSection"
-              value={state.crossSection}
-              options={CROSS_SECTION_OPTIONS}
+              value={intelliFrame ? state.intelliFrameSection : state.crossSection}
+              options={intelliFrame ? INTELLI_FRAME_OPTIONS : CROSS_SECTION_OPTIONS}
               onChange={(value) => dispatch({
                 type: "set",
-                field: "crossSection",
+                field: intelliFrame ? "intelliFrameSection" : "crossSection",
                 payload: value
               })}
             />
@@ -196,9 +200,12 @@ export default function ClientInput({state, dispatch, part, fixedLoadDirection}:
 
 type LoadDirection = "gravity" | "uplift";
 
+type SectionCatalog = "purlin" | "intelliframe";
+
 type ViewerCardProps = {
   state: PurLinLineState,
   loadDirection?: string,
+  sectionCatalog?: SectionCatalog,
 }
 
 type ClientInputProps = {
@@ -206,6 +213,7 @@ type ClientInputProps = {
   dispatch: PurLinLineStateDispatch,
   part: "section" | "geometry",
   fixedLoadDirection?: LoadDirection,
+  sectionCatalog?: SectionCatalog,
 }
 
 const LOAD_DIRECTION_OPTIONS = [
@@ -215,6 +223,10 @@ const LOAD_DIRECTION_OPTIONS = [
 
 
 const CROSS_SECTION_OPTIONS = purlinData.map(item => {
+  return {label: item.name, value: item.name}
+});
+
+const INTELLI_FRAME_OPTIONS = intelliFrameData.map(item => {
   return {label: item.name, value: item.name}
 });
 
