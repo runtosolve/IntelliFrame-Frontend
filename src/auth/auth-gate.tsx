@@ -46,7 +46,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       <AuthShell>
         <span className="auth-icon"><SafetyCertificateOutlined /></span>
         <span className="auth-eyebrow">Engineering workspace</span>
-        <h1>PurlinLine</h1>
+        <h1>IntelliFrame RF</h1>
       </AuthShell>
     );
   }
@@ -56,7 +56,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       <AuthShell>
         <span className="auth-icon"><SafetyCertificateOutlined /></span>
         <span className="auth-eyebrow">Engineering workspace</span>
-        <h1>Welcome to PurlinLine</h1>
+        <h1>Welcome to IntelliFrame RF</h1>
         <p>
           Open the calculator to check purlin lines and generate engineering reports.
         </p>

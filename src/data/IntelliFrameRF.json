@@ -1,0 +1,44 @@
+[
+  {
+    "name": "2x4.5x2.5 16g",
+    "shape": "C",
+    "D": 0.5,
+    "B": 2,
+    "B_bottom": 2,
+    "B_top": 2.5,
+    "H": 4.5,
+    "t": 0.06,
+    "r": 0.18,
+    "webAngle": 90,
+    "flangeAngle": 0,
+    "lipAngle": -45
+  },
+  {
+    "name": "2x4.5x2.5 14g",
+    "shape": "C",
+    "D": 0.5,
+    "B": 2,
+    "B_bottom": 2,
+    "B_top": 2.5,
+    "H": 4.5,
+    "t": 0.071,
+    "r": 0.213,
+    "webAngle": 90,
+    "flangeAngle": 0,
+    "lipAngle": -45
+  },
+  {
+    "name": "2x4.5x2.5 12g",
+    "shape": "C",
+    "D": 0.5,
+    "B": 2,
+    "B_bottom": 2,
+    "B_top": 2.5,
+    "H": 4.5,
+    "t": 0.105,
+    "r": 0.315,
+    "webAngle": 90,
+    "flangeAngle": 0,
+    "lipAngle": -45
+  }
+]

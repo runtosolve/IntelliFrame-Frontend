@@ -835,6 +835,42 @@ input:focus-visible {
   min-height: 0;
 }
 
+.summary-chart-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.summary-chart-switch button {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: #40566b;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+}
+
+.summary-chart-switch button:hover {
+  background: var(--blue-soft);
+}
+
+.summary-chart-switch button:focus-visible {
+  outline: 3px solid rgba(23, 95, 136, 0.28);
+  outline-offset: 2px;
+}
+
+.summary-chart-switch button.active {
+  color: #fff;
+  border-color: transparent;
+  background:
+    radial-gradient(circle at 112% -30%, rgba(143, 196, 216, 0.55), transparent 7rem),
+    linear-gradient(112deg, #102f4c, #1f5278);
+}
+
 .stale-alert {
   border-radius: 14px;
   align-items: center;
@@ -1020,6 +1056,19 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.field-locked {
+  min-height: 32px;
+  padding: 4px 11px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #d6e0e8;
+  border-radius: 8px;
+  background: #f4f7f9;
+  color: var(--navy-dark);
+  font-size: 14px;
+  font-weight: 650;
 }
 
 .field-label {

@@ -12,14 +12,14 @@ import {
 
 const BLANK = <span className="text-slate-300">—</span>;
 
-export function DeflectionCard({ output }: ResultsDisplayProps) {
+export function DeflectionCard({ output, title }: ResultsDisplayProps & { title?: string }) {
   return (
     <Card
       title={
         <div className="card-title">
           <AreaChartOutlined aria-hidden />
           <div>
-            <span>Purlin deflection and failure location</span>
+            <span>{title ?? "Purlin deflection and failure location"}</span>
             <small>Deflected shape with the governing failure point</small>
           </div>
         </div>

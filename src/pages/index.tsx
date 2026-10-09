@@ -10,7 +10,6 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Alert, Button, Card, Input, Tag } from "antd";
 import {
   BarChartOutlined,
-  BuildOutlined,
   ExperimentOutlined,
   ExclamationCircleOutlined,
   FileTextOutlined,
@@ -18,13 +17,22 @@ import {
   HomeOutlined,
   SafetyCertificateOutlined,
 } from "@ant-design/icons";
-import { mapStateToJSON } from "@/components/submission/submission-utils";
+import { mapGeometryToJSON } from "@/components/submission/submission-utils";
 
 const ReportViewNoSSR = dynamic(() => import("@/components/report/report-view"), {
   ssr: false,
 });
 
 const DEV_MODE = false;
+
+type AnalysisRunKey = "existing-gravity" | "existing-uplift" | "retrofit-gravity" | "retrofit-uplift";
+
+const SUMMARY_RUNS: Array<{ key: AnalysisRunKey; title: string; direction: "gravity" | "uplift" }> = [
+  { key: "existing-gravity", title: "Gravity - Existing roof analysis", direction: "gravity" },
+  { key: "existing-uplift", title: "Uplift - Existing roof analysis", direction: "uplift" },
+  { key: "retrofit-gravity", title: "Gravity - Retrofitted roof analysis", direction: "gravity" },
+  { key: "retrofit-uplift", title: "Uplift - Retrofitted roof analysis", direction: "uplift" },
+];
 
 type ProjectInfo = {
   projectName: string;
@@ -59,9 +67,11 @@ export default function Home() {
   const [inputData, inputDataDispatch] = usePurlinLine();
   const DEV_DATA = processRawData(inputData, SAMPLE_RAW_DATA);
   const [outputData, setOutputData] = useState<AnalaysisData | null>(!DEV_MODE ? null : DEV_DATA);
-  const [runs, setRuns] = useState<Record<"gravity" | "uplift", AnalaysisData | null>>({
-    gravity: !DEV_MODE ? null : DEV_DATA,
-    uplift: null,
+  const [runs, setRuns] = useState<Record<AnalysisRunKey, AnalaysisData | null>>({
+    "existing-gravity": !DEV_MODE ? null : DEV_DATA,
+    "existing-uplift": null,
+    "retrofit-gravity": null,
+    "retrofit-uplift": null,
   });
   const [activeTab, setActiveTab] = useState("project");
   const [project, setProject] = useState<ProjectInfo>({
@@ -72,20 +82,26 @@ export default function Home() {
     revisionNo: "",
   });
   const [analyzedInput, setAnalyzedInput] = useState<string | null>(
-    !DEV_MODE ? null : mapStateToJSON(inputData)
+    !DEV_MODE ? null : mapGeometryToJSON(inputData)
+  );
+  const [selectedRunKey, setSelectedRunKey] = useState<AnalysisRunKey | null>(
+    !DEV_MODE ? null : "existing-gravity"
   );
 
   const handleResult = (result: AnalaysisData | null, submittedInput?: string) => {
-    const direction = activeTab.includes("uplift") ? "uplift" : "gravity";
-    setRuns((current) => ({ ...current, [direction]: result }));
+    const runKey = SUMMARY_RUNS.find((run) => run.key === activeTab)?.key;
+    if (runKey) {
+      setRuns((current) => ({ ...current, [runKey]: result }));
+      if (result) setSelectedRunKey(runKey);
+    }
     setOutputData(result);
-    setAnalyzedInput(result ? submittedInput ?? null : null);
+    setAnalyzedInput(result ? submittedInput ?? mapGeometryToJSON(inputData) : null);
   };
 
   useEffect(() => {
-    const direction = activeTab === "existing-uplift"
+    const direction = activeTab.endsWith("-uplift")
       ? "uplift"
-      : activeTab === "existing-gravity"
+      : activeTab.endsWith("-gravity")
         ? "gravity"
         : null;
     if (direction && inputData.loadDirection !== direction) {
@@ -93,7 +109,11 @@ export default function Home() {
     }
   }, [activeTab, inputData.loadDirection, inputDataDispatch]);
 
-  const isStale = outputData !== null && analyzedInput !== mapStateToJSON(inputData);
+  const isStale = outputData !== null && analyzedInput !== mapGeometryToJSON(inputData);
+  const completedRuns = SUMMARY_RUNS.filter((run) => runs[run.key]);
+  const selectedRun = completedRuns.find((run) => run.key === selectedRunKey)
+    ?? completedRuns[completedRuns.length - 1]
+    ?? null;
 
   const pageHeading = (kicker: string, title: string, description: string, action?: ReactNode) => (
     <div className="analysis-toolbar">
@@ -159,20 +179,32 @@ export default function Home() {
     </div>
   );
 
-  const buildPage = (
+  const buildCasePage = (scope: "existing" | "retrofit", direction: "gravity" | "uplift") => (
     <div className="analysis-workspace">
       {pageHeading(
-        "Build",
-        "Section, geometry, and preview",
-        "Set the purlin section and framing geometry. The preview updates as you edit."
+        scope === "existing" ? "Existing roof analysis" : "Retrofitted roof analysis",
+        direction === "gravity" ? "Gravity build" : "Uplift build",
+        direction === "gravity"
+          ? "Set the purlin section and framing geometry. Load direction is gravity, and the framing layout shows the load downward."
+          : "Set the purlin section and framing geometry. Load direction is uplift, and the framing layout shows the load upward.",
+        <SubmitButton
+          input={{ ...inputData, loadDirection: direction }}
+          analysisType={scope}
+          onUpdate={handleResult}
+        />
       )}
       <div className="analysis-grid">
         <aside className="analysis-sidebar" aria-label="Purlin inputs">
-          <ClientInput state={inputData} dispatch={inputDataDispatch} part="section" />
+          <ClientInput
+            state={inputData}
+            dispatch={inputDataDispatch}
+            part="section"
+            fixedLoadDirection={direction}
+          />
           <ClientInput state={inputData} dispatch={inputDataDispatch} part="geometry" />
         </aside>
         <section className="analysis-preview" aria-label="Model preview">
-          <ViewerCard state={inputData} />
+          <ViewerCard state={inputData} loadDirection={direction} />
         </section>
       </div>
     </div>
@@ -183,7 +215,7 @@ export default function Home() {
       {pageHeading(
         "Methods",
         "Analysis basis",
-        "Load direction is set on Build. Existing roof runs each direction separately."
+        "Load direction is fixed on each build tab. Gravity and uplift are set up separately."
       )}
       <Card className="surface-card">
         <div className="method-list">
@@ -204,68 +236,6 @@ export default function Home() {
     </div>
   );
 
-  const directionResults = (direction: "gravity" | "uplift") => (
-    <>
-      <ResultStats output={runs[direction]} direction={direction} />
-      <DeflectionCard output={runs[direction]} />
-    </>
-  );
-
-  const existingPage = (direction: "gravity" | "uplift") => (
-    <div className="analysis-workspace">
-      {pageHeading(
-        "Existing roof analysis",
-        direction === "gravity" ? "Gravity" : "Uplift",
-        `Run the existing roof for ${direction}. Inputs come from Build.`,
-        <SubmitButton
-          input={{ ...inputData, loadDirection: direction }}
-          onUpdate={handleResult}
-        />
-      )}
-      <Card className="surface-card">
-        <div className="method-list">
-          <div>
-            <span>Cross section</span>
-            <strong>{inputData.crossSection}</strong>
-          </div>
-          <div>
-            <span>Deck</span>
-            <strong>{inputData.deckType}</strong>
-          </div>
-          <div>
-            <span>Spans</span>
-            <strong>{inputData.spans.map((span) => span.value).join(", ")} ft</strong>
-          </div>
-          <div>
-            <span>Lap length</span>
-            <strong>{inputData.lapLength} ft</strong>
-          </div>
-          <div>
-            <span>Spacing</span>
-            <strong>{inputData.spacing} ft</strong>
-          </div>
-          <div>
-            <span>Frame flange width</span>
-            <strong>{inputData.frameFlangeWidth} in</strong>
-          </div>
-        </div>
-        <Button type="link" onClick={() => setActiveTab("build")}>Edit on Build</Button>
-      </Card>
-      {directionResults(direction)}
-    </div>
-  );
-
-  const retrofitPage = (direction: "gravity" | "uplift") => (
-    <div className="summary-workspace">
-      {pageHeading(
-        "Retrofitted roof analysis",
-        direction === "gravity" ? "Gravity" : "Uplift",
-        "Allowable pressure, governing limit state, and deflection for this direction."
-      )}
-      {directionResults(direction)}
-    </div>
-  );
-
   const summary = (
     <div className="summary-workspace">
       <div className="summary-heading">
@@ -273,7 +243,7 @@ export default function Home() {
           <span className="section-kicker">Analysis output</span>
           <h1 className="page-title">Summary</h1>
           <p className="page-description">
-            Deflection profile for the latest run.
+            Choose a completed case to view its deflection, roof pressure, limit state, and failure location.
           </p>
         </div>
         {outputData && (
@@ -292,7 +262,7 @@ export default function Home() {
           type="warning"
           showIcon
           message="Inputs have changed since this analysis"
-          description="The chart below reflects the previous inputs. Run the analysis again to bring it up to date."
+          description="The chart and results below reflect the previous inputs. Run the analysis again to bring them up to date."
           action={
             <Button size="small" onClick={() => setActiveTab("existing-gravity")}>
               Back to existing roof
@@ -301,7 +271,34 @@ export default function Home() {
         />
       )}
 
-      <DeflectionCard output={outputData} />
+      {completedRuns.length > 0 && (
+        <div className="summary-chart-switch" role="radiogroup" aria-label="Analysis case">
+          {completedRuns.map((run) => {
+            const selected = selectedRun?.key === run.key;
+            return (
+              <button
+                key={run.key}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                className={selected ? "active" : ""}
+                onClick={() => setSelectedRunKey(run.key)}
+              >
+                {run.title}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      <div id="summary-deflection">
+        <DeflectionCard
+          output={selectedRun ? runs[selectedRun.key] : null}
+          title={selectedRun?.title}
+        />
+      </div>
+      {selectedRun && (
+        <ResultStats output={runs[selectedRun.key]} direction={selectedRun.direction} />
+      )}
     </div>
   );
 
@@ -336,15 +333,14 @@ export default function Home() {
 
   const steps = [
     { key: "project", label: "Project", icon: FolderOpenOutlined, content: projectPage },
-    { key: "build", label: "Build", icon: BuildOutlined, content: buildPage },
     { key: "methods", label: "Methods", icon: ExperimentOutlined, content: methodsPage },
     {
       key: "existing",
       label: "Existing Roof Analysis",
       icon: HomeOutlined,
       children: [
-        { key: "existing-gravity", label: "Gravity", content: existingPage("gravity") },
-        { key: "existing-uplift", label: "Uplift", content: existingPage("uplift") },
+        { key: "existing-gravity", label: "Gravity build", content: buildCasePage("existing", "gravity") },
+        { key: "existing-uplift", label: "Uplift build", content: buildCasePage("existing", "uplift") },
       ],
     },
     {
@@ -352,8 +348,8 @@ export default function Home() {
       label: "Retrofitted Roof Analysis",
       icon: SafetyCertificateOutlined,
       children: [
-        { key: "retrofit-gravity", label: "Gravity", content: retrofitPage("gravity") },
-        { key: "retrofit-uplift", label: "Uplift", content: retrofitPage("uplift") },
+        { key: "retrofit-gravity", label: "Gravity build", content: buildCasePage("retrofit", "gravity") },
+        { key: "retrofit-uplift", label: "Uplift build", content: buildCasePage("retrofit", "uplift") },
       ],
     },
     { key: "summary", label: "Summary", icon: BarChartOutlined, content: summary },
@@ -365,7 +361,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>PurlinLine | IMETCO</title>
+        <title>IntelliFrame RF | IMETCO</title>
         <meta
           name="description"
           content="Purlin line capacity and deflection analysis"
@@ -377,7 +373,7 @@ export default function Home() {
             <div className="workflow-sidebar-heading">
               <span>Design workflow</span>
             </div>
-            <nav className="workflow-nav" aria-label="PurlinLine workflow">
+            <nav className="workflow-nav" aria-label="IntelliFrame RF workflow">
               {steps.map((step) => {
                 const Icon = step.icon;
                 const childSelected = step.children?.some((child) => child.key === activeTab);
@@ -413,7 +409,7 @@ export default function Home() {
             </nav>
             <div className="workflow-sidebar-foot">
               <SafetyCertificateOutlined aria-hidden />
-              <span>Guided purlin line analysis</span>
+              <span>Guided IntelliFrame RF analysis</span>
             </div>
           </aside>
           <div className="workspace-main">

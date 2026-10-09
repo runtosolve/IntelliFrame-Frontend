@@ -47,10 +47,15 @@ type SectionViewProps = {
 
 function getBoundingBox(data: PurlinSectionData) {
   if (data) {
+    const bottom = data.B_bottom ?? data.B;
+    const top = data.B_top ?? data.B;
+    const lipReach = top + data.D * Math.cos(data.lipAngle * Math.PI / 180);
+    const framed = data.B_bottom != null || data.B_top != null;
+    const width = framed ? Math.max(bottom, lipReach) : (data.shape == "C" ? data.B : 2 * data.B);
     return ({
-      x: (data.shape == "C") ? data.B / 2 : 0,
+      x: framed || data.shape == "C" ? width / 2 : 0,
       y: data.H / 2,
-      width: (data.shape == "C") ? data.B : 2 * data.B,
+      width,
       height: data.H,
     });
   }

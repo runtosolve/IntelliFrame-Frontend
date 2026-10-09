@@ -20,7 +20,7 @@ export const INITIAL_PURLIN_STATE: PurLinLineState = {
   loadDirection: "gravity",
   roofSlope: 1 / 12,
   deckType: "SSR Ultra-Dek 18 in. 24 ga",
-  crossSection: "Z8x2.5 060",
+  crossSection: "2x4.5x2.5 16g",
   spans: [
     {id: uuidv4(), value: 16},
     {id: uuidv4(), value: 20},

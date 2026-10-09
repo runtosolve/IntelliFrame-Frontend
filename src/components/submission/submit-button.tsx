@@ -2,18 +2,18 @@ import { useState } from "react";
 import { Button, message } from "antd";
 import { ThunderboltOutlined } from "@ant-design/icons";
 import { PurLinLineState } from "../hooks/use-purlin-line";
-import { mapStateToJSON } from "./submission-utils";
+import { mapGeometryToJSON, mapStateToJSON } from "./submission-utils";
 import { AnalaysisData, processRawData } from "../results/results-display";
 import { API_URL } from "@/config/api";
 
-export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
+export default function SubmitButton({ input, analysisType = "existing", onUpdate }: SubmitButtonProps) {
   const [running, setRunning] = useState(false);
 
   const handleClick = async () => {
     setRunning(true);
     onUpdate(null);
 
-    const submittedInput = mapStateToJSON(input);
+    const submittedInput = mapStateToJSON(input, analysisType);
 
     try {
       const response = await fetch(API_URL, {
@@ -30,7 +30,7 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
       }
 
       const data = await response.json();
-      onUpdate(processRawData(input, data), submittedInput);
+      onUpdate(processRawData(input, data), mapGeometryToJSON(input));
       message.success("Analysis has been completed");
     } catch (err) {
       if (err instanceof TypeError) {
@@ -59,5 +59,6 @@ export default function SubmitButton({ input, onUpdate }: SubmitButtonProps) {
 
 type SubmitButtonProps = {
   input: PurLinLineState;
+  analysisType?: "existing" | "retrofit";
   onUpdate: (data: AnalaysisData | null, analyzedInput?: string) => void;
 };

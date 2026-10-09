@@ -56,7 +56,7 @@ export default function UserProfile() {
               <img src={DEFAULT_AVATAR} alt="" />
             </div>
             <div className="profile-identity">
-              <strong>PurlinLine</strong>
+              <strong>IntelliFrame RF</strong>
               <span>Local session</span>
             </div>
           </div>

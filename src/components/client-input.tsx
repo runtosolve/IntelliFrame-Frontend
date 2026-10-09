@@ -5,7 +5,7 @@ import { PurLinLineState, PurLinLineStateDispatch, INITIAL_PURLIN_STATE } from "
 import React from "react";
 import { Card, Tag } from "antd";
 import dynamic from "next/dynamic";
-import purlinData from "../data/Purlins.json";
+import purlinData from "../data/IntelliFrameRF.json";
 import deckData from "../data/Decks.json";
 import { generatePurlinViewData } from "./viewer/purlin-view-utils";
 import {
@@ -23,7 +23,7 @@ const SectionViewNoSSR = dynamic(() => import("@/components/viewer/section-view"
 });
 
 
-export function ViewerCard({ state }: { state: PurLinLineState }) {
+export function ViewerCard({ state, loadDirection = state.loadDirection }: ViewerCardProps) {
   return (
     <Card
       title={
@@ -52,7 +52,7 @@ export function ViewerCard({ state }: { state: PurLinLineState }) {
           <PurlineViewNoSSR
             purlinData={generatePurlinViewData(state.spans, state.lapLength)}
             frameFlangeWidth={state.frameFlangeWidth}
-            loadDirection={state.loadDirection}
+            loadDirection={loadDirection}
           />
         </div>
       </div>
@@ -60,7 +60,7 @@ export function ViewerCard({ state }: { state: PurLinLineState }) {
   );
 }
 
-export default function ClientInput({state, dispatch, part}: ClientInputProps) {
+export default function ClientInput({state, dispatch, part, fixedLoadDirection}: ClientInputProps) {
   return (
     <Card
       title={
@@ -81,17 +81,26 @@ export default function ClientInput({state, dispatch, part}: ClientInputProps) {
       {part === "section" && (
         <div className="input-section">
           <div className="form-stack">
-            <LabelledSelectField
-              label="Load direction"
-              name="loadDirection"
-              value={state.loadDirection}
-              options={LOAD_DIRECTION_OPTIONS}
-              onChange={(value) => dispatch({
-                type: "set",
-                field: "loadDirection",
-                payload: value
-              })}
-            />
+            {fixedLoadDirection ? (
+              <div>
+                <span id="load-direction-label" className="field-label">Load direction</span>
+                <div className="field-locked" aria-labelledby="load-direction-label">
+                  {fixedLoadDirection === "uplift" ? "Uplift" : "Gravity"}
+                </div>
+              </div>
+            ) : (
+              <LabelledSelectField
+                label="Load direction"
+                name="loadDirection"
+                value={state.loadDirection}
+                options={LOAD_DIRECTION_OPTIONS}
+                onChange={(value) => dispatch({
+                  type: "set",
+                  field: "loadDirection",
+                  payload: value
+                })}
+              />
+            )}
             <LabelledInputField
               label="Roof slope"
               unit="deg"
@@ -185,10 +194,18 @@ export default function ClientInput({state, dispatch, part}: ClientInputProps) {
   );
 }
 
+type LoadDirection = "gravity" | "uplift";
+
+type ViewerCardProps = {
+  state: PurLinLineState,
+  loadDirection?: string,
+}
+
 type ClientInputProps = {
   state: PurLinLineState,
   dispatch: PurLinLineStateDispatch,
   part: "section" | "geometry",
+  fixedLoadDirection?: LoadDirection,
 }
 
 const LOAD_DIRECTION_OPTIONS = [

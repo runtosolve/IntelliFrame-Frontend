@@ -29,7 +29,19 @@ type PurlinCrossSectionProps = {
 function getCeeSectionPoints(data: PurlinSectionData) {
   const {shape, D, B, H, t, r, webAngle, flangeAngle, lipAngle} = data;
   let coordinates: Array<{x: number, y:number}> = [];
-  if (shape === "C") {
+  if (data.B_bottom != null || data.B_top != null) {
+    const bottom = data.B_bottom ?? B;
+    const top = data.B_top ?? B;
+    const lip = lipAngle * Math.PI / 180;
+    coordinates = [
+      {x: bottom, y: 0},
+      {x: 0, y: 0},
+      {x: 0, y: H},
+      {x: top, y: H},
+      {x: top + D * Math.cos(lip), y: H + D * Math.sin(lip)},
+    ];
+  }
+  else if (shape === "C") {
     coordinates = [
       {x: B + D * Math.cos(Math.abs(lipAngle * Math.PI / 180)), y: D * Math.sin(Math.abs(lipAngle * Math.PI / 180))},
       {x: B, y: 0},

@@ -8,12 +8,12 @@ export default function Header() {
     <header className="app-header">
       <div className="app-header-inner">
         <div className="brand-lockup">
-          <Link href="/" className="brand-logo" aria-label="IMETCO PurlinLine home">
+          <Link href="/" className="brand-logo" aria-label="IMETCO IntelliFrame RF home">
             <Image src={logo} alt="IMETCO" priority />
           </Link>
           <span className="brand-divider" aria-hidden />
           <div className="brand-product">
-            <strong>PurlinLine</strong>
+            <strong>IntelliFrame RF</strong>
             <span>Structural analysis</span>
           </div>
         </div>

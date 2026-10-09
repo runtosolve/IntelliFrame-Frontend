@@ -5,7 +5,7 @@ export default function useSectionData(): [PurlinSectionLibrary, DeckSectionLibr
   const [deckSectionLibrary, setDeckSectionLibrary] = useState<DeckSectionLibrary>({});
 
   useEffect(() => {
-    fetch("/data/Purlins.json")
+    fetch("/data/IntelliFrameRF.json")
       .then((res) => res.json())
       .then((data) => {
         setPurlinSectionLibrary(createSectionLibrary(data) as PurlinSectionLibrary);
@@ -38,6 +38,8 @@ export type PurlinSectionData = {
   shape: "C" | "Z",
   D: number,
   B: number,
+  B_bottom?: number,
+  B_top?: number,
   H: number,
   t: number,
   r: number,
