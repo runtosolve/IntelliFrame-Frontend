@@ -4,7 +4,7 @@ import { ThunderboltOutlined } from "@ant-design/icons";
 import { PurLinLineState } from "../hooks/use-purlin-line";
 import { mapGeometryToJSON, mapStateToJSON } from "./submission-utils";
 import { AnalaysisData, processRawData } from "../results/results-display";
-import { API_URL } from "@/config/api";
+import { API_URL, CALCULATE_TIMEOUT_MS } from "@/config/api";
 
 export default function SubmitButton({ input, analysisType = "existing", onUpdate }: SubmitButtonProps) {
   const [running, setRunning] = useState(false);
@@ -14,6 +14,8 @@ export default function SubmitButton({ input, analysisType = "existing", onUpdat
     onUpdate(null);
 
     const submittedInput = mapStateToJSON(input, analysisType);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), CALCULATE_TIMEOUT_MS);
 
     try {
       const response = await fetch(API_URL, {
@@ -22,6 +24,7 @@ export default function SubmitButton({ input, analysisType = "existing", onUpdat
           "Content-Type": "application/json",
         },
         body: submittedInput,
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -33,11 +36,14 @@ export default function SubmitButton({ input, analysisType = "existing", onUpdat
       onUpdate(processRawData(input, data), mapGeometryToJSON(input));
       message.success("Analysis has been completed");
     } catch (err) {
-      if (err instanceof TypeError) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        message.error("Analysis timed out. Please try again.");
+      } else if (err instanceof TypeError) {
         message.error("Sorry, there is a problem with the server");
       }
       console.error(err);
     } finally {
+      window.clearTimeout(timeoutId);
       setRunning(false);
     }
   };
