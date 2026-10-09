@@ -183,7 +183,7 @@ export default function Home() {
     <div className="analysis-workspace">
       {pageHeading(
         scope === "existing" ? "Existing roof analysis" : "Retrofitted roof analysis",
-        direction === "gravity" ? "Gravity build" : "Uplift build",
+        direction === "gravity" ? "Gravity Build" : "Uplift Build",
         direction === "gravity"
           ? "Set the purlin section and framing geometry. Load direction is gravity, and the framing layout shows the load downward."
           : "Set the purlin section and framing geometry. Load direction is uplift, and the framing layout shows the load upward.",
@@ -339,8 +339,8 @@ export default function Home() {
       label: "Existing Roof Analysis",
       icon: HomeOutlined,
       children: [
-        { key: "existing-gravity", label: "Gravity build", content: buildCasePage("existing", "gravity") },
-        { key: "existing-uplift", label: "Uplift build", content: buildCasePage("existing", "uplift") },
+        { key: "existing-gravity", label: "Gravity Build", content: buildCasePage("existing", "gravity") },
+        { key: "existing-uplift", label: "Uplift Build", content: buildCasePage("existing", "uplift") },
       ],
     },
     {
@@ -348,8 +348,8 @@ export default function Home() {
       label: "Retrofitted Roof Analysis",
       icon: SafetyCertificateOutlined,
       children: [
-        { key: "retrofit-gravity", label: "Gravity build", content: buildCasePage("retrofit", "gravity") },
-        { key: "retrofit-uplift", label: "Uplift build", content: buildCasePage("retrofit", "uplift") },
+        { key: "retrofit-gravity", label: "Gravity Build", content: buildCasePage("retrofit", "gravity") },
+        { key: "retrofit-uplift", label: "Uplift Build", content: buildCasePage("retrofit", "uplift") },
       ],
     },
     { key: "summary", label: "Summary", icon: BarChartOutlined, content: summary },
