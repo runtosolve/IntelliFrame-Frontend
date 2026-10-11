@@ -1,5 +1,7 @@
-import * as d3 from "d3";
-import { useEffect, useRef, useState } from 'react'
+import { extent, line, max, min, scaleLinear, symbol, symbolTriangle } from "d3";
+import { useEffect, useMemo, useRef, useState } from 'react'
+
+const SUPPORT_SYMBOL_PATH = symbol().type(symbolTriangle).size(100)();
 
 export default function DeflectionView({data, scale = 50, ...props}) {
 
@@ -54,18 +56,27 @@ function LinePlot({
   const toolTipRef = useRef(null);
   const [currentNodeIndex, setCurNodeIndex] = useState(null);
 
-  const data = []
-  for (let index = 0; index < dataX.length; index++) {
-    data.push({x: dataX[index], y: dataY[index]});
-  }
+  const data = useMemo(
+    () => dataX.map((x, index) => ({ x, y: dataY[index] })),
+    [dataX, dataY],
+  );
 
   const xFailure = dataX[failureAt];
   const yFailure = dataY[failureAt];
 
-  const L = (d3.max(dataX) - d3.min(dataX));
-  const mapX = d3.scaleLinear(d3.extent(dataX), [margin, width - margin]);
-  const mapY = d3.scaleLinear([-L / 2 / deformScale, L / 2 / deformScale], [margin, height - margin]);
-  const line = d3.line((d) => mapX(d.x), (d) => mapY(d.y));
+  const { mapX, mapY } = useMemo(() => {
+    const L = max(dataX) - min(dataX);
+    return {
+      mapX: scaleLinear(extent(dataX), [margin, width - margin]),
+      mapY: scaleLinear([-L / 2 / deformScale, L / 2 / deformScale], [margin, height - margin]),
+    };
+  }, [dataX, width, height, margin, deformScale]);
+
+  const linePath = useMemo(
+    () => line((d) => mapX(d.x), (d) => mapY(d.y))(data),
+    [data, mapX, mapY],
+  );
+  const maxDeflection = useMemo(() => max(dataY), [dataY]);
 
   const handleMouseOverFor = (index) => {
     return ((e) => {
@@ -77,7 +88,6 @@ function LinePlot({
       let toolTipY = 0;
       const toolTipWidth = toolTipRef.current.getBoundingClientRect().width;
       const toolTipHeight = toolTipRef.current.getBoundingClientRect().height;
-      // Update horizontal position
       if (mouseX < rect.width / 2) {
         toolTipX = mapX(dataX[index]) + TOOLTIP_OFFSET;
       }
@@ -85,7 +95,6 @@ function LinePlot({
         toolTipX = mapX(dataX[index]) - toolTipWidth - TOOLTIP_OFFSET;
       }
       toolTipRef.current.style.left = `${(toolTipX).toFixed(0)}px`;
-      // Update vertical position
       if (mouseY < rect.height / 2) {
         toolTipY = mapY(dataY[index]) + TOOLTIP_OFFSET;
       }
@@ -104,12 +113,10 @@ function LinePlot({
     setCurNodeIndex(null);
   };
 
-  const supportSymbolSize = 100
-
   return (
     <div className="relative w-full aspect-[3/1]" ref={containerRef}>
       <svg className="w-full h-full" ref={svgRef}>
-        <path fill="none" stroke="currentColor" strokeWidth={2} d={line(data)} />
+        <path fill="none" stroke="currentColor" strokeWidth={2} d={linePath} />
         <circle
           cx={mapX(xFailure)}
           cy={mapY(yFailure)}
@@ -131,7 +138,7 @@ function LinePlot({
           {supportLocations.map((x) => (
             <path
             key={x}
-            d={d3.symbol().type(d3.symbolTriangle).size(supportSymbolSize)()}
+            d={SUPPORT_SYMBOL_PATH}
             fill="currentColor"
             transform={`translate(${mapX(x)}, ${mapY(0.4)})`}
           />
@@ -147,7 +154,7 @@ function LinePlot({
             <span className="font-semibold">deflection: </span>{currentNodeIndex ? dataY[currentNodeIndex].toPrecision(2) : (0.10)} in.
           </li>
           <li>
-            <span className="font-semibold">max deflection: </span>{d3.max(dataY).toPrecision(2)} in.
+            <span className="font-semibold">max deflection: </span>{maxDeflection.toPrecision(2)} in.
           </li>
         </ul>
       </div>

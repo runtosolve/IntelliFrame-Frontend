@@ -1,10 +1,10 @@
 import DynamicInputFiled from "./form-input/dynamic-input-field";
 import LabelledInputField from "./form-input/input-field";
 import LabelledSelectField from "./form-input/select-field";
-import { PurLinLineState, PurLinLineStateDispatch, INITIAL_PURLIN_STATE } from "./hooks/use-purlin-line";
-import React from "react";
+import { PurLinLineState, PurLinLineStateDispatch } from "./hooks/use-purlin-line";
 import { Card, Tag } from "antd";
 import dynamic from "next/dynamic";
+import { useMemo } from "react";
 import purlinData from "../data/Purlins.json";
 import intelliFrameData from "../data/IntelliFrameRF.json";
 import deckData from "../data/Decks.json";
@@ -26,6 +26,10 @@ const SectionViewNoSSR = dynamic(() => import("@/components/viewer/section-view"
 
 export function ViewerCard({ state, loadDirection = state.loadDirection, sectionCatalog = "purlin" }: ViewerCardProps) {
   const sectionName = sectionCatalog === "intelliframe" ? state.intelliFrameSection : state.crossSection;
+  const purlinViewData = useMemo(
+    () => generatePurlinViewData(state.spans, state.lapLength),
+    [state.spans, state.lapLength],
+  );
   return (
     <Card
       title={
@@ -45,15 +49,16 @@ export function ViewerCard({ state, loadDirection = state.loadDirection, section
           <div className="preview-label">Cross section</div>
           <SectionViewNoSSR
             purlinName={sectionName}
-            deckName={state.deckType}
+            existingName={sectionCatalog === "intelliframe" ? state.crossSection : undefined}
             catalog={sectionCatalog}
             rotation={-state.roofSlope}
+            loadDirection={loadDirection}
           />
         </div>
         <div className="preview-layout">
           <div className="preview-label">Framing layout</div>
           <PurlineViewNoSSR
-            purlinData={generatePurlinViewData(state.spans, state.lapLength)}
+            purlinData={purlinViewData}
             frameFlangeWidth={state.frameFlangeWidth}
             loadDirection={loadDirection}
           />
@@ -63,8 +68,95 @@ export function ViewerCard({ state, loadDirection = state.loadDirection, section
   );
 }
 
-export default function ClientInput({state, dispatch, part, fixedLoadDirection, sectionCatalog = "purlin"}: ClientInputProps) {
+function LockedField({ label, unit, name, value }: { label: string, unit?: string, name: string, value: string }) {
+  return (
+    <div>
+      <span id={`${name}-label`} className="field-label">
+        <span>{label}</span>
+        {unit && <span className="field-unit">{unit}</span>}
+      </span>
+      <div className="field-locked" aria-labelledby={`${name}-label`} aria-readonly="true">
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function LockedSpans({ spans }: { spans: PurLinLineState["spans"] }) {
+  return (
+    <div>
+      <span id="spans-label" className="field-label">
+        <span>Spans</span>
+        <span className="field-unit">ft</span>
+      </span>
+      <div className="space-y-2.5" role="list" aria-labelledby="spans-label">
+        {spans.map((span, index) => (
+          <div key={span.id} className="flex items-center gap-2" role="listitem">
+            <span className="span-index" aria-hidden>{index + 1}</span>
+            <div className="field-locked flex-1" aria-label={`Span ${index + 1}`} aria-readonly="true">
+              {formatNumber(span.value)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function formatNumber(value: number) {
+  return Number.isFinite(value) ? String(Number(value.toFixed(4))) : "—";
+}
+
+export default function ClientInput({state, dispatch, part, fixedLoadDirection, sectionCatalog = "purlin", readOnly = false}: ClientInputProps) {
   const intelliFrame = sectionCatalog === "intelliframe";
+  const sectionValue = intelliFrame ? state.intelliFrameSection : state.crossSection;
+
+  if (readOnly) {
+    return (
+      <Card
+        title={
+          <div className="card-title">
+            {part === "section" ? <CompassOutlined aria-hidden /> : <ApartmentOutlined aria-hidden />}
+            <div>
+              <span>{part === "section" ? "Section" : "Geometry"}</span>
+              <small>Same as Gravity Build · read only</small>
+            </div>
+          </div>
+        }
+        className="surface-card input-card"
+      >
+        <div className="input-section">
+          <div className="form-stack">
+            {part === "section" ? (
+              <>
+                <LockedField
+                  label="Load direction"
+                  name="loadDirection"
+                  value={fixedLoadDirection === "uplift" ? "Uplift" : "Gravity"}
+                />
+                <LockedField label="Roof slope" unit="deg" name="roofSlope" value={formatNumber(state.roofSlope)} />
+                <LockedField label="Cross section" name="crossSection" value={sectionValue} />
+                <LockedField label="Deck type" name="deckType" value={state.deckType} />
+              </>
+            ) : (
+              <>
+                <LockedSpans spans={state.spans} />
+                <LockedField label="Lap length" unit="ft" name="lapLength" value={formatNumber(state.lapLength)} />
+                <LockedField label="Spacing" unit="ft" name="spacing" value={formatNumber(state.spacing)} />
+                <LockedField
+                  label="Frame flange width"
+                  unit="in"
+                  name="frameFlangeWidth"
+                  value={formatNumber(state.frameFlangeWidth)}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card
       title={
@@ -101,7 +193,7 @@ export default function ClientInput({state, dispatch, part, fixedLoadDirection, 
                 onChange={(value) => dispatch({
                   type: "set",
                   field: "loadDirection",
-                  payload: value
+                  payload: value === "uplift" ? "uplift" : "gravity"
                 })}
               />
             )}
@@ -109,7 +201,7 @@ export default function ClientInput({state, dispatch, part, fixedLoadDirection, 
               label="Roof slope"
               unit="deg"
               name="roofSlope"
-              defaultValue={INITIAL_PURLIN_STATE.roofSlope.toFixed(2)}
+              defaultValue={formatNumber(state.roofSlope)}
               setField={(v) => dispatch({
                 type: "set",
                 field: "roofSlope",
@@ -119,7 +211,7 @@ export default function ClientInput({state, dispatch, part, fixedLoadDirection, 
             <LabelledSelectField
               label="Cross section"
               name="crossSection"
-              value={intelliFrame ? state.intelliFrameSection : state.crossSection}
+              value={sectionValue}
               options={intelliFrame ? INTELLI_FRAME_OPTIONS : CROSS_SECTION_OPTIONS}
               onChange={(value) => dispatch({
                 type: "set",
@@ -160,7 +252,7 @@ export default function ClientInput({state, dispatch, part, fixedLoadDirection, 
             label="Lap length"
             unit="ft"
             name="lapLength"
-            defaultValue={INITIAL_PURLIN_STATE.lapLength.toFixed(2)}
+            defaultValue={formatNumber(state.lapLength)}
             minValue={0.5}
             setField={(v) => dispatch({
               type: "set",
@@ -172,7 +264,7 @@ export default function ClientInput({state, dispatch, part, fixedLoadDirection, 
             label="Spacing"
             unit="ft"
             name="spacing"
-            defaultValue={INITIAL_PURLIN_STATE.spacing.toFixed(2)}
+            defaultValue={formatNumber(state.spacing)}
             setField={(v) => dispatch({
               type: "set",
               field: "spacing",
@@ -183,7 +275,7 @@ export default function ClientInput({state, dispatch, part, fixedLoadDirection, 
             label="Frame flange width"
             unit="in"
             name="frameFlangeWidth"
-            defaultValue={INITIAL_PURLIN_STATE.frameFlangeWidth.toFixed(2)}
+            defaultValue={formatNumber(state.frameFlangeWidth)}
             minValue={0.5}
             setField={(v) => dispatch({
               type: "set",
@@ -204,7 +296,7 @@ type SectionCatalog = "purlin" | "intelliframe";
 
 type ViewerCardProps = {
   state: PurLinLineState,
-  loadDirection?: string,
+  loadDirection?: LoadDirection,
   sectionCatalog?: SectionCatalog,
 }
 
@@ -214,6 +306,7 @@ type ClientInputProps = {
   part: "section" | "geometry",
   fixedLoadDirection?: LoadDirection,
   sectionCatalog?: SectionCatalog,
+  readOnly?: boolean,
 }
 
 const LOAD_DIRECTION_OPTIONS = [

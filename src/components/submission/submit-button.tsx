@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button, message } from "antd";
 import { ThunderboltOutlined } from "@ant-design/icons";
 import { PurLinLineState } from "../hooks/use-purlin-line";
-import { mapGeometryToJSON, mapStateToJSON } from "./submission-utils";
+import { mapStateToJSON } from "./submission-utils";
 import { AnalaysisData, processRawData } from "../results/results-display";
 import { API_URL, CALCULATE_TIMEOUT_MS } from "@/config/api";
 
@@ -33,7 +33,7 @@ export default function SubmitButton({ input, analysisType = "existing", onUpdat
       }
 
       const data = await response.json();
-      onUpdate(processRawData(input, data), mapGeometryToJSON(input));
+      onUpdate(processRawData(input, data), input);
       message.success("Analysis has been completed");
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
@@ -66,5 +66,5 @@ export default function SubmitButton({ input, analysisType = "existing", onUpdat
 type SubmitButtonProps = {
   input: PurLinLineState;
   analysisType?: "existing" | "retrofit";
-  onUpdate: (data: AnalaysisData | null, analyzedInput?: string) => void;
+  onUpdate: (data: AnalaysisData | null, submittedInput?: PurLinLineState) => void;
 };

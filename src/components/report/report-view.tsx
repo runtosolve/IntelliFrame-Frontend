@@ -1,17 +1,20 @@
 import { PDFViewer } from "@react-pdf/renderer";
 import { Empty } from "antd";
+import { memo } from "react";
 import { PurLinLineState } from "../hooks/use-purlin-line";
 import { AnalaysisData } from "../results/results-display";
 import ReportDocument from "./report-document";
 
-export default function ReportView({
+export default memo(function ReportView({
   input,
   output,
+  title,
 }: {
-  input: PurLinLineState;
+  input: PurLinLineState | null;
   output: AnalaysisData | null;
+  title?: string;
 }) {
-  if (!output) {
+  if (!input || !output) {
     return (
       <div className="report-empty">
         <Empty
@@ -25,8 +28,8 @@ export default function ReportView({
   return (
     <div className="report-shell">
       <PDFViewer width="100%" height="100%" showToolbar>
-        <ReportDocument input={input} output={output} />
+        <ReportDocument input={input} output={output} title={title} />
       </PDFViewer>
     </div>
   );
-}
+});

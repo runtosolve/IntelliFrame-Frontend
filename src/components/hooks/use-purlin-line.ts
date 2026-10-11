@@ -32,7 +32,7 @@ export const INITIAL_PURLIN_STATE: PurLinLineState = {
 }
 
 export type PurLinLineState = {
-  loadDirection: string,
+  loadDirection: "gravity" | "uplift",
   roofSlope: number,
   deckType: string, 
   crossSection: string,
@@ -47,7 +47,8 @@ export type PurLinLineStateDispatch = Dispatch<ReducerAction>
 
 type ReducerAction = 
   | { type: "set", field: "roofSlope" | "lapLength" | "spacing" | "frameFlangeWidth", payload: number }
-  | { type: "set", field: "deckType" | "crossSection" | "intelliFrameSection" | "loadDirection", payload: string }
+  | { type: "set", field: "deckType" | "crossSection" | "intelliFrameSection", payload: string }
+  | { type: "set", field: "loadDirection", payload: "gravity" | "uplift" }
   | { type: "set", field: "spans", payload: Array<{id: string, value: number}>}
 
 

@@ -1,17 +1,14 @@
 import ClientInput, { ViewerCard } from "@/components/client-input";
 import usePurlinLine from "@/components/hooks/use-purlin-line";
 import Layout from "@/components/layout/layout";
-import { DeflectionCard, ResultStats, AnalaysisData, SAMPLE_RAW_DATA, processRawData } from "@/components/results/results-display";
+import { DeflectionCard, ResultStats, type AnalaysisData } from "@/components/results/results-display";
 import SubmitButton from "@/components/submission/submit-button";
 import Head from "next/head";
 import { useState } from "react";
 
-const DEV_MODE = false;
-
 export default function TopHat() {
   const [inputData, inputDataDispatch] = usePurlinLine();
-  const DEV_DATA = processRawData(inputData, SAMPLE_RAW_DATA);
-  const [outputData, setOutputData] = useState<AnalaysisData | null>(!DEV_MODE ? null : DEV_DATA);
+  const [outputData, setOutputData] = useState<AnalaysisData | null>(null);
 
   return (
     <>

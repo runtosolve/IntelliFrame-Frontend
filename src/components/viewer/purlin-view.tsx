@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Layer, Rect, Stage, Group } from "react-konva";
 import Konva from "konva"
 import { useResponsiveStage } from "../hooks/use-responsive-stage";
@@ -10,21 +10,36 @@ import { calcualtePurlinPosiions, calculateSupportPositions } from "./purlin-vie
 
 export default function PurlinView({ purlinData, frameFlangeWidth, loadDirection }: PurLinViewProps) {
 
-  const box = getBoundingBox(purlinData, frameFlangeWidth);
+  const box = useMemo(() => getBoundingBox(purlinData, frameFlangeWidth), [purlinData, frameFlangeWidth]);
+  const purlinPositions = useMemo(() => calcualtePurlinPosiions(purlinData, PURLIN_LAP_OFFSET_Y), [purlinData]);
+  const supportPositions = useMemo(
+    () => calculateSupportPositions(purlinData, PURLIN_LAP_OFFSET_Y, PURLIN_HEIGHT),
+    [purlinData],
+  );
 
   const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null!);
   const stageRef = useRef<Konva.Stage>(null!);
 
-  useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom, padding: STAGE_PADDING })
+  const ready = useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom, padding: STAGE_PADDING })
+
+  const purlins = useMemo(() => generatePurlins(purlinData, purlinPositions, zoom), [purlinData, purlinPositions, zoom]);
+  const supports = useMemo(
+    () => generateSupports(supportPositions, zoom, frameFlangeWidth),
+    [supportPositions, zoom, frameFlangeWidth],
+  );
+  const uniformLoad = useMemo(
+    () => generateUniformLoad(supportPositions, zoom, loadDirection === "uplift"),
+    [supportPositions, zoom, loadDirection],
+  );
 
   return (
-    <div ref={containerRef} className="w-full h-full">
+    <div ref={containerRef} className="w-full h-full" style={{ visibility: ready ? "visible" : "hidden" }}>
       <Stage ref={stageRef}>
-        <Layer>
-          {generatePurlins(purlinData, zoom)}
-          {generateSupports(purlinData, zoom, frameFlangeWidth)}
-          {generateUniformLoad(purlinData, zoom, loadDirection === "uplift")}
+        <Layer listening={false}>
+          {purlins}
+          {supports}
+          {uniformLoad}
         </Layer>
       </Stage>
     </div>
@@ -32,10 +47,6 @@ export default function PurlinView({ purlinData, frameFlangeWidth, loadDirection
 }
 
 const PURLIN_STYLE = {
-  stroke: "#1e293b",
-  fillEnabled: false,
-}
-const SUPPORT_STYLE = {
   stroke: "#1e293b",
   fillEnabled: false,
 }
@@ -62,8 +73,8 @@ function getBoundingBox(data: Array<PurlinData>, frameFlangeWidth: number) {
 }
 
 
-const generateUniformLoad = (data: Array<PurlinData>, zoom: number, isUplift = false) => {
-  const supportPositions = calculateSupportPositions(data, PURLIN_LAP_OFFSET_Y, PURLIN_HEIGHT);
+const generateUniformLoad = (supportPositions: Array<Point>, zoom: number, isUplift = false) => {
+  if (supportPositions.length === 0) return null;
   const loadWidth = Math.max(...supportPositions.map(item => item.x)) - Math.min(...supportPositions.map(item => item.x));
 
   return (
@@ -79,15 +90,12 @@ const generateUniformLoad = (data: Array<PurlinData>, zoom: number, isUplift = f
 }
 
 
-const generatePurlins = (data: Array<PurlinData>, zoom: number) => {
-  
-  const purlinPositions = calcualtePurlinPosiions(data, PURLIN_LAP_OFFSET_Y);
-
+const generatePurlins = (data: Array<PurlinData>, purlinPositions: Array<Point>, zoom: number) => {
   return (
     purlinPositions.map((item, index) => {
     return (
       <Rect
-        key={item.x}
+        key={`${data[index].id}-${index}`}
         x={item.x}
         y={item.y}
         width={data[index].length}
@@ -100,8 +108,7 @@ const generatePurlins = (data: Array<PurlinData>, zoom: number) => {
 }
 
 
-const generateSupports = (data: Array<PurlinData>, zoom: number, frameFlangeWidth: number) => {
-  const supportPositions = calculateSupportPositions(data, PURLIN_LAP_OFFSET_Y, PURLIN_HEIGHT);
+const generateSupports = (supportPositions: Array<Point>, zoom: number, frameFlangeWidth: number) => {
   const numberSupport = supportPositions.length;
 
   const w = frameFlangeWidth / 12;
@@ -109,21 +116,19 @@ const generateSupports = (data: Array<PurlinData>, zoom: number, frameFlangeWidt
   const tf = w / 13.7;
   const tw = (h - 2 * tf) / 49.6;
 
-  let dimensionOn = true
   const dimensionObjsArr: Array<{startPoint: {x: number, y: number}, endPoint: {x: number, y: number}}> = []
   const dimensionY = PURLIN_HEIGHT + PURLIN_LAP_OFFSET_Y + h
   for (let index = 0; index < (numberSupport - 1); index++) {
-    if (index == (numberSupport - 1)) continue;
-    let startPoint = {x: supportPositions[index].x, y: dimensionY};
-    let endPoint = {x: supportPositions[index + 1].x, y: dimensionY};
+    const startPoint = {x: supportPositions[index].x, y: dimensionY};
+    const endPoint = {x: supportPositions[index + 1].x, y: dimensionY};
     dimensionObjsArr.push({startPoint, endPoint});
   }
 
   return (
     <Group>
-      {supportPositions.map((item) => (
+      {supportPositions.map((item, index) => (
         <SteelBeam
-          key={item.x}
+          key={`${item.x}-${index}`}
           x={item.x}
           y={PURLIN_HEIGHT + PURLIN_LAP_OFFSET_Y}
           w={w}
@@ -133,23 +138,25 @@ const generateSupports = (data: Array<PurlinData>, zoom: number, frameFlangeWidt
           strokeWidth={1 / zoom}
         />
       ))}
-      {dimensionOn && (dimensionObjsArr.map(item => (
+      {dimensionObjsArr.map((item, index) => (
         <DistanceDimension
-          key={item.startPoint.x}
+          key={`${item.startPoint.x}-${index}`}
           distanceUnit="ft."
           scale={1 / zoom}
           {...item}
         />
-      )))}
+      ))}
     </Group>
   );
 }
 
 
+type Point = { x: number, y: number };
+
 type PurLinViewProps = {
   purlinData: Array<PurlinData>,
   frameFlangeWidth: number,
-  loadDirection: string,
+  loadDirection: "gravity" | "uplift",
 }
 
 

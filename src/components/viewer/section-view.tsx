@@ -1,36 +1,55 @@
 import Konva from "konva";
-import { useEffect, useRef, useState } from "react";
-import { Layer, Rect, Stage } from "react-konva";
-import { getSectionCoordinates, PurlinCrossSection } from "@/components/viewer/elements/cross-section";
-import useSectionData, { PurlinSectionData } from "@/components/hooks/use-section-data";
+import { useMemo, useRef, useState } from "react";
+import { Layer, Stage } from "react-konva";
+import { getSectionDrawing, SectionDrawingView } from "@/components/viewer/elements/cross-section";
+import { getDimensionLayout } from "@/components/viewer/elements/section-dimensions";
+import useSectionData from "@/components/hooks/use-section-data";
 import { useResponsiveStage } from "../hooks/use-responsive-stage";
 
-export default function SectionView({ purlinName, deckName, catalog = "purlin", rotation = 0 }: SectionViewProps) {
-
-  const name = "Z10x2.5 060"
-
+export default function SectionView({
+  purlinName,
+  existingName,
+  catalog = "purlin",
+  rotation = 0,
+  loadDirection = "gravity",
+}: SectionViewProps) {
   const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null!);
   const stageRef = useRef<Konva.Stage>(null!);
-  
+
   const [purlinSectionLibrary, intelliFrameLibrary] = useSectionData();
-  const sectionLibrary = catalog === "intelliframe" ? intelliFrameLibrary : purlinSectionLibrary;
-  const section = sectionLibrary[purlinName];
+  const retrofit = catalog === "intelliframe";
+  const section = retrofit ? intelliFrameLibrary[purlinName] : purlinSectionLibrary[purlinName];
+  const existing = retrofit && existingName ? purlinSectionLibrary[existingName] : undefined;
 
-  const box = getBoundingBox(section);
+  const drawing = useMemo(() => (section ? getSectionDrawing(section, existing) : undefined), [section, existing]);
+  const layout = useMemo(() => (drawing ? getDimensionLayout(drawing) : undefined), [drawing]);
+  const box = layout
+    ? {
+      x: layout.bounds.cx,
+      y: layout.bounds.cy,
+      width: layout.bounds.maxX - layout.bounds.minX,
+      height: layout.bounds.maxY - layout.bounds.minY,
+    }
+    : { x: 0, y: 0, width: 10, height: 10 };
 
-  useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom, padding: SECTION_PADDING })
+  const ready = useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom, padding: SECTION_PADDING });
 
   return (
-    <div ref={containerRef} className="absolute w-full h-full">
+    <div
+      ref={containerRef}
+      className="absolute w-full h-full"
+      style={{ visibility: ready && drawing ? "visible" : "hidden" }}
+    >
       <Stage ref={stageRef}>
-        <Layer>
-          {section && (
-            <PurlinCrossSection
-              x={0}
-              y={0}
+        <Layer listening={false}>
+          {drawing && layout && (
+            <SectionDrawingView
+              drawing={drawing}
+              layout={layout}
+              zoom={zoom}
               rotation={rotation}
-              data={section}
+              loadDirection={loadDirection}
             />
           )}
         </Layer>
@@ -39,36 +58,12 @@ export default function SectionView({ purlinName, deckName, catalog = "purlin", 
   );
 }
 
-const SECTION_PADDING = { top: 40, bottom: 24, left: 28, right: 28 };
+const SECTION_PADDING = { top: 18, bottom: 14, left: 20, right: 20 };
 
 type SectionViewProps = {
   purlinName: string,
-  deckName: string,
+  existingName?: string,
   catalog?: "purlin" | "intelliframe",
   rotation: number,
-}
-
-function getBoundingBox(data: PurlinSectionData) {
-  if (!data) {
-    return { x: 0, y: 0, width: 10, height: 10 };
-  }
-
-  const points = getSectionCoordinates(data);
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minY = Infinity;
-  let maxY = -Infinity;
-  points.forEach((point) => {
-    minX = Math.min(minX, point.x);
-    maxX = Math.max(maxX, point.x);
-    minY = Math.min(minY, point.y);
-    maxY = Math.max(maxY, point.y);
-  });
-
-  return {
-    x: (minX + maxX) / 2,
-    y: (minY + maxY) / 2,
-    width: Math.max(maxX - minX, 0.1),
-    height: Math.max(maxY - minY, 0.1),
-  };
+  loadDirection?: "gravity" | "uplift",
 }

@@ -1,42 +1,64 @@
 import { useEffect, useState } from "react"
 
-export default function useSectionData(): [PurlinSectionLibrary, PurlinSectionLibrary, DeckSectionLibrary] {
-  const [purlinSectionLibrary, setPurlinSectionLibrary] = useState<PurlinSectionLibrary>({});
-  const [intelliFrameLibrary, setIntelliFrameLibrary] = useState<PurlinSectionLibrary>({});
-  const [deckSectionLibrary, setDeckSectionLibrary] = useState<DeckSectionLibrary>({});
+type SectionLibraries = {
+  purlin: PurlinSectionLibrary,
+  intelliFrame: PurlinSectionLibrary,
+}
+
+let cachedLibraries: SectionLibraries | null = null;
+let pendingLibraries: Promise<SectionLibraries> | null = null;
+
+function loadSectionLibraries(): Promise<SectionLibraries> {
+  if (cachedLibraries) return Promise.resolve(cachedLibraries);
+  if (!pendingLibraries) {
+    const read = async (url: string) => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Unable to load section data from ${url} (${response.status})`);
+      }
+      return response.json();
+    };
+    pendingLibraries = Promise.all([
+      read("/data/Purlins.json"),
+      read("/data/IntelliFrameRF.json"),
+    ])
+      .then(([purlins, intelliFrame]) => {
+        cachedLibraries = {
+          purlin: createSectionLibrary(purlins) as PurlinSectionLibrary,
+          intelliFrame: createSectionLibrary(intelliFrame) as PurlinSectionLibrary,
+        };
+        return cachedLibraries;
+      })
+      .catch((error) => {
+        pendingLibraries = null;
+        throw error;
+      });
+  }
+  return pendingLibraries;
+}
+
+export default function useSectionData(): [PurlinSectionLibrary, PurlinSectionLibrary] {
+  const [libraries, setLibraries] = useState<SectionLibraries | null>(cachedLibraries);
 
   useEffect(() => {
-    fetch("/data/Purlins.json")
-      .then((res) => res.json())
-      .then((data) => {
-        setPurlinSectionLibrary(createSectionLibrary(data) as PurlinSectionLibrary);
-      });
-    fetch("/data/IntelliFrameRF.json")
-      .then((res) => res.json())
-      .then((data) => {
-        setIntelliFrameLibrary(createSectionLibrary(data) as PurlinSectionLibrary);
-      });
-  }, []);
+    if (libraries) return;
+    let active = true;
+    loadSectionLibraries()
+      .then((loaded) => {
+        if (active) setLibraries(loaded);
+      })
+      .catch((error) => console.error(error));
+    return () => {
+      active = false;
+    };
+  }, [libraries]);
 
-  useEffect(() => {
-    fetch("/data/Decks.json")
-      .then((res) => res.json())
-      .then((data) => {
-        setDeckSectionLibrary(createSectionLibrary(data) as DeckSectionLibrary);
-      });
-  }, []);
-
-
-  return [purlinSectionLibrary, intelliFrameLibrary, deckSectionLibrary];
+  return [libraries?.purlin ?? {}, libraries?.intelliFrame ?? {}];
 }
 
 
-export type PurlinSectionLibrary = {
+type PurlinSectionLibrary = {
   [key: string]: PurlinSectionData
-}
-
-export type DeckSectionLibrary = {
-  [key: string]: DeckSectionData
 }
 
 export type PurlinSectionData = {
@@ -54,26 +76,8 @@ export type PurlinSectionData = {
   lipAngle: number,
 }
 
-export type DeckSectionData = {
-  name: string,
-  t: number,
-  connector: "fastener" | "clip",
-  connectorData: FastenerData | clipData,
-}
-
-type FastenerData = {
-  spacing: number,
-  diameter: number,
-  shearStrength: number,
-}
-
-type clipData = {
-  height: number,
-  spacing: number
-}
-
-function createSectionLibrary(sectionArr: PurlinSectionData[] | DeckSectionData[]) {
-  const sectionLibrary: PurlinSectionLibrary | DeckSectionLibrary = {};
+function createSectionLibrary(sectionArr: PurlinSectionData[]) {
+  const sectionLibrary: PurlinSectionLibrary = {};
   sectionArr.forEach((section) => {
     sectionLibrary[section.name] = section;
   });

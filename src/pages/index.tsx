@@ -1,12 +1,12 @@
 import ClientInput, { ViewerCard } from "@/components/client-input";
-import usePurlinLine from "@/components/hooks/use-purlin-line";
+import usePurlinLine, { type PurLinLineState } from "@/components/hooks/use-purlin-line";
 import Layout from "@/components/layout/layout";
 import Footer from "@/components/layout/footer";
-import { DeflectionCard, ResultStats, AnalaysisData, SAMPLE_RAW_DATA, processRawData } from "@/components/results/results-display";
+import { DeflectionCard, ResultStats, type AnalaysisData } from "@/components/results/results-display";
 import SubmitButton from "@/components/submission/submit-button";
 import Head from "next/head";
 import dynamic from "next/dynamic";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Alert, Button, Card, Input, Tag } from "antd";
 import {
   BarChartOutlined,
@@ -23,8 +23,6 @@ const ReportViewNoSSR = dynamic(() => import("@/components/report/report-view"),
   ssr: false,
 });
 
-const DEV_MODE = false;
-
 type AnalysisRunKey = "existing-gravity" | "existing-uplift" | "retrofit-gravity" | "retrofit-uplift";
 
 const SUMMARY_RUNS: Array<{ key: AnalysisRunKey; title: string; direction: "gravity" | "uplift" }> = [
@@ -33,6 +31,20 @@ const SUMMARY_RUNS: Array<{ key: AnalysisRunKey; title: string; direction: "grav
   { key: "retrofit-gravity", title: "Gravity - Retrofitted roof analysis", direction: "gravity" },
   { key: "retrofit-uplift", title: "Uplift - Retrofitted roof analysis", direction: "uplift" },
 ];
+
+const EMPTY_RUNS: Record<AnalysisRunKey, AnalaysisData | null> = {
+  "existing-gravity": null,
+  "existing-uplift": null,
+  "retrofit-gravity": null,
+  "retrofit-uplift": null,
+};
+
+const EMPTY_RUN_INPUTS: Record<AnalysisRunKey, PurLinLineState | null> = {
+  "existing-gravity": null,
+  "existing-uplift": null,
+  "retrofit-gravity": null,
+  "retrofit-uplift": null,
+};
 
 type ProjectInfo = {
   projectName: string;
@@ -63,16 +75,19 @@ const PROJECT_PLACEHOLDERS: Record<keyof ProjectInfo, string> = {
   revisionNo: "0",
 };
 
+function isRunStale(
+  runInput: PurLinLineState | null,
+  current: PurLinLineState,
+  direction: "gravity" | "uplift" | undefined,
+) {
+  if (!runInput || !direction) return false;
+  return mapGeometryToJSON(runInput) !== mapGeometryToJSON({ ...current, loadDirection: direction });
+}
+
 export default function Home() {
   const [inputData, inputDataDispatch] = usePurlinLine();
-  const DEV_DATA = processRawData(inputData, SAMPLE_RAW_DATA);
-  const [outputData, setOutputData] = useState<AnalaysisData | null>(!DEV_MODE ? null : DEV_DATA);
-  const [runs, setRuns] = useState<Record<AnalysisRunKey, AnalaysisData | null>>({
-    "existing-gravity": !DEV_MODE ? null : DEV_DATA,
-    "existing-uplift": null,
-    "retrofit-gravity": null,
-    "retrofit-uplift": null,
-  });
+  const [runs, setRuns] = useState<Record<AnalysisRunKey, AnalaysisData | null>>(EMPTY_RUNS);
+  const [runInputs, setRunInputs] = useState<Record<AnalysisRunKey, PurLinLineState | null>>(EMPTY_RUN_INPUTS);
   const [activeTab, setActiveTab] = useState("project");
   const [project, setProject] = useState<ProjectInfo>({
     projectName: "",
@@ -81,21 +96,24 @@ export default function Home() {
     clientName: "",
     revisionNo: "",
   });
-  const [analyzedInput, setAnalyzedInput] = useState<string | null>(
-    !DEV_MODE ? null : mapGeometryToJSON(inputData)
-  );
-  const [selectedRunKey, setSelectedRunKey] = useState<AnalysisRunKey | null>(
-    !DEV_MODE ? null : "existing-gravity"
-  );
+  const [selectedRunKey, setSelectedRunKey] = useState<AnalysisRunKey | null>(null);
+  const [selectedReportKey, setSelectedReportKey] = useState<AnalysisRunKey | null>(null);
 
-  const handleResult = (result: AnalaysisData | null, submittedInput?: string) => {
-    const runKey = SUMMARY_RUNS.find((run) => run.key === activeTab)?.key;
-    if (runKey) {
-      setRuns((current) => ({ ...current, [runKey]: result }));
-      if (result) setSelectedRunKey(runKey);
+  const handleResult = (result: AnalaysisData | null, submittedInput?: PurLinLineState) => {
+    const run = SUMMARY_RUNS.find((item) => item.key === activeTab);
+    if (run) {
+      setRuns((current) => ({ ...current, [run.key]: result }));
+      setRunInputs((current) => ({
+        ...current,
+        [run.key]: result
+          ? { ...(submittedInput ?? inputData), loadDirection: run.direction }
+          : null,
+      }));
+      if (result) {
+        setSelectedRunKey(run.key);
+        setSelectedReportKey(run.key);
+      }
     }
-    setOutputData(result);
-    setAnalyzedInput(result ? submittedInput ?? mapGeometryToJSON(inputData) : null);
   };
 
   useEffect(() => {
@@ -109,11 +127,51 @@ export default function Home() {
     }
   }, [activeTab, inputData.loadDirection, inputDataDispatch]);
 
-  const isStale = outputData !== null && analyzedInput !== mapGeometryToJSON(inputData);
   const completedRuns = SUMMARY_RUNS.filter((run) => runs[run.key]);
   const selectedRun = completedRuns.find((run) => run.key === selectedRunKey)
     ?? completedRuns[completedRuns.length - 1]
     ?? null;
+  const selectedRunInput = selectedRun ? runInputs[selectedRun.key] : null;
+  const selectedRunDirection = selectedRun?.direction;
+  const isStale = useMemo(
+    () => isRunStale(selectedRunInput, inputData, selectedRunDirection),
+    [selectedRunInput, inputData, selectedRunDirection],
+  );
+  const reportRuns = completedRuns.filter((run) => runInputs[run.key]);
+  const selectedReport = reportRuns.find((run) => run.key === selectedReportKey)
+    ?? reportRuns[reportRuns.length - 1]
+    ?? null;
+  const selectedReportInput = selectedReport ? runInputs[selectedReport.key] : null;
+  const selectedReportOutput = selectedReport ? runs[selectedReport.key] : null;
+  const selectedReportDirection = selectedReport?.direction;
+  const isReportStale = useMemo(
+    () => isRunStale(selectedReportInput, inputData, selectedReportDirection),
+    [selectedReportInput, inputData, selectedReportDirection],
+  );
+
+  const runSwitch = (
+    items: typeof SUMMARY_RUNS,
+    selectedKey: AnalysisRunKey | undefined,
+    onSelect: (key: AnalysisRunKey) => void,
+  ) => (
+    <div className="summary-chart-switch" role="radiogroup" aria-label="Analysis case">
+      {items.map((run) => {
+        const selected = selectedKey === run.key;
+        return (
+          <button
+            key={run.key}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            className={selected ? "active" : ""}
+            onClick={() => onSelect(run.key)}
+          >
+            {run.title}
+          </button>
+        );
+      })}
+    </div>
+  );
 
   const pageHeading = (kicker: string, title: string, description: string, action?: ReactNode) => (
     <div className="analysis-toolbar">
@@ -126,7 +184,7 @@ export default function Home() {
     </div>
   );
 
-  const projectPage = (
+  const renderProjectPage = () => (
     <div className="project-page">
       <section className="project-details" aria-labelledby="project-details-title">
         <h1 id="project-details-title" className="project-details-title">
@@ -185,8 +243,8 @@ export default function Home() {
         scope === "existing" ? "Existing roof analysis" : "Retrofitted roof analysis",
         direction === "gravity" ? "Gravity Build" : "Uplift Build",
         direction === "gravity"
-          ? "Set the purlin section and framing geometry. Load direction is gravity, and the framing layout shows the load downward."
-          : "Set the purlin section and framing geometry. Load direction is uplift, and the framing layout shows the load upward.",
+          ? "Set the purlin section and framing geometry. Load direction is gravity, and the framing layout shows the load downward. The Uplift Build uses these same values."
+          : "Values come from the Gravity Build and are read only here. Load direction is uplift, and the framing layout shows the load upward.",
         <SubmitButton
           input={{ ...inputData, loadDirection: direction }}
           analysisType={scope}
@@ -201,8 +259,14 @@ export default function Home() {
             part="section"
             fixedLoadDirection={direction}
             sectionCatalog={scope === "retrofit" ? "intelliframe" : "purlin"}
+            readOnly={direction === "uplift"}
           />
-          <ClientInput state={inputData} dispatch={inputDataDispatch} part="geometry" />
+          <ClientInput
+            state={inputData}
+            dispatch={inputDataDispatch}
+            part="geometry"
+            readOnly={direction === "uplift"}
+          />
         </aside>
         <section className="analysis-preview" aria-label="Model preview">
           <ViewerCard
@@ -215,7 +279,7 @@ export default function Home() {
     </div>
   );
 
-  const methodsPage = (
+  const renderMethodsPage = () => (
     <div className="analysis-workspace">
       {pageHeading(
         "Methods",
@@ -245,7 +309,7 @@ export default function Home() {
     </div>
   );
 
-  const summary = (
+  const renderSummary = () => (
     <div className="summary-workspace">
       <div className="summary-heading">
         <div>
@@ -255,7 +319,7 @@ export default function Home() {
             Choose a completed case to view its deflection, roof pressure, limit state, and failure location.
           </p>
         </div>
-        {outputData && (
+        {selectedRun && (
           <Tag
             icon={isStale ? <ExclamationCircleOutlined /> : <SafetyCertificateOutlined />}
             color={isStale ? "warning" : "success"}
@@ -273,32 +337,14 @@ export default function Home() {
           message="Inputs have changed since this analysis"
           description="The chart and results below reflect the previous inputs. Run the analysis again to bring them up to date."
           action={
-            <Button size="small" onClick={() => setActiveTab("existing-gravity")}>
-              Back to existing roof
+            <Button size="small" onClick={() => setActiveTab(selectedRun?.key ?? "existing-gravity")}>
+              Back to this case
             </Button>
           }
         />
       )}
 
-      {completedRuns.length > 0 && (
-        <div className="summary-chart-switch" role="radiogroup" aria-label="Analysis case">
-          {completedRuns.map((run) => {
-            const selected = selectedRun?.key === run.key;
-            return (
-              <button
-                key={run.key}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                className={selected ? "active" : ""}
-                onClick={() => setSelectedRunKey(run.key)}
-              >
-                {run.title}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      {completedRuns.length > 0 && runSwitch(completedRuns, selectedRun?.key, setSelectedRunKey)}
       <div id="summary-deflection">
         <DeflectionCard
           output={selectedRun ? runs[selectedRun.key] : null}
@@ -311,45 +357,59 @@ export default function Home() {
     </div>
   );
 
-  const report = (
+  const renderReport = () => (
     <div className="summary-workspace">
       <div className="summary-heading">
         <div>
           <span className="section-kicker">Issue package</span>
           <h1 className="page-title">Engineering report</h1>
           <p className="page-description">
-            Printable calculation package for the latest run.
+            Choose a completed case to view and print its calculation package.
           </p>
         </div>
+        {selectedReport && (
+          <Tag
+            icon={isReportStale ? <ExclamationCircleOutlined /> : <SafetyCertificateOutlined />}
+            color={isReportStale ? "warning" : "success"}
+          >
+            {isReportStale ? "Out of date" : "Report ready"}
+          </Tag>
+        )}
       </div>
-      {isStale && (
+      {isReportStale && selectedReport && (
         <Alert
           className="stale-alert"
           type="warning"
           showIcon
           message="Inputs have changed since this report"
-          description="The report still reflects the previous inputs. Run the analysis again before issuing it."
+          description="The report still reflects the previous inputs. Run this case again before issuing it."
           action={
-            <Button size="small" onClick={() => setActiveTab("existing-gravity")}>
-              Back to existing roof
+            <Button size="small" onClick={() => setActiveTab(selectedReport.key)}>
+              Back to this case
             </Button>
           }
         />
       )}
-      <ReportViewNoSSR input={inputData} output={outputData} />
+      {reportRuns.length > 0 && runSwitch(reportRuns, selectedReport?.key, setSelectedReportKey)}
+      <ReportViewNoSSR
+        key={selectedReport?.key ?? "empty"}
+        input={selectedReportInput}
+        output={selectedReportOutput}
+        title={selectedReport?.title}
+      />
     </div>
   );
 
   const steps = [
-    { key: "project", label: "Project", icon: FolderOpenOutlined, content: projectPage },
-    { key: "methods", label: "Methods", icon: ExperimentOutlined, content: methodsPage },
+    { key: "project", label: "Project", icon: FolderOpenOutlined, render: renderProjectPage },
+    { key: "methods", label: "Methods", icon: ExperimentOutlined, render: renderMethodsPage },
     {
       key: "existing",
       label: "Existing Roof Analysis",
       icon: HomeOutlined,
       children: [
-        { key: "existing-gravity", label: "Gravity Build", content: buildCasePage("existing", "gravity") },
-        { key: "existing-uplift", label: "Uplift Build", content: buildCasePage("existing", "uplift") },
+        { key: "existing-gravity", label: "Gravity Build", render: () => buildCasePage("existing", "gravity") },
+        { key: "existing-uplift", label: "Uplift Build", render: () => buildCasePage("existing", "uplift") },
       ],
     },
     {
@@ -357,12 +417,12 @@ export default function Home() {
       label: "Retrofitted Roof Analysis",
       icon: SafetyCertificateOutlined,
       children: [
-        { key: "retrofit-gravity", label: "Gravity Build", content: buildCasePage("retrofit", "gravity") },
-        { key: "retrofit-uplift", label: "Uplift Build", content: buildCasePage("retrofit", "uplift") },
+        { key: "retrofit-gravity", label: "Gravity Build", render: () => buildCasePage("retrofit", "gravity") },
+        { key: "retrofit-uplift", label: "Uplift Build", render: () => buildCasePage("retrofit", "uplift") },
       ],
     },
-    { key: "summary", label: "Summary", icon: BarChartOutlined, content: summary },
-    { key: "report", label: "Report", icon: FileTextOutlined, content: report },
+    { key: "summary", label: "Summary", icon: BarChartOutlined, render: renderSummary },
+    { key: "report", label: "Report", icon: FileTextOutlined, render: renderReport },
   ];
   const flatSteps = steps.flatMap((step) => step.children ?? [step]);
   const activeStep = flatSteps.find((step) => step.key === activeTab) ?? flatSteps[0];
@@ -423,7 +483,7 @@ export default function Home() {
           </aside>
           <div className="workspace-main">
             <div className={`workspace-content${activeTab === "project" ? " workspace-content-project" : ""}`}>
-              {activeStep.content}
+              {activeStep.render()}
             </div>
             <Footer />
           </div>

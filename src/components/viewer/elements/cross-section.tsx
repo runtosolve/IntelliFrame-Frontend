@@ -1,21 +1,72 @@
 import { PurlinSectionData } from "@/components/hooks/use-section-data";
-import { Line } from "react-konva";
+import { useMemo } from "react";
+import { Group, Line } from "react-konva";
+import SectionDimensions, { DimensionLayout } from "./section-dimensions";
+import { Point } from "./section-properties";
 
-export function PurlinCrossSection({x, y, rotation = 0, data }: PurlinCrossSectionProps) {
-  const coords = getSectionCoordinates(data);
-  const points = flatten(coords);
-  const box = bounds(coords);
+const EXISTING_SECTION_COLOR = "#78716c";
+const INTELLI_FRAME_COLOR = "#d62d33";
+const SINGLE_SECTION_COLOR = "#030712";
+
+type SectionPart = { points: Point[], t: number, color: string };
+
+export type SectionDrawing = {
+  parts: SectionPart[],
+  load: Point,
+};
+
+export function getSectionDrawing(section: PurlinSectionData, existing?: PurlinSectionData): SectionDrawing {
+  if (!existing) {
+    return {
+      parts: [{ points: getSectionCoordinates(section), t: section.t, color: SINGLE_SECTION_COLOR }],
+      load: { x: section.B / 2, y: 0 },
+    };
+  }
+
+  const bottom = section.B_bottom ?? section.B;
+  const top = section.B_top ?? section.B;
+  const shiftX = (existing.B - bottom) / 2;
+  const seat = (strokeWidth(existing.t) + strokeWidth(section.t)) / 2;
+  const intelliFramePoints = getSectionCoordinates(section)
+    .map((point) => ({ x: point.x + shiftX, y: point.y - seat }));
+
+  return {
+    parts: [
+      { points: getSectionCoordinates(existing), t: existing.t, color: EXISTING_SECTION_COLOR },
+      { points: intelliFramePoints, t: section.t, color: INTELLI_FRAME_COLOR },
+    ],
+    load: { x: shiftX + bottom + top / 2, y: -section.H - seat },
+  };
+}
+
+export function SectionDrawingView({ drawing, layout, zoom, rotation = 0, loadDirection }: SectionDrawingViewProps) {
+  const { cx, cy } = layout.bounds;
 
   return (
+    <Group x={cx} y={cy} offsetX={cx} offsetY={cy} rotation={rotation} listening={false}>
+      {drawing.parts.map((part, index) => (
+        <SectionLine key={index} points={part.points} thickness={part.t} color={part.color} />
+      ))}
+      <SectionDimensions layout={layout} zoom={zoom} loadDirection={loadDirection} />
+    </Group>
+  );
+}
+
+type SectionDrawingViewProps = {
+  drawing: SectionDrawing,
+  layout: DimensionLayout,
+  zoom: number,
+  rotation?: number,
+  loadDirection: "gravity" | "uplift",
+}
+
+function SectionLine({ points, thickness, color }: { points: Point[], thickness: number, color: string }) {
+  const flatPoints = useMemo(() => flatten(points), [points]);
+  return (
     <Line
-      x={x + box.cx}
-      y={y + box.cy}
-      offsetX={box.cx}
-      offsetY={box.cy}
-      rotation={rotation}
-      points={points}
-      stroke="#030712"
-      strokeWidth={Math.max(data.t * 1.4, 0.05)}
+      points={flatPoints}
+      stroke={color}
+      strokeWidth={strokeWidth(thickness)}
       lineCap="round"
       lineJoin="round"
       listening={false}
@@ -23,16 +74,11 @@ export function PurlinCrossSection({x, y, rotation = 0, data }: PurlinCrossSecti
   );
 }
 
-type PurlinCrossSectionProps = {
-  data: PurlinSectionData,
-  x: number,
-  y: number,
-  rotation?: number,
+function strokeWidth(thickness: number) {
+  return Math.max(thickness * 1.4, 0.05);
 }
 
-type Point = { x: number, y: number };
-
-export function getSectionCoordinates(data: PurlinSectionData): Point[] {
+function getSectionCoordinates(data: PurlinSectionData): Point[] {
   if (data.B_bottom != null || data.B_top != null) {
     return getIntelliFrameCoordinates(data);
   }
@@ -48,11 +94,11 @@ function getIntelliFrameCoordinates(data: PurlinSectionData): Point[] {
   const lip = Math.abs(data.lipAngle) * Math.PI / 180;
 
   const corners: Point[] = [
-    { x: -top - data.D * Math.cos(lip), y: data.H - data.D * Math.sin(lip) },
-    { x: -top, y: data.H },
-    { x: 0, y: data.H },
     { x: 0, y: 0 },
     { x: bottom, y: 0 },
+    { x: bottom, y: data.H },
+    { x: bottom + top, y: data.H },
+    { x: bottom + top + data.D * Math.cos(lip), y: data.H - data.D * Math.sin(lip) },
   ];
 
   return filletPolyline(corners, data.r).map((point) => ({ x: point.x, y: -point.y }));
@@ -60,26 +106,26 @@ function getIntelliFrameCoordinates(data: PurlinSectionData): Point[] {
 
 function getCeeSectionPoints(data: PurlinSectionData): Point[] {
   const lip = Math.abs(data.lipAngle * Math.PI / 180);
-  return [
+  return filletPolyline([
     { x: data.B + data.D * Math.cos(lip), y: data.D * Math.sin(lip) },
     { x: data.B, y: 0 },
     { x: 0, y: 0 },
     { x: 0, y: data.H },
     { x: data.B, y: data.H },
     { x: data.B + data.D * Math.cos(lip), y: data.H - data.D * Math.sin(lip) },
-  ];
+  ], data.r);
 }
 
 function getZeeSectionPoints(data: PurlinSectionData): Point[] {
   const lip = Math.abs(data.lipAngle * Math.PI / 180);
-  return [
+  return filletPolyline([
     { x: data.B + data.D * Math.cos(lip), y: data.D * Math.sin(lip) },
     { x: data.B, y: 0 },
     { x: 0, y: 0 },
     { x: 0, y: data.H },
     { x: -data.B, y: data.H },
     { x: -(data.B + data.D * Math.cos(lip)), y: data.H - data.D * Math.sin(lip) },
-  ];
+  ], data.r);
 }
 
 function filletPolyline(points: Point[], radius: number, arcSteps = 8): Point[] {
@@ -143,20 +189,6 @@ function flatten(points: Point[]): number[] {
     coords.push(point.x, point.y);
   });
   return coords;
-}
-
-function bounds(points: Point[]): { cx: number, cy: number } {
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minY = Infinity;
-  let maxY = -Infinity;
-  points.forEach((point) => {
-    minX = Math.min(minX, point.x);
-    maxX = Math.max(maxX, point.x);
-    minY = Math.min(minY, point.y);
-    maxY = Math.max(maxY, point.y);
-  });
-  return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
 }
 
 function add(a: Point, b: Point): Point {
