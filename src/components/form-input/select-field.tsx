@@ -1,8 +1,8 @@
 import { Select } from "antd";
 
-export default function LabelledSelectField({ label, name, options, value, defaultValue, onChange }: LabelledSelectFieldProps) {
+export default function LabelledSelectField({ label, name, options, value, defaultValue, onChange, emphasized = false }: LabelledSelectFieldProps) {
   return (
-    <div>
+    <div className={emphasized ? "field-editable" : undefined}>
       <label htmlFor={name} className="field-label">
         {label}
       </label>
@@ -10,6 +10,7 @@ export default function LabelledSelectField({ label, name, options, value, defau
         className="w-full"
         id={name}
         aria-label={label}
+        autoFocus={emphasized}
         options={options}
         value={value}
         defaultValue={defaultValue}
@@ -28,4 +29,5 @@ interface LabelledSelectFieldProps {
   value?: string,
   defaultValue?: string,
   onChange: (value: string) => void,
+  emphasized?: boolean,
 }

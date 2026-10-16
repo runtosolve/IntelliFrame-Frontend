@@ -173,14 +173,16 @@ export default function SectionDimensions({ layout, zoom, loadDirection }: Secti
         bold
       />
 
-      <Arrow
-        points={loadDirection === "uplift" ? [load.x, arrowTip, load.x, arrowTail] : [load.x, arrowTail, load.x, arrowTip]}
-        stroke={ACCENT_COLOR}
-        fill={ACCENT_COLOR}
-        strokeWidth={thin * 2}
-        pointerLength={8 * px}
-        pointerWidth={7 * px}
-      />
+      {loadDirection && (
+        <Arrow
+          points={loadDirection === "uplift" ? [load.x, arrowTip, load.x, arrowTail] : [load.x, arrowTail, load.x, arrowTip]}
+          stroke={ACCENT_COLOR}
+          fill={ACCENT_COLOR}
+          strokeWidth={thin * 2}
+          pointerLength={8 * px}
+          pointerWidth={7 * px}
+        />
+      )}
     </Group>
   );
 }
@@ -188,7 +190,7 @@ export default function SectionDimensions({ layout, zoom, loadDirection }: Secti
 type SectionDimensionsProps = {
   layout: DimensionLayout,
   zoom: number,
-  loadDirection: "gravity" | "uplift",
+  loadDirection?: "gravity" | "uplift",
 }
 
 function DimensionText({

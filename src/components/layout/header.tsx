@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import logo from "/public/ImetcoLogo.svg";
 import UserProfile from "../user-auth/user-profile";
 
 export default function Header() {
@@ -9,7 +8,7 @@ export default function Header() {
       <div className="app-header-inner">
         <div className="brand-lockup">
           <Link href="/" className="brand-logo" aria-label="IMETCO IntelliFrame RF home">
-            <Image src={logo} alt="IMETCO" priority />
+            <Image src="/IMETCO.png" alt="IMETCO" width={202} height={56} priority />
           </Link>
           <span className="brand-divider" aria-hidden />
           <div className="brand-product">

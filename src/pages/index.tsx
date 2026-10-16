@@ -6,10 +6,11 @@ import { DeflectionCard, ResultStats, type AnalaysisData } from "@/components/re
 import SubmitButton from "@/components/submission/submit-button";
 import Head from "next/head";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Alert, Button, Card, Input, Tag } from "antd";
 import {
   BarChartOutlined,
+  BuildOutlined,
   ExperimentOutlined,
   ExclamationCircleOutlined,
   FileTextOutlined,
@@ -23,14 +24,20 @@ const ReportViewNoSSR = dynamic(() => import("@/components/report/report-view"),
   ssr: false,
 });
 
-type AnalysisRunKey = "existing-gravity" | "existing-uplift" | "retrofit-gravity" | "retrofit-uplift";
+type AnalysisScope = "existing" | "retrofit";
+type LoadDirection = "gravity" | "uplift";
+type AnalysisRunKey = `${AnalysisScope}-${LoadDirection}`;
 
-const SUMMARY_RUNS: Array<{ key: AnalysisRunKey; title: string; direction: "gravity" | "uplift" }> = [
-  { key: "existing-gravity", title: "Gravity - Existing roof analysis", direction: "gravity" },
-  { key: "existing-uplift", title: "Uplift - Existing roof analysis", direction: "uplift" },
-  { key: "retrofit-gravity", title: "Gravity - Retrofitted roof analysis", direction: "gravity" },
-  { key: "retrofit-uplift", title: "Uplift - Retrofitted roof analysis", direction: "uplift" },
-];
+type AnalysisRun = { key: AnalysisRunKey; title: string; scope: AnalysisScope; direction: LoadDirection };
+
+const RUNS: Record<AnalysisRunKey, AnalysisRun> = {
+  "existing-gravity": { key: "existing-gravity", title: "Gravity - Existing roof analysis", scope: "existing", direction: "gravity" },
+  "existing-uplift": { key: "existing-uplift", title: "Uplift - Existing roof analysis", scope: "existing", direction: "uplift" },
+  "retrofit-gravity": { key: "retrofit-gravity", title: "Gravity - Retrofitted roof analysis", scope: "retrofit", direction: "gravity" },
+  "retrofit-uplift": { key: "retrofit-uplift", title: "Uplift - Retrofitted roof analysis", scope: "retrofit", direction: "uplift" },
+};
+
+const ANALYSIS_RUNS = Object.values(RUNS);
 
 const EMPTY_RUNS: Record<AnalysisRunKey, AnalaysisData | null> = {
   "existing-gravity": null,
@@ -75,10 +82,14 @@ const PROJECT_PLACEHOLDERS: Record<keyof ProjectInfo, string> = {
   revisionNo: "0",
 };
 
+function sectionCatalog(scope: AnalysisScope) {
+  return scope === "retrofit" ? "intelliframe" : "purlin";
+}
+
 function isRunStale(
   runInput: PurLinLineState | null,
   current: PurLinLineState,
-  direction: "gravity" | "uplift" | undefined,
+  direction: LoadDirection | undefined,
 ) {
   if (!runInput || !direction) return false;
   return mapGeometryToJSON(runInput) !== mapGeometryToJSON({ ...current, loadDirection: direction });
@@ -96,25 +107,31 @@ export default function Home() {
     clientName: "",
     revisionNo: "",
   });
-  const [selectedRunKey, setSelectedRunKey] = useState<AnalysisRunKey | null>(null);
   const [selectedReportKey, setSelectedReportKey] = useState<AnalysisRunKey | null>(null);
+  const [revealResults, setRevealResults] = useState(false);
+  const resultsRef = useRef<HTMLElement>(null);
 
   const handleResult = (result: AnalaysisData | null, submittedInput?: PurLinLineState) => {
-    const run = SUMMARY_RUNS.find((item) => item.key === activeTab);
-    if (run) {
-      setRuns((current) => ({ ...current, [run.key]: result }));
-      setRunInputs((current) => ({
-        ...current,
-        [run.key]: result
-          ? { ...(submittedInput ?? inputData), loadDirection: run.direction }
-          : null,
-      }));
-      if (result) {
-        setSelectedRunKey(run.key);
-        setSelectedReportKey(run.key);
-      }
+    const run = ANALYSIS_RUNS.find((item) => item.key === activeTab);
+    if (!run) return;
+    setRuns((current) => ({ ...current, [run.key]: result }));
+    setRunInputs((current) => ({
+      ...current,
+      [run.key]: result
+        ? { ...(submittedInput ?? inputData), loadDirection: run.direction }
+        : null,
+    }));
+    if (result) {
+      setSelectedReportKey(run.key);
+      setRevealResults(true);
     }
   };
+
+  useEffect(() => {
+    if (!revealResults) return;
+    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setRevealResults(false);
+  }, [revealResults]);
 
   useEffect(() => {
     const direction = activeTab.endsWith("-uplift")
@@ -127,17 +144,7 @@ export default function Home() {
     }
   }, [activeTab, inputData.loadDirection, inputDataDispatch]);
 
-  const completedRuns = SUMMARY_RUNS.filter((run) => runs[run.key]);
-  const selectedRun = completedRuns.find((run) => run.key === selectedRunKey)
-    ?? completedRuns[completedRuns.length - 1]
-    ?? null;
-  const selectedRunInput = selectedRun ? runInputs[selectedRun.key] : null;
-  const selectedRunDirection = selectedRun?.direction;
-  const isStale = useMemo(
-    () => isRunStale(selectedRunInput, inputData, selectedRunDirection),
-    [selectedRunInput, inputData, selectedRunDirection],
-  );
-  const reportRuns = completedRuns.filter((run) => runInputs[run.key]);
+  const reportRuns = ANALYSIS_RUNS.filter((run) => runs[run.key] && runInputs[run.key]);
   const selectedReport = reportRuns.find((run) => run.key === selectedReportKey)
     ?? reportRuns[reportRuns.length - 1]
     ?? null;
@@ -150,7 +157,7 @@ export default function Home() {
   );
 
   const runSwitch = (
-    items: typeof SUMMARY_RUNS,
+    items: AnalysisRun[],
     selectedKey: AnalysisRunKey | undefined,
     onSelect: (key: AnalysisRunKey) => void,
   ) => (
@@ -237,45 +244,81 @@ export default function Home() {
     </div>
   );
 
-  const buildCasePage = (scope: "existing" | "retrofit", direction: "gravity" | "uplift") => (
+  const renderBuildPage = (scope: AnalysisScope) => (
     <div className="analysis-workspace">
-      {pageHeading(
-        scope === "existing" ? "Existing roof analysis" : "Retrofitted roof analysis",
-        direction === "gravity" ? "Gravity Build" : "Uplift Build",
-        direction === "gravity"
-          ? "Set the purlin section and framing geometry. Load direction is gravity, and the framing layout shows the load downward. The Uplift Build uses these same values."
-          : "Values come from the Gravity Build and are read only here. Load direction is uplift, and the framing layout shows the load upward.",
-        <SubmitButton
-          input={{ ...inputData, loadDirection: direction }}
-          analysisType={scope}
-          onUpdate={handleResult}
-        />
-      )}
+      {scope === "existing"
+        ? pageHeading(
+          "Existing roof",
+          "Build Existing Roof",
+          "Set the existing purlin section and framing geometry. The gravity and uplift analyses use these values."
+        )
+        : pageHeading(
+          "Retrofitted roof",
+          "Build Retrofitted Roof",
+          "Purlin section and framing geometry come from Build Existing Roof. Choose the IntelliFrame RF profile used by the retrofitted gravity and uplift analyses."
+        )}
       <div className="analysis-grid">
         <aside className="analysis-sidebar" aria-label="Purlin inputs">
           <ClientInput
             state={inputData}
             dispatch={inputDataDispatch}
             part="section"
-            fixedLoadDirection={direction}
-            sectionCatalog={scope === "retrofit" ? "intelliframe" : "purlin"}
-            readOnly={direction === "uplift"}
+            retrofit={scope === "retrofit"}
           />
           <ClientInput
             state={inputData}
             dispatch={inputDataDispatch}
             part="geometry"
-            readOnly={direction === "uplift"}
+            retrofit={scope === "retrofit"}
           />
         </aside>
         <section className="analysis-preview" aria-label="Model preview">
           <ViewerCard
             state={inputData}
-            loadDirection={direction}
-            sectionCatalog={scope === "retrofit" ? "intelliframe" : "purlin"}
+            sectionCatalog={sectionCatalog(scope)}
+            showLoad={false}
           />
         </section>
       </div>
+    </div>
+  );
+
+  const caseResults = (run: AnalysisRun) => {
+    const output = runs[run.key];
+    if (!output) return null;
+    return (
+      <section ref={resultsRef} className="case-results" aria-label="Analysis results">
+        {isRunStale(runInputs[run.key], inputData, run.direction) && (
+          <Alert
+            className="stale-alert"
+            type="warning"
+            showIcon
+            message="Inputs have changed since this analysis"
+            description="The results below reflect the previous inputs. Run the analysis again to bring them up to date."
+          />
+        )}
+        <DeflectionCard output={output} title={run.title} />
+        <ResultStats output={output} direction={run.direction} />
+      </section>
+    );
+  };
+
+  const buildCasePage = (run: AnalysisRun) => (
+    <div className="analysis-workspace">
+      {pageHeading(
+        run.scope === "existing" ? "Existing roof analysis" : "Retrofitted roof analysis",
+        run.direction === "gravity" ? "Gravity Analysis" : "Uplift Analysis",
+        `Purlin section and framing geometry already set in ${run.scope === "existing" ? "Build Existing Roof" : "Build Retrofitted Roof"}. Load direction is ${run.direction}, and the framing layout shows the load ${run.direction === "gravity" ? "downward" : "upward"}. Run analysis to get the result.`,
+        <SubmitButton
+          input={{ ...inputData, loadDirection: run.direction }}
+          analysisType={run.scope}
+          onUpdate={handleResult}
+        />
+      )}
+      <section className="case-preview" aria-label="Model preview">
+        <ViewerCard state={inputData} loadDirection={run.direction} sectionCatalog={sectionCatalog(run.scope)} />
+      </section>
+      {caseResults(run)}
     </div>
   );
 
@@ -284,7 +327,7 @@ export default function Home() {
       {pageHeading(
         "Methods",
         "Analysis basis",
-        "Load direction is fixed on each build tab. Gravity and uplift are set up separately."
+        "Load direction is fixed on each analysis tab. Gravity and uplift are run separately."
       )}
       <Card className="surface-card">
         <div className="method-list">
@@ -309,53 +352,75 @@ export default function Home() {
     </div>
   );
 
-  const renderSummary = () => (
-    <div className="summary-workspace">
-      <div className="summary-heading">
-        <div>
-          <span className="section-kicker">Analysis output</span>
-          <h1 className="page-title">Summary</h1>
-          <p className="page-description">
-            Choose a completed case to view its deflection, roof pressure, limit state, and failure location.
-          </p>
-        </div>
-        {selectedRun && (
-          <Tag
-            icon={isStale ? <ExclamationCircleOutlined /> : <SafetyCertificateOutlined />}
-            color={isStale ? "warning" : "success"}
-          >
-            {isStale ? "Out of date" : "Analysis complete"}
+  const renderSummary = () => {
+    const completed = ANALYSIS_RUNS.filter((run) => runs[run.key]).length;
+    return (
+      <div className="summary-workspace">
+        <div className="summary-heading">
+          <div>
+            <span className="section-kicker">Analysis output</span>
+            <h1 id="summary-title" className="page-title">Summary</h1>
+            <p className="page-description">
+              Allowable pressure, governing limit state, and failure location for each case that has been run.
+            </p>
+          </div>
+          <Tag icon={<SafetyCertificateOutlined />} color={completed === ANALYSIS_RUNS.length ? "success" : "default"}>
+            {completed} of {ANALYSIS_RUNS.length} complete
           </Tag>
-        )}
+        </div>
+        <div className="summary-table-card">
+          <table className="summary-table" aria-labelledby="summary-title">
+            <thead>
+              <tr>
+                <th scope="col">Case</th>
+                <th scope="col">Allowable roof pressure</th>
+                <th scope="col">Predicted failure limit state</th>
+                <th scope="col">Failure location</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ANALYSIS_RUNS.map((run) => {
+                const output = runs[run.key];
+                const stale = isRunStale(runInputs[run.key], inputData, run.direction);
+                return (
+                  <tr key={run.key} className={output ? undefined : "is-pending"}>
+                    <th scope="row">
+                      <span className={`summary-case summary-case-${run.direction}`}>
+                        {run.direction === "gravity" ? "Gravity" : "Uplift"}
+                      </span>
+                      <span className="summary-scope">
+                        {run.scope === "existing" ? "Existing roof" : "Retrofitted roof"}
+                      </span>
+                      {stale && <span className="summary-stale">Inputs changed</span>}
+                    </th>
+                    <td>
+                      {output ? (
+                        <span className="summary-pressure">
+                          {output.capacity.value}
+                          <small>{output.capacity.unit}</small>
+                        </span>
+                      ) : <span className="summary-blank">—</span>}
+                    </td>
+                    <td className="summary-limit">
+                      {output ? output.failureLimitState : <span className="summary-blank">Not run</span>}
+                    </td>
+                    <td>
+                      {output ? (
+                        <span className="summary-location">
+                          {output.failureLocation.toLocaleString()}
+                          <small>in</small>
+                        </span>
+                      ) : <span className="summary-blank">—</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
-
-      {isStale && (
-        <Alert
-          className="stale-alert"
-          type="warning"
-          showIcon
-          message="Inputs have changed since this analysis"
-          description="The chart and results below reflect the previous inputs. Run the analysis again to bring them up to date."
-          action={
-            <Button size="small" onClick={() => setActiveTab(selectedRun?.key ?? "existing-gravity")}>
-              Back to this case
-            </Button>
-          }
-        />
-      )}
-
-      {completedRuns.length > 0 && runSwitch(completedRuns, selectedRun?.key, setSelectedRunKey)}
-      <div id="summary-deflection">
-        <DeflectionCard
-          output={selectedRun ? runs[selectedRun.key] : null}
-          title={selectedRun?.title}
-        />
-      </div>
-      {selectedRun && (
-        <ResultStats output={runs[selectedRun.key]} direction={selectedRun.direction} />
-      )}
-    </div>
-  );
+    );
+  };
 
   const renderReport = () => (
     <div className="summary-workspace">
@@ -403,22 +468,24 @@ export default function Home() {
   const steps = [
     { key: "project", label: "Project", icon: FolderOpenOutlined, render: renderProjectPage },
     { key: "methods", label: "Methods", icon: ExperimentOutlined, render: renderMethodsPage },
+    { key: "build-existing", label: "Build Existing Roof", icon: BuildOutlined, render: () => renderBuildPage("existing") },
     {
       key: "existing",
       label: "Existing Roof Analysis",
       icon: HomeOutlined,
       children: [
-        { key: "existing-gravity", label: "Gravity Build", render: () => buildCasePage("existing", "gravity") },
-        { key: "existing-uplift", label: "Uplift Build", render: () => buildCasePage("existing", "uplift") },
+        { key: "existing-gravity", label: "Gravity", render: () => buildCasePage(RUNS["existing-gravity"]) },
+        { key: "existing-uplift", label: "Uplift", render: () => buildCasePage(RUNS["existing-uplift"]) },
       ],
     },
+    { key: "build-retrofit", label: "Build Retrofitted Roof", icon: BuildOutlined, render: () => renderBuildPage("retrofit") },
     {
       key: "retrofit",
       label: "Retrofitted Roof Analysis",
       icon: SafetyCertificateOutlined,
       children: [
-        { key: "retrofit-gravity", label: "Gravity Build", render: () => buildCasePage("retrofit", "gravity") },
-        { key: "retrofit-uplift", label: "Uplift Build", render: () => buildCasePage("retrofit", "uplift") },
+        { key: "retrofit-gravity", label: "Gravity", render: () => buildCasePage(RUNS["retrofit-gravity"]) },
+        { key: "retrofit-uplift", label: "Uplift", render: () => buildCasePage(RUNS["retrofit-uplift"]) },
       ],
     },
     { key: "summary", label: "Summary", icon: BarChartOutlined, render: renderSummary },
@@ -482,7 +549,7 @@ export default function Home() {
             </div>
           </aside>
           <div className="workspace-main">
-            <div className={`workspace-content${activeTab === "project" ? " workspace-content-project" : ""}`}>
+            <div className={`workspace-content${activeTab === "project" || activeTab === "report" ? " workspace-content-accent" : ""}`}>
               {activeStep.render()}
             </div>
             <Footer />

@@ -10,7 +10,11 @@ import { calcualtePurlinPosiions, calculateSupportPositions } from "./purlin-vie
 
 export default function PurlinView({ purlinData, frameFlangeWidth, loadDirection }: PurLinViewProps) {
 
-  const box = useMemo(() => getBoundingBox(purlinData, frameFlangeWidth), [purlinData, frameFlangeWidth]);
+  const showLoad = loadDirection !== undefined;
+  const box = useMemo(
+    () => getBoundingBox(purlinData, frameFlangeWidth, showLoad),
+    [purlinData, frameFlangeWidth, showLoad],
+  );
   const purlinPositions = useMemo(() => calcualtePurlinPosiions(purlinData, PURLIN_LAP_OFFSET_Y), [purlinData]);
   const supportPositions = useMemo(
     () => calculateSupportPositions(purlinData, PURLIN_LAP_OFFSET_Y, PURLIN_HEIGHT),
@@ -21,7 +25,13 @@ export default function PurlinView({ purlinData, frameFlangeWidth, loadDirection
   const containerRef = useRef<HTMLDivElement>(null!);
   const stageRef = useRef<Konva.Stage>(null!);
 
-  const ready = useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom, padding: STAGE_PADDING })
+  const ready = useResponsiveStage({
+    stageRef,
+    containerRef,
+    boundingBox: box,
+    setZoom,
+    padding: showLoad ? STAGE_PADDING : SPAN_ONLY_PADDING,
+  })
 
   const purlins = useMemo(() => generatePurlins(purlinData, purlinPositions, zoom), [purlinData, purlinPositions, zoom]);
   const supports = useMemo(
@@ -29,8 +39,8 @@ export default function PurlinView({ purlinData, frameFlangeWidth, loadDirection
     [supportPositions, zoom, frameFlangeWidth],
   );
   const uniformLoad = useMemo(
-    () => generateUniformLoad(supportPositions, zoom, loadDirection === "uplift"),
-    [supportPositions, zoom, loadDirection],
+    () => (showLoad ? generateUniformLoad(supportPositions, zoom, loadDirection === "uplift") : null),
+    [supportPositions, zoom, loadDirection, showLoad],
   );
 
   return (
@@ -53,15 +63,17 @@ const PURLIN_STYLE = {
 const PURLIN_LAP_OFFSET_Y = 0.2;
 const PURLIN_HEIGHT = 8 / 12;
 
-const STAGE_PADDING = { top: 44, right: 16, bottom: 84, left: 16 };
+const LOAD_GAP_PX = 27;
+const STAGE_PADDING = { top: 24 + LOAD_GAP_PX, right: 16, bottom: 84, left: 16 };
+const SPAN_ONLY_PADDING = { top: 24, right: 16, bottom: 84, left: 16 };
 
-function getBoundingBox(data: Array<PurlinData>, frameFlangeWidth: number) {
+function getBoundingBox(data: Array<PurlinData>, frameFlangeWidth: number, showLoad: boolean) {
   let width = 0;
   data.forEach(item => {
     width += item.span;
   })
 
-  const top = -0.12 * width;
+  const top = showLoad ? -width / 25 : 0;
   const bottom = PURLIN_HEIGHT + PURLIN_LAP_OFFSET_Y + 3 * (frameFlangeWidth / 12);
 
   return {
@@ -80,7 +92,7 @@ const generateUniformLoad = (supportPositions: Array<Point>, zoom: number, isUpl
   return (
     <UniformLoad
       x={0}
-      y={-0.1 * loadWidth}
+      y={-(loadWidth / 50 + LOAD_GAP_PX / zoom)}
       width={loadWidth}
       zoom={zoom}
       rotation={isUplift ? 180 : 0}
@@ -156,7 +168,7 @@ type Point = { x: number, y: number };
 type PurLinViewProps = {
   purlinData: Array<PurlinData>,
   frameFlangeWidth: number,
-  loadDirection: "gravity" | "uplift",
+  loadDirection?: "gravity" | "uplift",
 }
 
 

@@ -57,7 +57,7 @@ type SectionDrawingViewProps = {
   layout: DimensionLayout,
   zoom: number,
   rotation?: number,
-  loadDirection: "gravity" | "uplift",
+  loadDirection?: "gravity" | "uplift",
 }
 
 function SectionLine({ points, thickness, color }: { points: Point[], thickness: number, color: string }) {

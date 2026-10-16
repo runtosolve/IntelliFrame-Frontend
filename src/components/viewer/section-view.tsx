@@ -11,7 +11,7 @@ export default function SectionView({
   existingName,
   catalog = "purlin",
   rotation = 0,
-  loadDirection = "gravity",
+  loadDirection,
 }: SectionViewProps) {
   const [zoom, setZoom] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null!);

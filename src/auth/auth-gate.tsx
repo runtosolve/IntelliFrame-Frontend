@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import Image from "next/image";
 import { Button } from "antd";
 import { LoginOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
-import logo from "/public/ImetcoLogo.svg";
+import logo from "/public/IMETCO.png";
 
 const SESSION_KEY = "purlinline-entered";
 
@@ -56,7 +56,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       <AuthShell>
         <span className="auth-icon"><SafetyCertificateOutlined /></span>
         <span className="auth-eyebrow">Engineering workspace</span>
-        <h1>Welcome to IntelliFrame RF</h1>
+        <h1>Welcome to IntelliFrame RF Analysis</h1>
         <p>
           Open the calculator to check purlin lines and generate engineering reports.
         </p>

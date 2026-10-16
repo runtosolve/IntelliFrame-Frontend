@@ -4,7 +4,11 @@ import { createCache, extractStyle, StyleProvider } from '@ant-design/cssinjs'
 export default function MyDocument() {
   return (
     <Html lang="en">
-      <Head />
+      <Head>
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+      </Head>
       <body>
         <Main />
         <NextScript />
