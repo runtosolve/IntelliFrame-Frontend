@@ -6,8 +6,8 @@ import { DeflectionCard, ResultStats, type AnalaysisData } from "@/components/re
 import SubmitButton from "@/components/submission/submit-button";
 import Head from "next/head";
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Alert, Button, Card, Input, Tag } from "antd";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Alert, Card, Input, Tag } from "antd";
 import {
   BarChartOutlined,
   BuildOutlined,
@@ -18,7 +18,7 @@ import {
   HomeOutlined,
   SafetyCertificateOutlined,
 } from "@ant-design/icons";
-import { mapGeometryToJSON } from "@/components/submission/submission-utils";
+import { mapGeometryToJSON, type ProjectInfo } from "@/components/submission/submission-utils";
 
 const ReportViewNoSSR = dynamic(() => import("@/components/report/report-view"), {
   ssr: false,
@@ -51,14 +51,6 @@ const EMPTY_RUN_INPUTS: Record<AnalysisRunKey, PurLinLineState | null> = {
   "existing-uplift": null,
   "retrofit-gravity": null,
   "retrofit-uplift": null,
-};
-
-type ProjectInfo = {
-  projectName: string;
-  projectLocation: string;
-  projectReference: string;
-  clientName: string;
-  revisionNo: string;
 };
 
 const PROJECT_FIELDS: Array<{
@@ -107,7 +99,7 @@ export default function Home() {
     clientName: "",
     revisionNo: "",
   });
-  const [selectedReportKey, setSelectedReportKey] = useState<AnalysisRunKey | null>(null);
+  const [reportStale, setReportStale] = useState(false);
   const [revealResults, setRevealResults] = useState(false);
   const resultsRef = useRef<HTMLElement>(null);
 
@@ -121,10 +113,7 @@ export default function Home() {
         ? { ...(submittedInput ?? inputData), loadDirection: run.direction }
         : null,
     }));
-    if (result) {
-      setSelectedReportKey(run.key);
-      setRevealResults(true);
-    }
+    if (result) setRevealResults(true);
   };
 
   useEffect(() => {
@@ -143,42 +132,6 @@ export default function Home() {
       inputDataDispatch({ type: "set", field: "loadDirection", payload: direction });
     }
   }, [activeTab, inputData.loadDirection, inputDataDispatch]);
-
-  const reportRuns = ANALYSIS_RUNS.filter((run) => runs[run.key] && runInputs[run.key]);
-  const selectedReport = reportRuns.find((run) => run.key === selectedReportKey)
-    ?? reportRuns[reportRuns.length - 1]
-    ?? null;
-  const selectedReportInput = selectedReport ? runInputs[selectedReport.key] : null;
-  const selectedReportOutput = selectedReport ? runs[selectedReport.key] : null;
-  const selectedReportDirection = selectedReport?.direction;
-  const isReportStale = useMemo(
-    () => isRunStale(selectedReportInput, inputData, selectedReportDirection),
-    [selectedReportInput, inputData, selectedReportDirection],
-  );
-
-  const runSwitch = (
-    items: AnalysisRun[],
-    selectedKey: AnalysisRunKey | undefined,
-    onSelect: (key: AnalysisRunKey) => void,
-  ) => (
-    <div className="summary-chart-switch" role="radiogroup" aria-label="Analysis case">
-      {items.map((run) => {
-        const selected = selectedKey === run.key;
-        return (
-          <button
-            key={run.key}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            className={selected ? "active" : ""}
-            onClick={() => onSelect(run.key)}
-          >
-            {run.title}
-          </button>
-        );
-      })}
-    </div>
-  );
 
   const pageHeading = (kicker: string, title: string, description: string, action?: ReactNode) => (
     <div className="analysis-toolbar">
@@ -429,45 +382,33 @@ export default function Home() {
           <span className="section-kicker">Issue package</span>
           <h1 className="page-title">Engineering report</h1>
           <p className="page-description">
-            Choose a completed case to view and print its calculation package.
+            The IMETCO report for the current project and inputs: existing and retrofitted roof, gravity and
+            uplift, with the summary. Generate the client report or the detailed calculation record.
           </p>
         </div>
-        {selectedReport && (
-          <Tag
-            icon={isReportStale ? <ExclamationCircleOutlined /> : <SafetyCertificateOutlined />}
-            color={isReportStale ? "warning" : "success"}
-          >
-            {isReportStale ? "Out of date" : "Report ready"}
+        {reportStale && (
+          <Tag icon={<ExclamationCircleOutlined />} color="warning">
+            Out of date
           </Tag>
         )}
       </div>
-      {isReportStale && selectedReport && (
+      {reportStale && (
         <Alert
           className="stale-alert"
           type="warning"
           showIcon
           message="Inputs have changed since this report"
-          description="The report still reflects the previous inputs. Run this case again before issuing it."
-          action={
-            <Button size="small" onClick={() => setActiveTab(selectedReport.key)}>
-              Back to this case
-            </Button>
-          }
+          description="The report still reflects the previous project or roof inputs. Regenerate it before issuing it."
         />
       )}
-      {reportRuns.length > 0 && runSwitch(reportRuns, selectedReport?.key, setSelectedReportKey)}
-      <ReportViewNoSSR
-        key={selectedReport?.key ?? "empty"}
-        input={selectedReportInput}
-        output={selectedReportOutput}
-        title={selectedReport?.title}
-      />
+      <ReportViewNoSSR input={inputData} project={project} onStaleChange={setReportStale} />
     </div>
   );
 
   const steps = [
     { key: "project", label: "Project", icon: FolderOpenOutlined, render: renderProjectPage },
-    { key: "methods", label: "Methods", icon: ExperimentOutlined, render: renderMethodsPage },
+    // Methods is hidden for now: it has no content yet. Uncomment to bring the tab back (renderMethodsPage is kept).
+    // { key: "methods", label: "Methods", icon: ExperimentOutlined, render: renderMethodsPage },
     { key: "build-existing", label: "Build Existing Roof", icon: BuildOutlined, render: () => renderBuildPage("existing") },
     {
       key: "existing",
@@ -550,7 +491,9 @@ export default function Home() {
           </aside>
           <div className="workspace-main">
             <div className={`workspace-content${activeTab === "project" || activeTab === "report" ? " workspace-content-accent" : ""}`}>
-              {activeStep.render()}
+              {activeStep.key !== "report" && activeStep.render()}
+              {/* the report page stays mounted so a report keeps generating, and stays shown, across tabs */}
+              <div hidden={activeStep.key !== "report"}>{renderReport()}</div>
             </div>
             <Footer />
           </div>
