@@ -17,7 +17,6 @@ type GeneratedReport = {
   fingerprint: string;
 };
 
-/** File name from `Content-Disposition: inline; filename="..."`, else from the project name. */
 function reportFilename(response: Response, project: ProjectInfo, type: ReportType) {
   const header = response.headers.get("Content-Disposition") ?? "";
   const match = /filename="?([^";]+)"?/i.exec(header);
@@ -26,11 +25,6 @@ function reportFilename(response: Response, project: ProjectInfo, type: ReportTy
   return `${base}${type === "detailed" ? "_detailed" : ""}.pdf`;
 }
 
-/**
- * Engineering report from the API (POST /intelliframe/export-pdf): the server runs the existing and
- * retrofitted roof for gravity and uplift, compiles the Typst report and returns the PDF, shown here
- * in an iframe (the browser's own PDF viewer, with print and zoom).
- */
 export default function ReportView({
   input,
   project,
@@ -51,7 +45,6 @@ export default function ReportView({
     onStaleChange?.(stale);
   }, [stale, onStaleChange]);
 
-  // free the blob URL when it is replaced or the tab unmounts; abort a request still running
   useEffect(() => () => {
     if (report) URL.revokeObjectURL(report.url);
   }, [report]);
