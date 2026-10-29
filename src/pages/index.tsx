@@ -2,7 +2,7 @@ import ClientInput, { ViewerCard } from "@/components/client-input";
 import usePurlinLine, { type PurLinLineState } from "@/components/hooks/use-purlin-line";
 import Layout from "@/components/layout/layout";
 import Footer from "@/components/layout/footer";
-import { DeflectionCard, ResultStats, type AnalaysisData } from "@/components/results/results-display";
+import { SummaryComparisonTable, type AnalaysisData } from "@/components/results/results-display";
 import SubmitButton from "@/components/submission/submit-button";
 import Head from "next/head";
 import dynamic from "next/dynamic";
@@ -136,7 +136,7 @@ export default function Home() {
   const pageHeading = (kicker: string, title: string, description: string, action?: ReactNode) => (
     <div className="analysis-toolbar">
       <div>
-        <span className="section-kicker">{kicker}</span>
+        {kicker ? <span className="section-kicker">{kicker}</span> : null}
         <h1 className="page-title">{title}</h1>
         <p className="page-description">{description}</p>
       </div>
@@ -201,7 +201,7 @@ export default function Home() {
     <div className="analysis-workspace">
       {scope === "existing"
         ? pageHeading(
-          "Existing roof",
+          "",
           "Build Existing Roof",
           "Set the existing purlin section and framing geometry. The gravity and uplift analyses use these values."
         )
@@ -239,19 +239,16 @@ export default function Home() {
   const caseResults = (run: AnalysisRun) => {
     const output = runs[run.key];
     if (!output) return null;
+    if (!isRunStale(runInputs[run.key], inputData, run.direction)) return null;
     return (
       <section ref={resultsRef} className="case-results" aria-label="Analysis results">
-        {isRunStale(runInputs[run.key], inputData, run.direction) && (
-          <Alert
-            className="stale-alert"
-            type="warning"
-            showIcon
-            message="Inputs have changed since this analysis"
-            description="The results below reflect the previous inputs. Run the analysis again to bring them up to date."
-          />
-        )}
-        <DeflectionCard output={output} title={run.title} />
-        <ResultStats output={output} direction={run.direction} />
+        <Alert
+          className="stale-alert"
+          type="warning"
+          showIcon
+          message="Inputs have changed since this analysis"
+          description="Results in the model preview reflect the previous inputs. Run the analysis again to bring them up to date."
+        />
       </section>
     );
   };
@@ -269,7 +266,12 @@ export default function Home() {
         />
       )}
       <section className="case-preview" aria-label="Model preview">
-        <ViewerCard state={inputData} loadDirection={run.direction} sectionCatalog={sectionCatalog(run.scope)} />
+        <ViewerCard
+          state={inputData}
+          loadDirection={run.direction}
+          sectionCatalog={sectionCatalog(run.scope)}
+          deflection={runs[run.key]}
+        />
       </section>
       {caseResults(run)}
     </div>
@@ -297,7 +299,7 @@ export default function Home() {
             <strong>{inputData.intelliFrameSection}</strong>
           </div>
           <div>
-            <span>Deck</span>
+            <span>Roof deck type</span>
             <strong>{inputData.deckType}</strong>
           </div>
         </div>
@@ -307,6 +309,10 @@ export default function Home() {
 
   const renderSummary = () => {
     const completed = ANALYSIS_RUNS.filter((run) => runs[run.key]).length;
+    const staleKeys = ANALYSIS_RUNS
+      .filter((run) => runs[run.key] && isRunStale(runInputs[run.key], inputData, run.direction))
+      .map((run) => run.key);
+
     return (
       <div className="summary-workspace">
         <div className="summary-heading">
@@ -314,63 +320,15 @@ export default function Home() {
             <span className="section-kicker">Analysis output</span>
             <h1 id="summary-title" className="page-title">Summary</h1>
             <p className="page-description">
-              Allowable pressure, governing limit state, and failure location for each case that has been run.
+              Allowable pressure, improvement, governing limit state, failure location, and maximum deflection
+              for gravity and uplift — existing vs. IRF retrofit.
             </p>
           </div>
           <Tag icon={<SafetyCertificateOutlined />} color={completed === ANALYSIS_RUNS.length ? "success" : "default"}>
             {completed} of {ANALYSIS_RUNS.length} complete
           </Tag>
         </div>
-        <div className="summary-table-card">
-          <table className="summary-table" aria-labelledby="summary-title">
-            <thead>
-              <tr>
-                <th scope="col">Case</th>
-                <th scope="col">Allowable roof pressure</th>
-                <th scope="col">Predicted failure limit state</th>
-                <th scope="col">Failure location</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ANALYSIS_RUNS.map((run) => {
-                const output = runs[run.key];
-                const stale = isRunStale(runInputs[run.key], inputData, run.direction);
-                return (
-                  <tr key={run.key} className={output ? undefined : "is-pending"}>
-                    <th scope="row">
-                      <span className={`summary-case summary-case-${run.direction}`}>
-                        {run.direction === "gravity" ? "Gravity" : "Uplift"}
-                      </span>
-                      <span className="summary-scope">
-                        {run.scope === "existing" ? "Existing roof" : "Retrofitted roof"}
-                      </span>
-                      {stale && <span className="summary-stale">Inputs changed</span>}
-                    </th>
-                    <td>
-                      {output ? (
-                        <span className="summary-pressure">
-                          {output.capacity.value}
-                          <small>{output.capacity.unit}</small>
-                        </span>
-                      ) : <span className="summary-blank">—</span>}
-                    </td>
-                    <td className="summary-limit">
-                      {output ? output.failureLimitState : <span className="summary-blank">Not run</span>}
-                    </td>
-                    <td>
-                      {output ? (
-                        <span className="summary-location">
-                          {output.failureLocation.toLocaleString()}
-                          <small>in</small>
-                        </span>
-                      ) : <span className="summary-blank">—</span>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <SummaryComparisonTable runs={runs} staleKeys={staleKeys} />
       </div>
     );
   };

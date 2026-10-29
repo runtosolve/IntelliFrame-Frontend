@@ -22,8 +22,12 @@ export default function SectionView({
   const section = retrofit ? intelliFrameLibrary[purlinName] : purlinSectionLibrary[purlinName];
   const existing = retrofit && existingName ? purlinSectionLibrary[existingName] : undefined;
 
+  const analysis = loadDirection !== undefined;
   const drawing = useMemo(() => (section ? getSectionDrawing(section, existing) : undefined), [section, existing]);
-  const layout = useMemo(() => (drawing ? getDimensionLayout(drawing) : undefined), [drawing]);
+  const layout = useMemo(
+    () => (drawing ? getDimensionLayout(drawing, { analysis }) : undefined),
+    [drawing, analysis],
+  );
   const box = layout
     ? {
       x: layout.bounds.cx,
@@ -33,7 +37,13 @@ export default function SectionView({
     }
     : { x: 0, y: 0, width: 10, height: 10 };
 
-  const ready = useResponsiveStage({ stageRef, containerRef, boundingBox: box, setZoom, padding: SECTION_PADDING });
+  const ready = useResponsiveStage({
+    stageRef,
+    containerRef,
+    boundingBox: box,
+    setZoom,
+    padding: analysis ? ANALYSIS_SECTION_PADDING : SECTION_PADDING,
+  });
 
   return (
     <div
@@ -58,7 +68,8 @@ export default function SectionView({
   );
 }
 
-const SECTION_PADDING = { top: 18, bottom: 14, left: 20, right: 20 };
+const SECTION_PADDING = { top: 48, bottom: 28, left: 36, right: 24 };
+const ANALYSIS_SECTION_PADDING = { top: 22, bottom: 20, left: 18, right: 24 };
 
 type SectionViewProps = {
   purlinName: string,

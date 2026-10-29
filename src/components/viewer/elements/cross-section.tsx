@@ -10,16 +10,33 @@ const SINGLE_SECTION_COLOR = "#030712";
 
 type SectionPart = { points: Point[], t: number, color: string };
 
+export type SectionFlangeDim = {
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+  value: number,
+};
+
+export type SectionDimAnchors = {
+  height: { x0: number, y0: number, x1: number, y1: number, value: number },
+  flanges: SectionFlangeDim[],
+};
+
 export type SectionDrawing = {
   parts: SectionPart[],
   load: Point,
+  dims: SectionDimAnchors,
+  upperFlangeOutside: boolean,
 };
 
 export function getSectionDrawing(section: PurlinSectionData, existing?: PurlinSectionData): SectionDrawing {
   if (!existing) {
     return {
       parts: [{ points: getSectionCoordinates(section), t: section.t, color: SINGLE_SECTION_COLOR }],
-      load: { x: section.B / 2, y: 0 },
+      load: getTopFlangeLoadPoint(section),
+      dims: getSectionDimAnchors(section),
+      upperFlangeOutside: true,
     };
   }
 
@@ -29,13 +46,76 @@ export function getSectionDrawing(section: PurlinSectionData, existing?: PurlinS
   const seat = (strokeWidth(existing.t) + strokeWidth(section.t)) / 2;
   const intelliFramePoints = getSectionCoordinates(section)
     .map((point) => ({ x: point.x + shiftX, y: point.y - seat }));
+  const load = getTopFlangeLoadPoint(section);
+  load.x += shiftX;
+  load.y -= seat;
 
   return {
     parts: [
       { points: getSectionCoordinates(existing), t: existing.t, color: EXISTING_SECTION_COLOR },
       { points: intelliFramePoints, t: section.t, color: INTELLI_FRAME_COLOR },
     ],
-    load: { x: shiftX + bottom + top / 2, y: -section.H - seat },
+    load,
+    dims: getSectionDimAnchors(existing),
+    upperFlangeOutside: false,
+  };
+}
+
+function getTopFlangeLoadPoint(data: PurlinSectionData): Point {
+  const r = Math.max(0, data.r);
+  const lip = Math.abs(data.lipAngle) * Math.PI / 180;
+
+  if (data.B_bottom != null || data.B_top != null) {
+    const bottom = data.B_bottom ?? data.B;
+    const top = data.B_top ?? data.B;
+    const webTrim = filletTrimDistance(Math.PI / 2, r);
+    const lipTrim = filletTrimDistance(Math.PI - lip, r);
+    const x0 = bottom + webTrim;
+    const x1 = bottom + top - lipTrim;
+    return { x: (x0 + x1) / 2, y: -data.H };
+  }
+
+  const webTrim = filletTrimDistance(Math.PI / 2, r);
+  const lipTrim = filletTrimDistance(Math.PI - lip, r);
+  const x0 = webTrim;
+  const x1 = data.B - lipTrim;
+  return { x: (x0 + x1) / 2, y: 0 };
+}
+
+function filletTrimDistance(cornerAngle: number, radius: number) {
+  const angle = Math.min(Math.max(cornerAngle, 1e-3), Math.PI - 1e-3);
+  return radius / Math.tan(angle / 2);
+}
+
+function getSectionDimAnchors(data: PurlinSectionData): SectionDimAnchors {
+  if (data.B_bottom != null || data.B_top != null) {
+    const bottom = data.B_bottom ?? data.B;
+    const top = data.B_top ?? data.B;
+    return {
+      height: { x0: 0, y0: 0, x1: 0, y1: -data.H, value: data.H },
+      flanges: [
+        { x0: 0, y0: 0, x1: bottom, y1: 0, value: bottom },
+        { x0: bottom, y0: -data.H, x1: bottom + top, y1: -data.H, value: top },
+      ],
+    };
+  }
+
+  if (data.shape === "C") {
+    return {
+      height: { x0: 0, y0: 0, x1: 0, y1: data.H, value: data.H },
+      flanges: [
+        { x0: 0, y0: 0, x1: data.B, y1: 0, value: data.B },
+        { x0: 0, y0: data.H, x1: data.B, y1: data.H, value: data.B },
+      ],
+    };
+  }
+
+  return {
+    height: { x0: 0, y0: 0, x1: 0, y1: data.H, value: data.H },
+    flanges: [
+      { x0: 0, y0: 0, x1: data.B, y1: 0, value: data.B },
+      { x0: 0, y0: data.H, x1: -data.B, y1: data.H, value: data.B },
+    ],
   };
 }
 

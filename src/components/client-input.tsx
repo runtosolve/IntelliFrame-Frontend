@@ -1,5 +1,5 @@
 import DynamicInputFiled from "./form-input/dynamic-input-field";
-import LabelledInputField from "./form-input/input-field";
+import LabelledInputField, { InputField } from "./form-input/input-field";
 import LabelledSelectField from "./form-input/select-field";
 import { PurLinLineState, PurLinLineStateDispatch } from "./hooks/use-purlin-line";
 import { Card, Tag } from "antd";
@@ -9,6 +9,7 @@ import purlinData from "../data/Purlins.json";
 import intelliFrameData from "../data/IntelliFrameRF.json";
 import deckData from "../data/Decks.json";
 import { generatePurlinViewData } from "./viewer/purlin-view-utils";
+import { PreviewResultRail, type AnalaysisData } from "./results/results-display";
 import {
   ApartmentOutlined,
   CompassOutlined,
@@ -24,11 +25,17 @@ const SectionViewNoSSR = dynamic(() => import("@/components/viewer/section-view"
 });
 
 
-export function ViewerCard({ state, loadDirection = state.loadDirection, sectionCatalog = "purlin", showLoad = true }: ViewerCardProps) {
+export function ViewerCard({
+  state,
+  loadDirection = state.loadDirection,
+  sectionCatalog = "purlin",
+  showLoad = true,
+  deflection = null,
+}: ViewerCardProps) {
   const sectionName = sectionCatalog === "intelliframe" ? state.intelliFrameSection : state.crossSection;
   const purlinViewData = useMemo(
-    () => generatePurlinViewData(state.spans, state.lapLength),
-    [state.spans, state.lapLength],
+    () => generatePurlinViewData(state.spans, state.lapNegZ, state.lapPosZ),
+    [state.spans, state.lapNegZ, state.lapPosZ],
   );
   return (
     <Card
@@ -44,7 +51,7 @@ export function ViewerCard({ state, loadDirection = state.loadDirection, section
       extra={<Tag variant="filled">{state.spans.length} spans</Tag>}
       className="surface-card preview-card"
     >
-      <div className="preview-canvas">
+      <div className={`preview-canvas${showLoad ? " preview-canvas--analysis" : ""}${deflection ? " preview-canvas--has-results" : ""}`}>
         <div className="preview-section">
           <div className="preview-label">Cross section</div>
           <SectionViewNoSSR
@@ -54,13 +61,32 @@ export function ViewerCard({ state, loadDirection = state.loadDirection, section
             rotation={-state.roofSlope}
             loadDirection={showLoad ? loadDirection : undefined}
           />
+          {deflection ? (
+            <PreviewResultRail output={deflection} direction={loadDirection} />
+          ) : null}
         </div>
         <div className="preview-layout">
           <div className="preview-label">Framing layout</div>
+          {showLoad ? (
+            <div className="framing-axes" aria-hidden>
+              <svg viewBox="0 0 56 56" width="56" height="56">
+                <defs>
+                  <marker id="framing-axis-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                    <path d="M0,0 L6,3 L0,6 Z" fill="#44403c" />
+                  </marker>
+                </defs>
+                <line x1="18" y1="38" x2="44" y2="38" stroke="#44403c" strokeWidth="1.6" markerEnd="url(#framing-axis-arrow)" />
+                <text x="46" y="42" fill="#44403c" fontSize="12" fontWeight="700">Z</text>
+                <line x1="18" y1="38" x2="18" y2="12" stroke="#44403c" strokeWidth="1.6" markerEnd="url(#framing-axis-arrow)" />
+                <text x="14" y="10" fill="#44403c" fontSize="12" fontWeight="700" textAnchor="middle">Y</text>
+              </svg>
+            </div>
+          ) : null}
           <PurlineViewNoSSR
             purlinData={purlinViewData}
             frameFlangeWidth={state.frameFlangeWidth}
             loadDirection={showLoad ? loadDirection : undefined}
+            deflection={deflection}
           />
         </div>
       </div>
@@ -73,10 +99,10 @@ function LockedField({ label, unit, name, value }: { label: string, unit?: strin
     <div>
       <span id={`${name}-label`} className="field-label">
         <span>{label}</span>
-        {unit && <span className="field-unit">{unit}</span>}
       </span>
       <div className="field-locked" aria-labelledby={`${name}-label`} aria-readonly="true">
-        {value}
+        <span>{value}</span>
+        {unit && <span className="field-inline-unit">{unit}</span>}
       </div>
     </div>
   );
@@ -130,9 +156,19 @@ export default function ClientInput({state, dispatch, part, retrofit = false}: C
           <div className="form-stack">
             {part === "section" ? (
               <>
-                <LockedField label="Roof slope" unit="deg" name="roofSlope" value={formatNumber(state.roofSlope)} />
+                <div>
+                  <span id="roofSlope-label" className="field-label">
+                    <span>Roof slope</span>
+                  </span>
+                  <div className="roof-slope-row" aria-labelledby="roofSlope-label">
+                    <div className="field-locked roof-slope-input" aria-readonly="true">
+                      {formatNumber(state.roofSlope)}
+                    </div>
+                    <span className="roof-slope-suffix">on 12</span>
+                  </div>
+                </div>
                 <LockedField label="Cross section" name="crossSection" value={state.crossSection} />
-                <LockedField label="Deck type" name="deckType" value={state.deckType} />
+                <LockedField label="Roof deck type" name="deckType" value={state.deckType} />
                 <LabelledSelectField
                   label="IntelliFrame RF Profile"
                   name="intelliFrameSection"
@@ -149,8 +185,32 @@ export default function ClientInput({state, dispatch, part, retrofit = false}: C
             ) : (
               <>
                 <LockedSpans spans={state.spans} />
-                <LockedField label="Lap length" unit="ft" name="lapLength" value={formatNumber(state.lapLength)} />
-                <LockedField label="Spacing" unit="ft" name="spacing" value={formatNumber(state.spacing)} />
+                <div>
+                  <span id="purlinLapLength-label" className="field-label">
+                    <span>Purlin lap length</span>
+                  </span>
+                  <div className="lap-length-row" aria-labelledby="purlinLapLength-label">
+                    <div className="lap-length-field">
+                      <div className="lap-length-field-row">
+                        <span className="lap-length-tag" aria-hidden>-Z</span>
+                        <div className="field-locked" aria-label="Purlin lap length -Z" aria-readonly="true">
+                          <span>{formatNumber(state.lapNegZ)}</span>
+                          <span className="field-inline-unit">ft</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="lap-length-field">
+                      <div className="lap-length-field-row">
+                        <span className="lap-length-tag" aria-hidden>+Z</span>
+                        <div className="field-locked" aria-label="Purlin lap length +Z" aria-readonly="true">
+                          <span>{formatNumber(state.lapPosZ)}</span>
+                          <span className="field-inline-unit">ft</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <LockedField label="Purlin spacing" unit="ft" name="spacing" value={formatNumber(state.spacing)} />
                 <LockedField
                   label="Frame flange width"
                   unit="in"
@@ -185,17 +245,24 @@ export default function ClientInput({state, dispatch, part, retrofit = false}: C
       {part === "section" && (
         <div className="input-section">
           <div className="form-stack">
-            <LabelledInputField
-              label="Roof slope"
-              unit="deg"
-              name="roofSlope"
-              defaultValue={formatNumber(state.roofSlope)}
-              setField={(v) => dispatch({
-                type: "set",
-                field: "roofSlope",
-                payload: v
-              })}
-            />
+            <div>
+              <label htmlFor="roofSlope" className="field-label">
+                <span>Roof slope</span>
+              </label>
+              <div className="roof-slope-row">
+                <InputField
+                  className="roof-slope-input"
+                  name="roofSlope"
+                  defaultValue={formatNumber(state.roofSlope)}
+                  setField={(v) => dispatch({
+                    type: "set",
+                    field: "roofSlope",
+                    payload: v
+                  })}
+                />
+                <span className="roof-slope-suffix" aria-hidden="false">on 12</span>
+              </div>
+            </div>
             <LabelledSelectField
               label="Cross section"
               name="crossSection"
@@ -208,7 +275,7 @@ export default function ClientInput({state, dispatch, part, retrofit = false}: C
               })}
             />
             <LabelledSelectField
-              label="Deck type"
+              label="Roof deck type"
               name="deckType"
               value={state.deckType}
               options={DECK_OPTIONS}
@@ -236,20 +303,47 @@ export default function ClientInput({state, dispatch, part, retrofit = false}: C
               payload: v
             })}
           />
+          <div>
+            <span id="purlinLapLength-label" className="field-label">
+              <span>Purlin lap length</span>
+            </span>
+            <div className="lap-length-row" aria-labelledby="purlinLapLength-label">
+              <div className="lap-length-field">
+                <div className="lap-length-field-row">
+                  <label htmlFor="lapNegZ" className="lap-length-tag">-Z</label>
+                  <InputField
+                    name="lapNegZ"
+                    unit="ft"
+                    defaultValue={formatNumber(state.lapNegZ)}
+                    minValue={0.5}
+                    setField={(v) => dispatch({
+                      type: "set",
+                      field: "lapNegZ",
+                      payload: v,
+                    })}
+                  />
+                </div>
+              </div>
+              <div className="lap-length-field">
+                <div className="lap-length-field-row">
+                  <label htmlFor="lapPosZ" className="lap-length-tag">+Z</label>
+                  <InputField
+                    name="lapPosZ"
+                    unit="ft"
+                    defaultValue={formatNumber(state.lapPosZ)}
+                    minValue={0.5}
+                    setField={(v) => dispatch({
+                      type: "set",
+                      field: "lapPosZ",
+                      payload: v,
+                    })}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
           <LabelledInputField
-            label="Lap length"
-            unit="ft"
-            name="lapLength"
-            defaultValue={formatNumber(state.lapLength)}
-            minValue={0.5}
-            setField={(v) => dispatch({
-              type: "set",
-              field: "lapLength",
-              payload: v,
-            })}
-          />
-          <LabelledInputField
-            label="Spacing"
+            label="Purlin spacing"
             unit="ft"
             name="spacing"
             defaultValue={formatNumber(state.spacing)}
@@ -287,6 +381,7 @@ type ViewerCardProps = {
   loadDirection?: LoadDirection,
   sectionCatalog?: SectionCatalog,
   showLoad?: boolean,
+  deflection?: AnalaysisData | null,
 }
 
 type ClientInputProps = {

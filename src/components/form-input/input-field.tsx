@@ -8,17 +8,17 @@ export default function LabelledInputField({ label, unit, name, ...props }: Labe
     <div>
       <label htmlFor={name} className="field-label">
         <span>{label}</span>
-        {unit && <span className="field-unit">{unit}</span>}
       </label>
       <InputField
         name={name}
+        unit={unit}
         {...props}
         />
     </div>
   );
 }
 
-export function InputField({ name, defaultValue, minValue = 0, setField, ...props }: InputFieldProps) {
+export function InputField({ name, defaultValue, minValue = 0, setField, unit, className, ...props }: InputFieldProps) {
 
   const [isValid, setIsValid] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
@@ -36,7 +36,7 @@ export function InputField({ name, defaultValue, minValue = 0, setField, ...prop
   }
 
   return (
-    <div {...props}>
+    <div className={["field-input-wrap", className].filter(Boolean).join(" ")} {...props}>
       <InputNumber
         style={{ width: "100%" }}
         id={name}
@@ -44,6 +44,7 @@ export function InputField({ name, defaultValue, minValue = 0, setField, ...prop
         defaultValue={parseFloat(defaultValue)}
         status={isValid ? "" : "error"}
         controls={false}
+        suffix={unit ? <span className="field-inline-unit">{unit}</span> : undefined}
         aria-describedby={!isValid ? `${name}-error` : undefined}
         onChange={handleOnChange}
       />
@@ -60,7 +61,8 @@ interface InputFieldProps extends Omit<React.ComponentProps<"div">, "onChange"> 
   name: string,
   defaultValue: string,
   minValue?: number,
-  setField: (v: number) => void
+  setField: (v: number) => void,
+  unit?: string,
 }
 
 

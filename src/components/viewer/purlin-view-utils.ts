@@ -1,11 +1,15 @@
 import { PurlinData } from "./purlin-view";
 
-export function generatePurlinViewData(spans: Array<{id: string, value: number}>, lapLength: number) {
+export function generatePurlinViewData(
+  spans: Array<{id: string, value: number}>,
+  lapNegZ: number,
+  lapPosZ: number,
+) {
 
   const data = spans.map((item, index) => {
     let span = item.value;
-    let leftLap = (index == 0) ? (0) : (lapLength / 2);
-    let rightLap = (index == (spans.length - 1)) ? (0) : (lapLength / 2)
+    let leftLap = (index == 0) ? (0) : lapNegZ;
+    let rightLap = (index == (spans.length - 1)) ? (0) : lapPosZ;
     let length = span + leftLap + rightLap;
     
     return {id: item.id, index, leftLap, span, rightLap, length}
@@ -44,4 +48,3 @@ export function calculateSupportPositions(data: Array<PurlinData>, lapOffsetY: n
 
   return supportPositions;
 }
-
