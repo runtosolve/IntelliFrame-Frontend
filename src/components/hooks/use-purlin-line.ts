@@ -18,7 +18,7 @@ function reducer(state: PurLinLineState, action: ReducerAction): PurLinLineState
 
 export const INITIAL_PURLIN_STATE: PurLinLineState = {
   loadDirection: "gravity",
-  roofSlope: 1 / 12,
+  roofSlope: 1, // rise in 12 (1:12)
   deckType: "SSR Trapezoidal 18 in. 24 g",
   crossSection: "Z8x2.5 054",
   intelliFrameSection: "2x4.5x2.5 16g",

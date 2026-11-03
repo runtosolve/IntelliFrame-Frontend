@@ -58,7 +58,7 @@ export function ViewerCard({
             purlinName={sectionName}
             existingName={sectionCatalog === "intelliframe" ? state.crossSection : undefined}
             catalog={sectionCatalog}
-            rotation={-state.roofSlope}
+            rotation={-Math.atan(state.roofSlope / 12) * 180 / Math.PI}
             loadDirection={showLoad ? loadDirection : undefined}
           />
           {deflection ? (

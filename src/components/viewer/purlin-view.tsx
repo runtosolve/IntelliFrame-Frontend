@@ -98,7 +98,7 @@ export default function PurlinView({ purlinData, frameFlangeWidth, loadDirection
           {deflectionPlot && (
             <Line
               points={deflectionPlot.points}
-              stroke="#111827"
+              stroke="#b91c1c"
               strokeWidth={2 / zoom}
               lineCap="round"
               lineJoin="round"
@@ -110,7 +110,7 @@ export default function PurlinView({ purlinData, frameFlangeWidth, loadDirection
               x={deflectionPlot.xs[deflectionPlot.failureIndex]}
               y={deflectionPlot.ys[deflectionPlot.failureIndex]}
               radius={(9 * pulse) / zoom}
-              fill="#b91c1c"
+              fill="#111827"
               opacity={0.55 + 0.45 * pulse}
               listening={false}
             />
@@ -124,7 +124,7 @@ export default function PurlinView({ purlinData, frameFlangeWidth, loadDirection
                 x={x}
                 y={deflectionPlot.ys[index]}
                 radius={8 / zoom}
-                fill="#111827"
+                fill="#b91c1c"
                 opacity={hoverIndex === index ? 1 : 0}
                 onMouseEnter={(e) => {
                   const stage = e.target.getStage();
