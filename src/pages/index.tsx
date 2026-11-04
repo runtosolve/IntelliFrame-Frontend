@@ -7,8 +7,9 @@ import SubmitButton from "@/components/submission/submit-button";
 import Head from "next/head";
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Alert, Card, Input, Tag } from "antd";
+import { Alert, Button, Card, Input, Tag } from "antd";
 import {
+  ArrowRightOutlined,
   BarChartOutlined,
   BuildOutlined,
   ExperimentOutlined,
@@ -392,6 +393,8 @@ export default function Home() {
   ];
   const flatSteps = steps.flatMap((step) => step.children ?? [step]);
   const activeStep = flatSteps.find((step) => step.key === activeTab) ?? flatSteps[0];
+  const stepIndex = Math.max(0, flatSteps.findIndex((step) => step.key === activeTab));
+  const nextStep = flatSteps[stepIndex + 1] ?? null;
 
   return (
     <>
@@ -449,6 +452,28 @@ export default function Home() {
           </aside>
           <div className="workspace-main">
             <div className={`workspace-content${activeTab === "project" || activeTab === "report" ? " workspace-content-accent" : ""}`}>
+              {nextStep && (
+                <nav className="workflow-pager" aria-label="Continue workflow">
+                  <div className="workflow-pager-meta">
+                    <span className="workflow-pager-step">
+                      Step {stepIndex + 1} of {flatSteps.length}
+                    </span>
+                    <span className="workflow-pager-next">
+                      Next · <strong>{nextStep.label}</strong>
+                    </span>
+                  </div>
+                  <Button
+                    type="default"
+                    size="middle"
+                    className="go-next-button"
+                    icon={<ArrowRightOutlined />}
+                    iconPosition="end"
+                    onClick={() => setActiveTab(nextStep.key)}
+                  >
+                    Go Next
+                  </Button>
+                </nav>
+              )}
               {activeStep.key !== "report" && activeStep.render()}
               {/* the report page stays mounted so a report keeps generating, and stays shown, across tabs */}
               <div hidden={activeStep.key !== "report"}>{renderReport()}</div>

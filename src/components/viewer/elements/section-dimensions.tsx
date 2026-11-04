@@ -117,7 +117,12 @@ export function getDimensionLayout(
   };
 }
 
-export default function SectionDimensions({ layout, zoom, loadDirection }: SectionDimensionsProps) {
+export default function SectionDimensions({
+  layout,
+  zoom,
+  loadDirection,
+  sectionRotation = 0,
+}: SectionDimensionsProps) {
   const px = 1 / Math.max(zoom, 1e-6);
   const fontSize = FONT_SIZE * px;
   const thin = px;
@@ -134,6 +139,7 @@ export default function SectionDimensions({ layout, zoom, loadDirection }: Secti
     const diamond = 5 * px;
     const dotted = [1.5 * px, 3 * px];
     const dashed = [6 * px, 4 * px];
+    const gravityWorldVertical = loadDirection === "gravity" && Math.abs(sectionRotation) > 1e-6;
 
     return (
       <Group listening={false}>
@@ -176,14 +182,27 @@ export default function SectionDimensions({ layout, zoom, loadDirection }: Secti
           listening={false}
         />
 
-        <Arrow
-          points={loadDirection === "uplift" ? [load.x, arrowTip, load.x, arrowTail] : [load.x, arrowTail, load.x, arrowTip]}
-          stroke={ACCENT_COLOR}
-          fill={ACCENT_COLOR}
-          strokeWidth={thin * 2}
-          pointerLength={8 * px}
-          pointerWidth={7 * px}
-        />
+        {gravityWorldVertical ? (
+          <Group x={load.x} y={arrowTip} rotation={-sectionRotation} listening={false}>
+            <Arrow
+              points={[0, -arrowLength, 0, 0]}
+              stroke={ACCENT_COLOR}
+              fill={ACCENT_COLOR}
+              strokeWidth={thin * 2}
+              pointerLength={8 * px}
+              pointerWidth={7 * px}
+            />
+          </Group>
+        ) : (
+          <Arrow
+            points={loadDirection === "uplift" ? [load.x, arrowTip, load.x, arrowTail] : [load.x, arrowTail, load.x, arrowTip]}
+            stroke={ACCENT_COLOR}
+            fill={ACCENT_COLOR}
+            strokeWidth={thin * 2}
+            pointerLength={8 * px}
+            pointerWidth={7 * px}
+          />
+        )}
       </Group>
     );
   }
@@ -360,4 +379,5 @@ type SectionDimensionsProps = {
   layout: DimensionLayout,
   zoom: number,
   loadDirection?: "gravity" | "uplift",
+  sectionRotation?: number,
 }

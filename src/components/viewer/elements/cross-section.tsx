@@ -127,7 +127,12 @@ export function SectionDrawingView({ drawing, layout, zoom, rotation = 0, loadDi
       {drawing.parts.map((part, index) => (
         <SectionLine key={index} points={part.points} thickness={part.t} color={part.color} />
       ))}
-      <SectionDimensions layout={layout} zoom={zoom} loadDirection={loadDirection} />
+      <SectionDimensions
+        layout={layout}
+        zoom={zoom}
+        loadDirection={loadDirection}
+        sectionRotation={rotation}
+      />
     </Group>
   );
 }
