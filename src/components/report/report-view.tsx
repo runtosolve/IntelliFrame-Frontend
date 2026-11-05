@@ -8,22 +8,22 @@ import {
   mapReportToJSON,
   reportFingerprint,
 } from "../submission/submission-utils";
-import { REPORT_TIMEOUT_MS, REPORT_URL } from "@/config/api";
+import { REPORT_TIMEOUT_MS } from "@/config/api";
+import {
+  ApiError,
+  downloadJobFile,
+  jobStatusLabel,
+  runJob,
+  type JobStatus,
+} from "@/api/jobs";
 
 type GeneratedReport = {
   url: string;
   filename: string;
   type: ReportType;
   fingerprint: string;
+  jobId?: string;
 };
-
-function reportFilename(response: Response, project: ProjectInfo, type: ReportType) {
-  const header = response.headers.get("Content-Disposition") ?? "";
-  const match = /filename="?([^";]+)"?/i.exec(header);
-  if (match) return match[1];
-  const base = project.projectName.trim().replace(/[^A-Za-z0-9._ -]/g, "_") || "IntelliFrame_Report";
-  return `${base}${type === "detailed" ? "_detailed" : ""}.pdf`;
-}
 
 export default function ReportView({
   input,
@@ -36,6 +36,7 @@ export default function ReportView({
 }) {
   const [report, setReport] = useState<GeneratedReport | null>(null);
   const [running, setRunning] = useState<ReportType | null>(null);
+  const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -48,45 +49,45 @@ export default function ReportView({
   useEffect(() => () => {
     if (report) URL.revokeObjectURL(report.url);
   }, [report]);
+
   useEffect(() => () => controllerRef.current?.abort(), []);
 
   const generate = async (type: ReportType) => {
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
-    const timeoutId = window.setTimeout(() => controller.abort(), REPORT_TIMEOUT_MS);
     const fingerprint = reportFingerprint(input, project);
     setRunning(type);
+    setJobStatus(null);
     setError(null);
 
     try {
-      const response = await fetch(REPORT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: mapReportToJSON(input, project, type),
+      const payload = JSON.parse(mapReportToJSON(input, project, type)) as Record<string, unknown>;
+      const job = await runJob("/intelliframe/export-pdf", payload, {
         signal: controller.signal,
+        timeoutMs: REPORT_TIMEOUT_MS,
+        onStatus: (next) => setJobStatus(next.status),
       });
-      if (!response.ok) {
-        let detail = `Server error ${response.status}`;
-        try {
-          const body = await response.json();
-          detail = body.detail ?? body.error ?? detail;
-        } catch {
-          // not a JSON error body
-        }
-        throw new Error(detail);
-      }
-      const blob = await response.blob();
-      setReport({
-        url: URL.createObjectURL(new Blob([blob], { type: "application/pdf" })),
-        filename: reportFilename(response, project, type),
-        type,
-        fingerprint,
+
+      const { blob, filename } = await downloadJobFile(job, controller.signal);
+      const url = URL.createObjectURL(new Blob([blob], { type: job.content_type || "application/pdf" }));
+
+      setReport((previous) => {
+        if (previous) URL.revokeObjectURL(previous.url);
+        return {
+          url,
+          filename,
+          type,
+          fingerprint,
+          jobId: job.job_id,
+        };
       });
       message.success(type === "detailed" ? "Detailed report is ready" : "Report is ready");
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
         if (controllerRef.current === controller) setError("The report timed out. Please try again.");
+      } else if (err instanceof ApiError && err.status === 401) {
+        setError("Your session expired. Please sign in again.");
       } else if (err instanceof TypeError) {
         setError("Sorry, there is a problem with the server.");
       } else {
@@ -94,10 +95,10 @@ export default function ReportView({
       }
       console.error(err);
     } finally {
-      window.clearTimeout(timeoutId);
       if (controllerRef.current === controller) {
         controllerRef.current = null;
         setRunning(null);
+        setJobStatus(null);
       }
     }
   };
@@ -109,6 +110,10 @@ export default function ReportView({
     a.download = report.filename;
     a.click();
   };
+
+  const progressLabel = jobStatus
+    ? jobStatusLabel(jobStatus)
+    : "Submitting…";
 
   return (
     <div className="report-panel">
@@ -148,8 +153,8 @@ export default function ReportView({
           <div className="report-progress">
             <Spin size="large" />
             <p>
-              Running the existing and retrofitted roof for gravity and uplift and building the report.
-              This takes 1-2 minutes.
+              {progressLabel} Running the existing and retrofitted roof for gravity and uplift and
+              building the report. This can take a few minutes.
             </p>
           </div>
         </div>

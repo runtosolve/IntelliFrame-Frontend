@@ -67,6 +67,7 @@ export function mapStateToJSON(
   return JSON.stringify({
     ...JSON.parse(mapGeometryToJSON(state)),
     analysis_type: analysisType,
-    generate_report: true,
+    // Legacy field only — does not generate a PDF. Use /intelliframe/export-pdf for reports.
+    generate_report: false,
   });
 }

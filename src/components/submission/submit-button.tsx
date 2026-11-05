@@ -1,52 +1,75 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button, message } from "antd";
 import { ThunderboltOutlined } from "@ant-design/icons";
 import { PurLinLineState } from "../hooks/use-purlin-line";
 import { mapStateToJSON } from "./submission-utils";
 import { AnalaysisData, processRawData } from "../results/results-display";
-import { API_URL, CALCULATE_TIMEOUT_MS } from "@/config/api";
+import { CALCULATE_TIMEOUT_MS } from "@/config/api";
+import {
+  ApiError,
+  downloadJobFile,
+  jobStatusLabel,
+  runJob,
+  type AnalysisResult,
+  type JobStatus,
+} from "@/api/jobs";
 
 export default function SubmitButton({ input, analysisType = "existing", onUpdate }: SubmitButtonProps) {
   const [running, setRunning] = useState(false);
+  const [status, setStatus] = useState<JobStatus | null>(null);
+  const controllerRef = useRef<AbortController | null>(null);
 
   const handleClick = async () => {
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+
     setRunning(true);
+    setStatus(null);
     onUpdate(null);
 
-    const submittedInput = mapStateToJSON(input, analysisType);
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), CALCULATE_TIMEOUT_MS);
-
     try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: submittedInput,
+      const payload = JSON.parse(mapStateToJSON(input, analysisType)) as Record<string, unknown>;
+      const job = await runJob("/intelliframe/base", payload, {
         signal: controller.signal,
+        timeoutMs: CALCULATE_TIMEOUT_MS,
+        onStatus: (next) => setStatus(next.status),
       });
 
-      if (!response.ok) {
-        message.error("Sorry, there is a problem with the server");
-        throw new Error("Server error");
+      let result = job.result;
+      if (!result && job.download_url) {
+        const { blob } = await downloadJobFile(job, controller.signal);
+        result = JSON.parse(await blob.text()) as AnalysisResult;
+      }
+      if (!result || typeof result.applied_pressure !== "number") {
+        throw new Error("Analysis finished without a usable result. Please try again.");
       }
 
-      const data = await response.json();
-      onUpdate(processRawData(input, data), input);
+      onUpdate(processRawData(input, result), input);
       message.success("Analysis has been completed");
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
         message.error("Analysis timed out. Please try again.");
+      } else if (err instanceof ApiError && err.status === 401) {
+        message.error("Your session expired. Please sign in again.");
       } else if (err instanceof TypeError) {
         message.error("Sorry, there is a problem with the server");
+      } else {
+        message.error(err instanceof Error ? err.message : "Analysis failed");
       }
       console.error(err);
     } finally {
-      window.clearTimeout(timeoutId);
-      setRunning(false);
+      if (controllerRef.current === controller) {
+        controllerRef.current = null;
+        setRunning(false);
+        setStatus(null);
+      }
     }
   };
+
+  const label = running
+    ? (status ? jobStatusLabel(status) : "Submitting…")
+    : "Run analysis";
 
   return (
     <Button
@@ -56,9 +79,10 @@ export default function SubmitButton({ input, analysisType = "existing", onUpdat
       className="run-analysis-button"
       icon={<ThunderboltOutlined />}
       loading={running}
+      disabled={running}
       onClick={handleClick}
     >
-      {running ? "Running analysis" : "Run analysis"}
+      {label}
     </Button>
   );
 }

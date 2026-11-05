@@ -135,12 +135,13 @@ export function PreviewResultRail({
 }
 
 export function processRawData(inputData: PurLinLineState, rawData: RawAPIData): AnalaysisData {
+  const label = (rawData.failure_limit_state ?? "").trim();
   return {
     capacity: {
-      value: (rawData.applied_pressure * 1000 * 144).toPrecision(3), // convert from ksi to psf
+      value: (rawData.applied_pressure * 144_000).toPrecision(3),
       unit: "psf"
     },
-    failureLimitState: rawData.failure_limit_state[0].toLocaleUpperCase() + rawData.failure_limit_state.slice(1),
+    failureLimitState: label || "—",
     failureLocation: rawData.failure_location,
     nodeLocations: rawData.input_z,
     nodeDeflections: rawData.output_v, // downward being positive

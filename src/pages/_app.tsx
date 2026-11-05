@@ -3,6 +3,7 @@ import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import { ConfigProvider } from 'antd'
 import AuthGate from '@/auth/auth-gate'
+import { AuthContextProvider } from '@/components/user-auth/auth-context'
 
 const theme = {
   token: {
@@ -55,9 +56,11 @@ export default function App({ Component, pageProps }: AppProps) {
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <AuthGate>
-        <Component {...pageProps} />
-      </AuthGate>
+      <AuthContextProvider>
+        <AuthGate>
+          <Component {...pageProps} />
+        </AuthGate>
+      </AuthContextProvider>
     </ConfigProvider>
   )
 }

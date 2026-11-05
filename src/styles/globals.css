@@ -393,6 +393,43 @@ input:focus-visible {
   border-radius: 12px;
 }
 
+.auth-card .auth-google.ant-btn {
+  width: min(100%, 320px);
+  color: #fff !important;
+  background: linear-gradient(112deg, #b51f28, #d62d33) !important;
+  border-color: transparent !important;
+  box-shadow: 0 10px 22px rgba(214, 45, 51, 0.28);
+}
+
+.auth-card .auth-google.ant-btn:hover,
+.auth-card .auth-google.ant-btn:focus-visible {
+  background: linear-gradient(112deg, #9a1a22, #c0262e) !important;
+}
+
+.auth-divider.ant-divider {
+  width: min(100%, 320px);
+  margin: 22px 0 18px;
+  color: #78716c;
+  font-size: 12px;
+}
+
+.auth-password-form {
+  width: min(100%, 320px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.auth-password-form .ant-alert {
+  text-align: left;
+}
+
+.auth-card code {
+  font-size: 12px;
+  color: #8e191d;
+}
+
 .auth-card small {
   margin-top: 18px;
   color: #78716c;

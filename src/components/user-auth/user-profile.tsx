@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { LogoutOutlined } from "@ant-design/icons";
-import { useSession } from "@/auth/auth-gate";
+import { useAuthContext } from "./auth-context";
 
 const DEFAULT_AVATAR = "/admin-avatar.svg";
 
 export default function UserProfile() {
-  const { signOut } = useSession();
+  const { email, signOut } = useAuthContext();
   const [open, setOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -32,6 +33,16 @@ export default function UserProfile() {
     };
   }, [open]);
 
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await signOut();
+    } finally {
+      setSigningOut(false);
+      setOpen(false);
+    }
+  };
+
   return (
     <div className="user-profile" ref={rootRef}>
       <button
@@ -56,8 +67,8 @@ export default function UserProfile() {
               <img src={DEFAULT_AVATAR} alt="" />
             </div>
             <div className="profile-identity">
-              <strong>IntelliFrame RF</strong>
-              <span>Local session</span>
+              <strong>IMETCO ADMIN</strong>
+              <span>{email || "Signed in"}</span>
             </div>
           </div>
 
@@ -65,10 +76,11 @@ export default function UserProfile() {
             type="button"
             className="profile-logout"
             role="menuitem"
-            onClick={signOut}
+            disabled={signingOut}
+            onClick={handleSignOut}
           >
             <LogoutOutlined aria-hidden />
-            <span>Sign out</span>
+            <span>{signingOut ? "Signing out…" : "Sign out"}</span>
           </button>
         </div>
       )}

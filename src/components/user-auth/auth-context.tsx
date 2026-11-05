@@ -1,30 +1,36 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import {
-  AuthenticationDetails,
-  CognitoUser,
-  CognitoUserAttribute,
-  CognitoUserPool,
-} from "amazon-cognito-identity-js";
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  confirmSignIn,
+  fetchAuthSession,
+  getCurrentUser,
+  signIn as amplifySignIn,
+  signInWithRedirect,
+  signOut as amplifySignOut,
+} from "aws-amplify/auth";
+import { Hub } from "aws-amplify/utils";
+import { configureAuth, isAuthConfigured, OIDC_PROVIDER } from "@/config/auth";
 
-const USER_POOL_ID = "us-east-1_tX8VGAryE";
-const CLIENT_ID = "57mvrdlt25lavm7epi144h67h3";
-
-function getUserPool() {
-  return new CognitoUserPool({ UserPoolId: USER_POOL_ID, ClientId: CLIENT_ID });
-}
+export type SignInOutcome =
+  | { status: "signedIn" }
+  | { status: "newPasswordRequired" };
 
 type AuthContextValue = {
   isAuthenticated: boolean;
   sessionChecked: boolean;
   email: string;
   accessToken: string;
-  loginModalOpen: boolean;
-  openLoginModal: () => void;
-  closeLoginModal: () => void;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  confirmSignUp: (email: string, code: string) => Promise<void>;
-  signOut: () => void;
+  signIn: (email: string, password: string) => Promise<SignInOutcome>;
+  confirmNewPassword: (newPassword: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signOut: () => Promise<void>;
   getFreshTokens: () => Promise<{ accessToken: string; idToken: string }>;
 };
 
@@ -33,13 +39,10 @@ const AuthContext = createContext<AuthContextValue>({
   sessionChecked: false,
   email: "",
   accessToken: "",
-  loginModalOpen: false,
-  openLoginModal: () => {},
-  closeLoginModal: () => {},
-  signIn: async () => {},
-  signUp: async () => {},
-  confirmSignUp: async () => {},
-  signOut: () => {},
+  signIn: async () => ({ status: "signedIn" }),
+  confirmNewPassword: async () => {},
+  signInWithGoogle: async () => {},
+  signOut: async () => {},
   getFreshTokens: async () => ({ accessToken: "", idToken: "" }),
 });
 
@@ -49,107 +52,157 @@ export function useAuthContext() {
   return useContext(AuthContext);
 }
 
-export function AuthContextProvider({ children }: { children: React.ReactNode }) {
+async function readSession(): Promise<{ email: string; accessToken: string } | null> {
+  try {
+    await getCurrentUser();
+    const session = await fetchAuthSession();
+    const accessToken = session.tokens?.accessToken?.toString() ?? "";
+    if (!accessToken) return null;
+    const payload = session.tokens?.idToken?.payload as Record<string, unknown> | undefined;
+    const email =
+      (typeof payload?.email === "string" && payload.email) ||
+      (typeof payload?.["cognito:username"] === "string" && payload["cognito:username"]) ||
+      "";
+    return { email, accessToken };
+  } catch {
+    return null;
+  }
+}
+
+export function AuthContextProvider({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState("");
   const [accessToken, setAccessToken] = useState("");
   const [sessionChecked, setSessionChecked] = useState(false);
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
 
-  const applySession = useCallback((session: any) => {
-    setEmail(session.getIdToken().payload?.email ?? "");
-    setAccessToken(session.getAccessToken().getJwtToken());
+  const applySession = useCallback((session: { email: string; accessToken: string } | null) => {
+    setEmail(session?.email ?? "");
+    setAccessToken(session?.accessToken ?? "");
   }, []);
+
+  const refreshSession = useCallback(async () => {
+    applySession(await readSession());
+  }, [applySession]);
 
   useEffect(() => {
-    const currentUser = getUserPool().getCurrentUser();
-    if (!currentUser) {
-      setSessionChecked(true);
-      return;
-    }
-    currentUser.getSession((err: Error | null, session: any) => {
-      if (!err && session?.isValid()) applySession(session);
-      setSessionChecked(true);
-    });
-  }, [applySession]);
+    configureAuth();
+    let cancelled = false;
 
-  const signIn = useCallback((username: string, password: string) => {
-    return new Promise<void>((resolve, reject) => {
-      const user = new CognitoUser({ Username: username, Pool: getUserPool() });
-      user.authenticateUser(
-        new AuthenticationDetails({ Username: username, Password: password }),
-        {
-          onSuccess: (session) => {
-            applySession(session);
-            resolve();
-          },
-          onFailure: reject,
-        },
-      );
-    });
-  }, [applySession]);
-
-  const getFreshTokens = useCallback(() => {
-    return new Promise<{ accessToken: string; idToken: string }>((resolve, reject) => {
-      const currentUser = getUserPool().getCurrentUser();
-      if (!currentUser) {
-        reject(new Error("Not signed in"));
+    (async () => {
+      if (!isAuthConfigured()) {
+        if (!cancelled) setSessionChecked(true);
         return;
       }
-      currentUser.getSession((err: Error | null, session: any) => {
-        if (err || !session?.isValid()) {
-          setEmail("");
-          setAccessToken("");
-          reject(err ?? new Error("Session expired"));
-          return;
-        }
-        applySession(session);
-        resolve({
-          accessToken: session.getAccessToken().getJwtToken(),
-          idToken: session.getIdToken().getJwtToken(),
-        });
-      });
+      await refreshSession();
+      if (!cancelled) setSessionChecked(true);
+    })();
+
+    const unsubscribe = Hub.listen("auth", ({ payload }) => {
+      switch (payload.event) {
+        case "signedIn":
+        case "signInWithRedirect":
+        case "tokenRefresh":
+          void refreshSession();
+          break;
+        case "signedOut":
+        case "signInWithRedirect_failure":
+          applySession(null);
+          break;
+        default:
+          break;
+      }
     });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [applySession, refreshSession]);
+
+  const signIn = useCallback(async (username: string, password: string): Promise<SignInOutcome> => {
+    configureAuth();
+    try {
+      await amplifySignOut({ global: false });
+    } catch {
+    }
+
+    const result = await amplifySignIn({ username, password });
+    if (result.isSignedIn) {
+      applySession(await readSession());
+      return { status: "signedIn" };
+    }
+
+    if (result.nextStep?.signInStep === "CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED") {
+      return { status: "newPasswordRequired" };
+    }
+
+    throw new Error(
+      `Sign-in needs another step (${result.nextStep?.signInStep ?? "unknown"}). Contact your administrator.`,
+    );
   }, [applySession]);
 
-  const signUp = useCallback((username: string, password: string) => {
-    return new Promise<void>((resolve, reject) => {
-      getUserPool().signUp(
-        username,
-        password,
-        [new CognitoUserAttribute({ Name: "email", Value: username })],
-        [],
-        (err) => (err ? reject(err) : resolve()),
+  const confirmNewPassword = useCallback(async (newPassword: string) => {
+    configureAuth();
+    const result = await confirmSignIn({ challengeResponse: newPassword });
+    if (!result.isSignedIn) {
+      throw new Error(
+        `Could not finish password setup (${result.nextStep?.signInStep ?? "unknown"}). Try again.`,
       );
-    });
+    }
+    applySession(await readSession());
+  }, [applySession]);
+
+  const signInWithGoogle = useCallback(async () => {
+    configureAuth();
+    await signInWithRedirect({ provider: { custom: OIDC_PROVIDER } });
   }, []);
 
-  const confirmSignUp = useCallback((username: string, code: string) => {
-    return new Promise<void>((resolve, reject) => {
-      const user = new CognitoUser({ Username: username, Pool: getUserPool() });
-      user.confirmRegistration(code, true, (err) => (err ? reject(err) : resolve()));
-    });
-  }, []);
+  const signOut = useCallback(async () => {
+    configureAuth();
+    try {
+      await amplifySignOut();
+    } finally {
+      applySession(null);
+    }
+  }, [applySession]);
 
-  const signOut = useCallback(() => {
-    getUserPool().getCurrentUser()?.signOut();
-    setEmail("");
-    setAccessToken("");
-  }, []);
+  const getFreshTokens = useCallback(async () => {
+    const session = await fetchAuthSession({ forceRefresh: true });
+    const access = session.tokens?.accessToken?.toString() ?? "";
+    const id = session.tokens?.idToken?.toString() ?? "";
+    if (!access) {
+      applySession(null);
+      throw new Error("Session expired");
+    }
+    const payload = session.tokens?.idToken?.payload as Record<string, unknown> | undefined;
+    const nextEmail =
+      (typeof payload?.email === "string" && payload.email) || email;
+    applySession({ email: nextEmail, accessToken: access });
+    return { accessToken: access, idToken: id };
+  }, [applySession, email]);
 
-  const value: AuthContextValue = {
-    isAuthenticated: !!accessToken,
-    sessionChecked,
-    email,
-    accessToken,
-    loginModalOpen,
-    openLoginModal: () => setLoginModalOpen(true),
-    closeLoginModal: () => setLoginModalOpen(false),
-    signIn,
-    signUp,
-    confirmSignUp,
-    signOut,
-    getFreshTokens,
-  };
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      isAuthenticated: Boolean(accessToken),
+      sessionChecked,
+      email,
+      accessToken,
+      signIn,
+      confirmNewPassword,
+      signInWithGoogle,
+      signOut,
+      getFreshTokens,
+    }),
+    [
+      accessToken,
+      confirmNewPassword,
+      email,
+      getFreshTokens,
+      sessionChecked,
+      signIn,
+      signInWithGoogle,
+      signOut,
+    ],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
