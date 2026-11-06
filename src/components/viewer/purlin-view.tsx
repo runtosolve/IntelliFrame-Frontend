@@ -60,8 +60,8 @@ export default function PurlinView({ purlinData, frameFlangeWidth, loadDirection
     [purlinData, supportPositions, zoom],
   );
   const axes = useMemo(
-    () => (showLoad ? null : generateSpanAxes(supportPositions, zoom)),
-    [supportPositions, zoom, showLoad],
+    () => generateSpanAxes(supportPositions, zoom),
+    [supportPositions, zoom],
   );
   const uniformLoad = useMemo(
     () => (showLoad ? generateUniformLoad(supportPositions, zoom, loadDirection === "uplift") : null),
@@ -175,17 +175,17 @@ const LAP_STACK_PX = 42;
 const LOAD_GAP_PX = 16;
 const LOAD_HEIGHT_FACTOR = 1 / 25;
 const LAP_DIM_EXTENSION = 24;
-const AXIS_TOP_CLEARANCE_PX = 52;
 const AXIS_COLOR = "#44403c";
+const AXIS_RIGHT_CLEARANCE_PX = 56;
 const STAGE_PADDING = {
   top: 22 + LAP_STACK_PX + LOAD_GAP_PX,
-  right: 16,
+  right: AXIS_RIGHT_CLEARANCE_PX,
   bottom: 86,
   left: 16,
 };
 const SPAN_ONLY_PADDING = {
-  top: 22 + LAP_STACK_PX + AXIS_TOP_CLEARANCE_PX,
-  right: 16,
+  top: 22 + LAP_STACK_PX,
+  right: AXIS_RIGHT_CLEARANCE_PX,
   bottom: 86,
   left: 16,
 };
@@ -347,13 +347,13 @@ const generateSpanAxes = (
   if (supportPositions.length === 0) return null;
 
   const scale = 1 / zoom;
-  const axisLength = 32 * scale;
-  const fontSize = 12 * scale;
+  const axisLength = 28 * scale;
+  const fontSize = 11 * scale;
   const lastX = supportPositions[supportPositions.length - 1].x;
-  const originX = lastX - axisLength - fontSize - 8 * scale;
-  const originY = -((LAP_STACK_PX + 12) * scale) - axisLength;
-  const strokeWidth = 1.25 * scale;
-  const pointer = 6.5 * scale;
+  const originX = lastX + 4 * scale;
+  const originY = PURLIN_HEIGHT - 3 * scale;
+  const strokeWidth = 1.35 * scale;
+  const pointer = 6 * scale;
 
   return (
     <Group x={originX} y={originY} listening={false}>
@@ -366,25 +366,9 @@ const generateSpanAxes = (
         pointerWidth={pointer * 0.9}
       />
       <Text
-        text="Z"
-        x={axisLength + 4 * scale}
-        y={-fontSize * 0.55}
-        fontSize={fontSize}
-        fontStyle="700"
-        fill={AXIS_COLOR}
-      />
-      <Arrow
-        points={[0, 0, 0, -axisLength]}
-        stroke={AXIS_COLOR}
-        fill={AXIS_COLOR}
-        strokeWidth={strokeWidth}
-        pointerLength={pointer}
-        pointerWidth={pointer * 0.9}
-      />
-      <Text
-        text="Y"
-        x={-fontSize * 0.35}
-        y={-axisLength - fontSize - 3 * scale}
+        text="z"
+        x={axisLength + 5 * scale}
+        y={-fontSize * 0.45}
         fontSize={fontSize}
         fontStyle="700"
         fill={AXIS_COLOR}

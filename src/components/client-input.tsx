@@ -67,21 +67,6 @@ export function ViewerCard({
         </div>
         <div className="preview-layout">
           <div className="preview-label">Framing layout</div>
-          {showLoad ? (
-            <div className="framing-axes" aria-hidden>
-              <svg viewBox="0 0 56 56" width="56" height="56">
-                <defs>
-                  <marker id="framing-axis-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                    <path d="M0,0 L6,3 L0,6 Z" fill="#44403c" />
-                  </marker>
-                </defs>
-                <line x1="18" y1="38" x2="44" y2="38" stroke="#44403c" strokeWidth="1.6" markerEnd="url(#framing-axis-arrow)" />
-                <text x="46" y="42" fill="#44403c" fontSize="12" fontWeight="700">Z</text>
-                <line x1="18" y1="38" x2="18" y2="12" stroke="#44403c" strokeWidth="1.6" markerEnd="url(#framing-axis-arrow)" />
-                <text x="14" y="10" fill="#44403c" fontSize="12" fontWeight="700" textAnchor="middle">Y</text>
-              </svg>
-            </div>
-          ) : null}
           <PurlineViewNoSSR
             purlinData={purlinViewData}
             frameFlangeWidth={state.frameFlangeWidth}

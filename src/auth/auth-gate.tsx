@@ -169,7 +169,7 @@ function SignInPanel() {
         disabled={pending !== null}
         onClick={onGoogle}
       >
-        Continue with RTS SSO
+        Continue with SSO
       </Button>
 
       <Divider className="auth-divider" plain>

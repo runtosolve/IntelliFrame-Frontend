@@ -1846,20 +1846,6 @@ input:focus-visible {
   }
 }
 
-.framing-axes {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  z-index: 2;
-  pointer-events: none;
-  line-height: 0;
-}
-
-.framing-axes svg {
-  display: block;
-  overflow: visible;
-}
-
 /* Deflection hover readout on the framing layout overlay */
 .framing-deflection-tooltip {
   position: absolute;

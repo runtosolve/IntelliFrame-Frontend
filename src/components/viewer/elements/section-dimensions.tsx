@@ -78,11 +78,10 @@ export function getDimensionLayout(
   let boundsMaxY: number;
 
   if (analysis) {
-    const eccPad = Math.abs(drawing.load.x - sc.x) + unit * 1.2;
-    boundsMinX = Math.min(minX, sc.x, drawing.load.x) - unit * 0.35;
-    boundsMaxX = Math.max(maxX, sc.x, drawing.load.x) + Math.max(unit * 0.55, eccPad * 0.28);
-    boundsMinY = Math.min(minY, drawing.load.y - gap - arrowLength, sc.y) - unit * 0.28;
-    boundsMaxY = Math.max(maxY, sc.y) + unit * 0.4;
+    boundsMinX = Math.min(minX, drawing.load.x) - unit * 0.35;
+    boundsMaxX = Math.max(maxX, drawing.load.x) + unit * 0.55;
+    boundsMinY = Math.min(minY, drawing.load.y - gap - arrowLength) - unit * 0.28;
+    boundsMaxY = maxY + unit * 0.35;
   } else {
     boundsMinX = Math.min(minX, heightX, drawing.load.x) - unit * 0.9;
     boundsMaxX = Math.max(maxX, drawing.load.x) + unit * 0.55;
@@ -127,61 +126,17 @@ export default function SectionDimensions({
   const fontSize = FONT_SIZE * px;
   const thin = px;
   const tick = layout.tick;
-  const { load, gap, arrowLength, dims, verticalX, upperFlangeOutside, sc } = layout;
+  const { load, gap, arrowLength, dims, verticalX, upperFlangeOutside } = layout;
   const arrowTip = load.y - gap;
   const arrowTail = arrowTip - arrowLength;
-  const labelWidth = 220 * px;
   const analysis = loadDirection !== undefined;
 
   if (analysis) {
-    const eccentricity = Math.abs(load.x - sc.x);
-    const showEccentricity = eccentricity >= 0.01;
-    const diamond = 5 * px;
-    const dotted = [1.5 * px, 3 * px];
-    const dashed = [6 * px, 4 * px];
+    // Gravity/uplift preview: section + load arrow only (no shear-center / eccentricity callouts).
     const gravityWorldVertical = loadDirection === "gravity" && Math.abs(sectionRotation) > 1e-6;
 
     return (
       <Group listening={false}>
-        {showEccentricity && (
-          <>
-            <Line points={[load.x, load.y, load.x, sc.y]} stroke={EXTENSION_COLOR} strokeWidth={thin} dash={dotted} />
-            <Line points={[sc.x, sc.y, load.x, sc.y]} stroke={ACCENT_COLOR} strokeWidth={thin * 1.4} dash={dashed} />
-            <Text
-              text={`e = ${eccentricity.toFixed(2)} in.`}
-              x={Math.min(sc.x, load.x) + 7 * px}
-              y={sc.y + 5 * px}
-              width={labelWidth}
-              fontSize={fontSize}
-              fontFamily={FONT_FAMILY}
-              fontStyle="600"
-              fill={ACCENT_COLOR}
-              align="left"
-              listening={false}
-            />
-          </>
-        )}
-
-        <Line
-          points={[sc.x, sc.y - diamond, sc.x + diamond, sc.y, sc.x, sc.y + diamond, sc.x - diamond, sc.y]}
-          closed
-          fill={ACCENT_COLOR}
-          stroke="#ffffff"
-          strokeWidth={thin}
-        />
-        <Text
-          text="Shear center"
-          x={sc.x + diamond + 3 * px}
-          y={sc.y - diamond - fontSize * 1.15}
-          width={labelWidth}
-          fontSize={fontSize}
-          fontFamily={FONT_FAMILY}
-          fontStyle="600"
-          fill={ACCENT_COLOR}
-          align="left"
-          listening={false}
-        />
-
         {gravityWorldVertical ? (
           <Group x={load.x} y={arrowTip} rotation={-sectionRotation} listening={false}>
             <Arrow
