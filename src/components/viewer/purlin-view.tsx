@@ -176,7 +176,7 @@ const LOAD_GAP_PX = 16;
 const LOAD_HEIGHT_FACTOR = 1 / 25;
 const LAP_DIM_EXTENSION = 24;
 const AXIS_COLOR = "#44403c";
-const AXIS_RIGHT_CLEARANCE_PX = 56;
+const AXIS_RIGHT_CLEARANCE_PX = 84;
 const STAGE_PADDING = {
   top: 22 + LAP_STACK_PX + LOAD_GAP_PX,
   right: AXIS_RIGHT_CLEARANCE_PX,
@@ -347,13 +347,13 @@ const generateSpanAxes = (
   if (supportPositions.length === 0) return null;
 
   const scale = 1 / zoom;
-  const axisLength = 28 * scale;
-  const fontSize = 11 * scale;
+  const axisLength = 42 * scale;
+  const fontSize = 19 * scale;
   const lastX = supportPositions[supportPositions.length - 1].x;
   const originX = lastX + 4 * scale;
   const originY = PURLIN_HEIGHT - 3 * scale;
-  const strokeWidth = 1.35 * scale;
-  const pointer = 6 * scale;
+  const strokeWidth = 1.6 * scale;
+  const pointer = 9 * scale;
 
   return (
     <Group x={originX} y={originY} listening={false}>
@@ -363,11 +363,11 @@ const generateSpanAxes = (
         fill={AXIS_COLOR}
         strokeWidth={strokeWidth}
         pointerLength={pointer}
-        pointerWidth={pointer * 0.9}
+        pointerWidth={pointer * 0.95}
       />
       <Text
         text="z"
-        x={axisLength + 5 * scale}
+        x={axisLength + 6 * scale}
         y={-fontSize * 0.45}
         fontSize={fontSize}
         fontStyle="700"

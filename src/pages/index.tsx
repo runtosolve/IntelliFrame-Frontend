@@ -134,12 +134,12 @@ export default function Home() {
     }
   }, [activeTab, inputData.loadDirection, inputDataDispatch]);
 
-  const pageHeading = (kicker: string, title: string, description: string, action?: ReactNode) => (
+  const pageHeading = (kicker: string, title: string, description?: string, action?: ReactNode) => (
     <div className="analysis-toolbar">
       <div>
         {kicker ? <span className="section-kicker">{kicker}</span> : null}
         <h1 className="page-title">{title}</h1>
-        <p className="page-description">{description}</p>
+        {description ? <p className="page-description">{description}</p> : null}
       </div>
       {action}
     </div>
@@ -204,12 +204,12 @@ export default function Home() {
         ? pageHeading(
           "",
           "Build Existing Roof",
-          "Set the existing purlin section and framing geometry. The gravity and uplift analyses use these values."
+          "Set the existing purlin section and framing geometry. The gravity and uplift analyses use these values.",
         )
         : pageHeading(
           "Retrofitted roof",
           "Build Retrofitted Roof",
-          "Purlin section and framing geometry come from Build Existing Roof. Choose the IntelliFrame RF profile used by the retrofitted gravity and uplift analyses."
+          "Purlin section and framing geometry come from Build Existing Roof. Choose the IntelliFrame RF profile used by the retrofitted gravity and uplift analyses.",
         )}
       <div className="analysis-grid">
         <aside className="analysis-sidebar" aria-label="Purlin inputs">
@@ -260,11 +260,6 @@ export default function Home() {
         run.scope === "existing" ? "Existing roof analysis" : "Retrofitted roof analysis",
         run.direction === "gravity" ? "Gravity Analysis" : "Uplift Analysis",
         `Purlin section and framing geometry already set in ${run.scope === "existing" ? "Build Existing Roof" : "Build Retrofitted Roof"}. Load direction is ${run.direction}, and the framing layout shows the load ${run.direction === "gravity" ? "downward" : "upward"}. Run analysis to get the result.`,
-        <SubmitButton
-          input={{ ...inputData, loadDirection: run.direction }}
-          analysisType={run.scope}
-          onUpdate={handleResult}
-        />
       )}
       <section className="case-preview" aria-label="Model preview">
         <ViewerCard
@@ -321,8 +316,7 @@ export default function Home() {
             <span className="section-kicker">Analysis output</span>
             <h1 id="summary-title" className="page-title">Summary</h1>
             <p className="page-description">
-              Allowable pressure, improvement, governing limit state, failure location, and maximum deflection
-              for gravity and uplift — existing vs. IRF retrofit.
+              Allowable pressure, improvement, governing limit state, failure location, and maximum deflection for gravity and uplift - existing vs. IRF retrofit.
             </p>
           </div>
           <Tag icon={<SafetyCertificateOutlined />} color={completed === ANALYSIS_RUNS.length ? "success" : "default"}>
@@ -341,8 +335,7 @@ export default function Home() {
           <span className="section-kicker">Issue package</span>
           <h1 className="page-title">Engineering report</h1>
           <p className="page-description">
-            The IMETCO report for the current project and inputs: existing and retrofitted roof, gravity and
-            uplift, with the summary. Generate the client report or the detailed calculation record.
+            The IMETCO report for the current project and inputs: existing and retrofitted roof, gravity and uplift, with the summary. Generate the client report or the detailed calculation record.
           </p>
         </div>
         {reportStale && (
@@ -366,8 +359,6 @@ export default function Home() {
 
   const steps = [
     { key: "project", label: "Project", icon: FolderOpenOutlined, render: renderProjectPage },
-    // Methods is hidden for now: it has no content yet. Uncomment to bring the tab back (renderMethodsPage is kept).
-    // { key: "methods", label: "Methods", icon: ExperimentOutlined, render: renderMethodsPage },
     { key: "build-existing", label: "Build Existing Roof", icon: BuildOutlined, render: () => renderBuildPage("existing") },
     {
       key: "existing",
@@ -395,6 +386,12 @@ export default function Home() {
   const activeStep = flatSteps.find((step) => step.key === activeTab) ?? flatSteps[0];
   const stepIndex = Math.max(0, flatSteps.findIndex((step) => step.key === activeTab));
   const nextStep = flatSteps[stepIndex + 1] ?? null;
+  const activeAnalysisRun = ANALYSIS_RUNS.find((run) => run.key === activeTab) ?? null;
+  const contentClassName = [
+    "workspace-content",
+    activeTab === "project" || activeTab === "report" ? "workspace-content-accent" : "",
+    activeTab === "project" ? "workspace-content-project" : "",
+  ].filter(Boolean).join(" ");
 
   return (
     <>
@@ -451,7 +448,7 @@ export default function Home() {
             </div>
           </aside>
           <div className="workspace-main">
-            <div className={`workspace-content${activeTab === "project" || activeTab === "report" ? " workspace-content-accent" : ""}`}>
+            <div className={contentClassName}>
               {nextStep && (
                 <nav className="workflow-pager" aria-label="Continue workflow">
                   <div className="workflow-pager-meta">
@@ -462,20 +459,28 @@ export default function Home() {
                       Next · <strong>{nextStep.label}</strong>
                     </span>
                   </div>
-                  <Button
-                    type="default"
-                    size="middle"
-                    className="go-next-button"
-                    icon={<ArrowRightOutlined />}
-                    iconPosition="end"
-                    onClick={() => setActiveTab(nextStep.key)}
-                  >
-                    Go Next
-                  </Button>
+                  <div className="workflow-pager-actions">
+                    {activeAnalysisRun && (
+                      <SubmitButton
+                        input={{ ...inputData, loadDirection: activeAnalysisRun.direction }}
+                        analysisType={activeAnalysisRun.scope}
+                        onUpdate={handleResult}
+                      />
+                    )}
+                    <Button
+                      type="default"
+                      size="middle"
+                      className="go-next-button"
+                      icon={<ArrowRightOutlined />}
+                      iconPosition="end"
+                      onClick={() => setActiveTab(nextStep.key)}
+                    >
+                      Go Next
+                    </Button>
+                  </div>
                 </nav>
               )}
               {activeStep.key !== "report" && activeStep.render()}
-              {/* the report page stays mounted so a report keeps generating, and stays shown, across tabs */}
               <div hidden={activeStep.key !== "report"}>{renderReport()}</div>
             </div>
             <Footer />
